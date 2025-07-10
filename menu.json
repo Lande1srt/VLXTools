@@ -6,18 +6,7 @@
             {
                 "name": "文本转换",
                 "icon": "fa-exchange",
-                "children": [
-                    {
-                        "name": "大小写转换",
-                        "icon": "fa-text-height",
-                        "url": "https://example.com/text-case"
-                    },
-                    {
-                        "name": "HTML转义/反转义",
-                        "icon": "fa-code",
-                        "url": "https://example.com/html-escape"
-                    }
-                ]
+                "url": "https://example.com/text-case"                
             },
             {
                 "name": "文本对比",
@@ -28,6 +17,11 @@
                 "name": "字数统计",
                 "icon": "fa-bar-chart",
                 "url": "https://example.com/word-count"
+            },
+            {
+                "name": "文本编码/解码",
+                "icon": "fa-code",
+                "url": "https://example.com/text-encode"
             }
         ]
     },
