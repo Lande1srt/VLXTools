@@ -1,0 +1,24 @@
+@layer utilities {
+    .content-auto {
+        content-visibility: auto;
+    }
+    .gradient-bg {
+        background: linear-gradient(135deg, #4F46E5 0%, #EC4899 100%);
+    }
+    .glass-effect {
+        backdrop-filter: blur(10px);
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    .neumorphic {
+        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.5);
+    }
+    .neumorphic-inset {
+        box-shadow: inset 2px 2px 5px rgba(163, 177, 198, 0.6), inset -3px -3px 7px rgba(255, 255, 255, 0.5);
+    }
+    .menu-active {
+        @apply bg-primary/10 text-primary border-l-4 border-primary;
+    }
+    .sub-menu {
+        @apply hidden pl-6 mt-1 space-y-1 relative z-10;
+    }
+}

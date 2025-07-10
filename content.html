@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工具中心 - ExPlusTools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#EC4899',
+                        accent: '#10B981',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="min-h-screen bg-gray-50 font-sans flex flex-col overflow-hidden">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg z-10">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fa fa-wrench text-xl"></i>
+                    <h1 class="text-xl font-bold">ExPlusTools - 工具中心</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="menu-toggle" class="md:hidden text-xl">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                    <a href="index.html" class="hidden md:flex items-center text-white hover:text-gray-200 transition-colors">
+                        <i class="fa fa-home mr-1"></i> 返回首页
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex flex-1 overflow-hidden">
+        <!-- Sidebar Menu -->
+        <aside id="sidebar" class="w-64 bg-white neumorphic mr-4 hidden md:block overflow-y-auto transition-all duration-300 h-[calc(100vh-64px)]">
+            <div class="p-4">
+                <div class="neumorphic-inset rounded-lg p-3 mb-4">
+                    <div class="flex items-center">
+                        <i class="fa fa-search text-gray-400 mr-2"></i>
+                        <input type="text" placeholder="搜索工具..." class="bg-transparent w-full outline-none text-sm">
+                    </div>
+                </div>
+                <nav id="tool-menu" class="space-y-1">
+                    <!-- 菜单将通过JavaScript动态生成 -->
+                    <div class="text-center py-10 text-gray-400">
+                        <i class="fa fa-spinner fa-spin text-2xl mb-2"></i>
+                        <p>加载菜单中...</p>
+                    </div>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Iframe Content -->
+        <section class="flex-1 overflow-hidden neumorphic m-4">
+            <iframe id="tool-iframe" src="about:blank" class="w-full h-full border-0" frameborder="0"></iframe>
+        </section>
+    </main>
+
+    <script src="js/content.js"></script>
+</body>
+</html>
