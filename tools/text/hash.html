@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Hash</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4f46e5',
+                        success: '#10b981',
+                        danger: '#ef4444',
+                        neutral: '#f0f4f8',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .neumorphic {
+                box-shadow: 6px 6px 12px rgba(163, 177, 198, 0.6),
+                           -6px -6px 12px rgba(255, 255, 255, 0.8);
+            }
+            .neumorphic-inset {
+                box-shadow: inset 4px 4px 8px rgba(163, 177, 198, 0.6),
+                           inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+            }
+            .neumorphic-btn {
+                box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6),
+                           -5px -5px 10px rgba(255, 255, 255, 0.8);
+                transition: all 0.2s ease;
+            }
+            .neumorphic-btn:hover {
+                box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.7),
+                           -7px -7px 14px rgba(255, 255, 255, 0.9);
+                transform: translateY(-2px);
+            }
+            .neumorphic-btn:active {
+                box-shadow: inset 4px 4px 8px rgba(163, 177, 198, 0.6),
+                           inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+                transform: translateY(0);
+            }
+            .custom-select {
+                appearance: none;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 12px center;
+                background-size: 16px;
+            }
+            .hash-match {
+                background-color: rgba(16, 185, 129, 0.15);
+                border: 1px solid rgba(16, 185, 129, 0.3);
+            }
+        }
+    </style>
+</head>
+<body class="bg-neutral min-h-screen font-inter p-4 text-gray-700">
+    <div class="max-w-3xl mx-auto">
+        <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-center mb-6 text-primary">文本Hash计算</h1>
+        
+        <!-- 输入区域 -->
+        <div class="mb-6">
+            <label class="block mb-2 font-medium">输入文本</label>
+            <div class="neumorphic-inset rounded-xl p-4">
+                <textarea id="input-text" rows="4" class="w-full bg-transparent border-none outline-none resize-none" placeholder="输入文本后自动计算所有哈希值..."></textarea>
+            </div>
+        </div>
+        
+        <!-- 编码选择区域 -->
+        <div class="mb-6">
+            <label class="block mb-2 font-medium">编码类型</label>
+            <div class="neumorphic rounded-xl p-1 max-w-xs">
+                <select id="encoding" class="custom-select w-full bg-transparent border-none outline-none p-3 rounded-lg">
+                    <option value="hex">Base16 (Hex)</option>
+                    <option value="binary">Base2 (Binary)</option>
+                    <option value="base32">Base32</option>
+                    <option value="base64">Base64</option>
+                    <option value="base64url">Base64URL</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- 结果显示区域 -->
+        <div class="mb-6">
+            <label class="block mb-4 font-medium">所有算法计算结果 (点击可复制)</label>
+            <div id="hash-results" class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                <!-- 结果将通过JS动态生成 -->
+            </div>
+        </div>
+        
+        <!-- 哈希对比区域 -->
+        <div>
+            <label class="block mb-2 font-medium">对比哈希值 (验证是否存在匹配结果)</label>
+            <div class="neumorphic-inset rounded-xl p-4 mb-4">
+                <input type="text" id="compare-hash" class="w-full bg-transparent border-none outline-none" placeholder="输入哈希值自动对比...">
+            </div>
+            
+            <div id="comparison-result" class="hidden py-3 rounded-xl text-center font-medium"></div>
+        </div>
+        
+        <script>
+            // 算法配置列表 - 所有算法将同时计算
+            const algorithms = [
+                { id: 'md5', name: 'MD5' },
+                { id: 'sha1', name: 'SHA1' },
+                { id: 'sha224', name: 'SHA224' },
+                { id: 'sha256', name: 'SHA256' },
+                { id: 'sha384', name: 'SHA384' },
+                { id: 'sha512', name: 'SHA512' },
+                { id: 'sha3', name: 'SHA3' },
+                { id: 'ripemd160', name: 'RIPEMD160' }
+            ];
+            
+            // DOM元素
+            const inputText = document.getElementById('input-text');
+            const compareHash = document.getElementById('compare-hash');
+            const encoding = document.getElementById('encoding');
+            const hashResults = document.getElementById('hash-results');
+            const comparisonResult = document.getElementById('comparison-result');
+            
+            // 初始化结果区域
+            function initResultArea() {
+                hashResults.innerHTML = '';
+                algorithms.forEach(alg => {
+                    const resultItem = document.createElement('div');
+                    resultItem.id = `result-${alg.id}`;
+                    resultItem.className = 'neumorphic-inset rounded-xl p-4 hash-result-item';
+                    resultItem.innerHTML = `
+                        <div class="font-medium mb-2 flex justify-between">
+                            <span>${alg.name}</span>
+                            <span class="text-sm text-gray-500">点击复制</span>
+                        </div>
+                        <div class="algorithm-result font-mono break-all text-sm text-gray-500">等待输入文本...</div>
+                    `;
+                    hashResults.appendChild(resultItem);
+                });
+            }
+            
+            // 计算单个Hash值
+            function calculateSingleHash(text, algorithm) {
+                if (!text) return '';
+                
+                let hash;
+                switch (algorithm) {
+                    case 'md5':
+                        hash = CryptoJS.MD5(text);
+                        break;
+                    case 'sha1':
+                        hash = CryptoJS.SHA1(text);
+                        break;
+                    case 'sha224':
+                        hash = CryptoJS.SHA224(text);
+                        break;
+                    case 'sha256':
+                        hash = CryptoJS.SHA256(text);
+                        break;
+                    case 'sha384':
+                        hash = CryptoJS.SHA384(text);
+                        break;
+                    case 'sha512':
+                        hash = CryptoJS.SHA512(text);
+                        break;
+                    case 'sha3':
+                        hash = CryptoJS.SHA3(text);
+                        break;
+                    case 'ripemd160':
+                        hash = CryptoJS.RIPEMD160(text);
+                        break;
+                    default:
+                        hash = CryptoJS.MD5(text);
+                }
+                return hash;
+            }
+            
+            // 编码转换 (所有算法共用选定的编码)
+            function encodeHash(hash, encodingType) {
+                if (!hash) return '';
+                
+                switch (encodingType) {
+                    case 'hex':
+                        return hash.toString(CryptoJS.enc.Hex);
+                    case 'binary':
+                        return hash.toString(CryptoJS.enc.Binary);
+                    case 'base32':
+                        return hash.toString(CryptoJS.enc.Base32);
+                    case 'base64':
+                        return hash.toString(CryptoJS.enc.Base64);
+                    case 'base64url':
+                        return hash.toString(CryptoJS.enc.Base64)
+                            .replace(/\+/g, '-')
+                            .replace(/\//g, '_')
+                            .replace(/=+$/, '');
+                    default:
+                        return hash.toString(CryptoJS.enc.Hex);
+                }
+            }
+            
+            // 自动计算所有算法的哈希值
+            function autoCalculateHashes() {
+                const text = inputText.value.trim();
+                const encodingType = encoding.value;
+                
+                // 清除匹配样式
+                algorithms.forEach(alg => {
+                    document.getElementById(`result-${alg.id}`).classList.remove('hash-match');
+                });
+                comparisonResult.classList.add('hidden');
+                
+                if (!text) {
+                    // 清空结果
+                    algorithms.forEach(alg => {
+                        const resultEl = document.querySelector(`#result-${alg.id} .algorithm-result`);
+                        resultEl.textContent = '等待输入文本...';
+                        resultEl.classList.add('text-gray-500');
+                    });
+                    return;
+                }
+                
+                // 计算所有算法的哈希值（共用选定的编码）
+                algorithms.forEach(alg => {
+                    const hash = calculateSingleHash(text, alg.id);
+                    const encodedHash = encodeHash(hash, encodingType);
+                    
+                    const resultEl = document.querySelector(`#result-${alg.id} .algorithm-result`);
+                    resultEl.textContent = encodedHash;
+                    resultEl.classList.remove('text-gray-500');
+                });
+                
+                // 如有对比值则自动对比
+                if (compareHash.value.trim()) {
+                    compareHashes();
+                }
+            }
+            
+            // 对比哈希值（检查是否存在匹配的算法结果）
+            function compareHashes() {
+                const targetHash = compareHash.value.trim().toLowerCase();
+                let matchCount = 0;
+                
+                if (!targetHash) {
+                    algorithms.forEach(alg => {
+                        document.getElementById(`result-${alg.id}`).classList.remove('hash-match');
+                    });
+                    comparisonResult.classList.add('hidden');
+                    return;
+                }
+                
+                // 检查每个算法结果
+                algorithms.forEach(alg => {
+                    const resultEl = document.querySelector(`#result-${alg.id} .algorithm-result`);
+                    const currentHash = resultEl.textContent.toLowerCase();
+                    const resultItem = document.getElementById(`result-${alg.id}`);
+                    
+                    if (currentHash === targetHash && currentHash) {
+                        resultItem.classList.add('hash-match');
+                        matchCount++;
+                    } else {
+                        resultItem.classList.remove('hash-match');
+                    }
+                });
+                
+                // 显示对比结果
+                comparisonResult.classList.remove('hidden');
+                if (matchCount > 0) {
+                    comparisonResult.innerHTML = `已找到 ${matchCount} 个匹配结果（已高亮显示）`;
+                    comparisonResult.className = 'py-3 rounded-xl text-center font-medium bg-success/20 text-success';
+                } else {
+                    comparisonResult.textContent = '没有找到匹配的哈希值';
+                    comparisonResult.className = 'py-3 rounded-xl text-center font-medium bg-danger/20 text-danger';
+                }
+            }
+            
+            // 初始化页面
+            initResultArea();
+            
+            // 事件监听 - 实现自动计算
+            inputText.addEventListener('input', autoCalculateHashes);
+            encoding.addEventListener('change', autoCalculateHashes);
+            compareHash.addEventListener('input', compareHashes);
+            
+            // 点击复制功能
+            hashResults.addEventListener('click', (e) => {
+                const resultItem = e.target.closest('.hash-result-item');
+                if (resultItem) {
+                    const hashText = resultItem.querySelector('.algorithm-result').textContent;
+                    if (hashText && hashText !== '等待输入文本...') {
+                        navigator.clipboard.writeText(hashText);
+                        
+                        // 复制反馈
+                        const originalText = resultItem.querySelector('.algorithm-result').textContent;
+                        resultItem.querySelector('.algorithm-result').textContent = '已复制!';
+                        setTimeout(() => {
+                            resultItem.querySelector('.algorithm-result').textContent = originalText;
+                        }, 1500);
+                    }
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>

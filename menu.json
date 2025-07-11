@@ -4,9 +4,19 @@
         "icon": "fa-file-text-o",
         "children": [
             {
-                "name": "文本转换",
+                "name": "随机字符生成",
+                "icon": "fa-align-justify",
+                "url": "tools/text/rstring.html"                
+            },
+            {
+                "name": "文本加密",
                 "icon": "fa-exchange",
-                "url": "https://example.com/text-case"                
+                "url": "tools/text/enc.html"                
+            },
+            {
+                "name": "文本Hash计算",
+                "icon": "fa-exchange",
+                "url": "tools/text/hash.html"                
             },
             {
                 "name": "文本对比",

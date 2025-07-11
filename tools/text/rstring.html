@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rstring</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        neutral: '#f3f4f6',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .neumorphic {
+                box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6),
+                            -9px -9px 16px rgba(255, 255, 255, 0.5);
+            }
+            .neumorphic-inset {
+                box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                            inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+            }
+            .neumorphic-btn {
+                box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6),
+                            -5px -5px 10px rgba(255, 255, 255, 0.5);
+                transition: all 0.2s ease;
+            }
+            .neumorphic-btn:hover {
+                box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.7),
+                            -7px -7px 14px rgba(255, 255, 255, 0.6);
+                transform: translateY(-2px);
+            }
+            .neumorphic-btn:active {
+                box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                            inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+                transform: translateY(0);
+            }
+            /* 自定义复选框样式 */
+            .custom-checkbox {
+                appearance: none;
+                width: 16px;
+                height: 16px;
+                border-radius: 3px;
+                background-color: transparent;
+                transition: all 0.2s ease;
+                position: relative;
+                cursor: pointer;
+            }
+            .custom-checkbox:checked {
+                background-color: #6366f1;
+            }
+            .custom-checkbox:checked::after {
+                content: "✓";
+                position: absolute;
+                color: white;
+                font-size: 12px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+        }
+    </style>
+</head>
+<body class="bg-neutral min-h-screen font-inter flex items-center justify-center p-4 text-gray-700">
+    <div class="w-full max-w-md rounded-2xl p-6 md:p-8">
+        <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-center mb-6 text-primary">随机字符生成</h1>
+        
+        <!-- 显示区域 -->
+        <div class="relative mb-8">
+            <div class="neumorphic-inset rounded-xl p-4 h-16 flex items-center overflow-hidden">
+                <input type="text" id="password" 
+                       class="w-full bg-transparent border-none outline-none text-lg font-mono text-center truncate"
+                       readonly placeholder="生成的密码将显示在这里">
+            </div>
+            
+            <!-- 按钮区域 -->
+            <div class="flex gap-4 mb-8" style="margin-top: 10px;">
+                <button id="refresh" class="neumorphic-btn flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-primary font-medium">
+                    <i class="fa fa-refresh"></i>
+                    <span>刷新</span>
+                </button>
+                <button id="copy" class="neumorphic-btn flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-secondary font-medium">
+                    <i class="fa fa-copy"></i>
+                    <span>复制</span>
+                </button>
+            </div>
+            
+            <!-- 长度控制 -->
+            <div class="mb-6">
+                <div class="flex justify-between mb-2">
+                    <label for="length" class="font-medium">密码长度: <span id="length-value">12</span></label>
+                </div>
+                <input type="range" id="length" min="6" max="128" value="12" 
+                       class="w-full h-3 neumorphic-inset rounded-full appearance-none cursor-pointer">
+            </div>
+            
+            <!-- 选项设置 -->
+            <div class="space-y-3">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <div class="w-6 h-6 rounded-lg neumorphic flex items-center justify-center p-0.5">
+                        <input type="checkbox" id="uppercase" checked 
+                               class="custom-checkbox">
+                    </div>
+                    <span>包含大写字母 (A-Z)</span>
+                </label>
+                
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <div class="w-6 h-6 rounded-lg neumorphic flex items-center justify-center p-0.5">
+                        <input type="checkbox" id="lowercase" checked 
+                               class="custom-checkbox">
+                    </div>
+                    <span>包含小写字母 (a-z)</span>
+                </label>
+                
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <div class="w-6 h-6 rounded-lg neumorphic flex items-center justify-center p-0.5">
+                        <input type="checkbox" id="numbers" checked 
+                               class="custom-checkbox">
+                    </div>
+                    <span>包含数字 (0-9)</span>
+                </label>
+                
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <div class="w-6 h-6 rounded-lg neumorphic flex items-center justify-center p-0.5">
+                        <input type="checkbox" id="symbols"
+                               class="custom-checkbox">
+                    </div>
+                    <span>包含符号 (!@#$%等)</span>
+                </label>
+            </div>
+        </div>
+
+        <script>
+            // DOM元素
+            const passwordEl = document.getElementById('password');
+            const lengthEl = document.getElementById('length');
+            const lengthValueEl = document.getElementById('length-value');
+            const uppercaseEl = document.getElementById('uppercase');
+            const lowercaseEl = document.getElementById('lowercase');
+            const numbersEl = document.getElementById('numbers');
+            const symbolsEl = document.getElementById('symbols');
+            const refreshEl = document.getElementById('refresh');
+            const copyEl = document.getElementById('copy');
+            
+            // 字符集
+            const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
+            const numbersChars = '0123456789';
+            const symbolsChars = '!@#$%^&*()_+~`|}{[]:;?><,./-=';
+            
+            // 生成密码
+            function generatePassword() {
+                let length = parseInt(lengthEl.value);
+                let chars = '';
+                let password = '';
+                
+                // 根据选项构建字符集
+                if (uppercaseEl.checked) chars += uppercaseChars;
+                if (lowercaseEl.checked) chars += lowercaseChars;
+                if (numbersEl.checked) chars += numbersChars;
+                if (symbolsEl.checked) chars += symbolsChars;
+                
+                // 确保至少选择了一个选项
+                if (chars === '') {
+                    alert('请至少选择一种字符类型');
+                    return;
+                }
+                
+                // 生成密码
+                for (let i = 0; i < length; i++) {
+                    const randomIndex = Math.floor(Math.random() * chars.length);
+                    password += chars[randomIndex];
+                }
+                
+                passwordEl.value = password;
+            }
+            
+            // 复制到剪贴板
+            function copyToClipboard() {
+                if (!passwordEl.value) {
+                    alert('请先生成密码');
+                    return;
+                }
+                
+                passwordEl.select();
+                document.execCommand('copy');
+                
+                // 显示复制成功反馈
+                const originalText = copyEl.innerHTML;
+                copyEl.innerHTML = '<i class="fa fa-check"></i><span>已复制</span>';
+                
+                setTimeout(() => {
+                    copyEl.innerHTML = originalText;
+                }, 2000);
+            }
+            
+            // 事件监听
+            lengthEl.addEventListener('input', () => {
+                lengthValueEl.textContent = lengthEl.value;
+                generatePassword();
+            });
+            
+            refreshEl.addEventListener('click', generatePassword);
+            copyEl.addEventListener('click', copyToClipboard);
+            
+            // 选项变化时重新生成密码
+            [uppercaseEl, lowercaseEl, numbersEl, symbolsEl].forEach(checkbox => {
+                checkbox.addEventListener('change', generatePassword);
+            });
+            
+            // 初始生成密码
+            generatePassword();
+        </script>
+    </body>
+</html>
