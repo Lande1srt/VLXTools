@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>工具中心 - ExPlusTools</title>
+    <title>ExPlusTools Core</title>
+    <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script>
@@ -22,7 +23,6 @@
             }
         }
     </script>
-    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="min-h-screen bg-gray-50 font-sans flex flex-col overflow-hidden">
     <!-- Header -->
@@ -31,7 +31,7 @@
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-2">
                     <i class="fa fa-wrench text-xl"></i>
-                    <h1 class="text-xl font-bold">ExPlusTools - 工具中心</h1>
+                    <h1 class="text-xl font-bold">ExPlusTools Core</h1>
                 </div>
                 <div class="flex items-center space-x-4">
                     <button id="menu-toggle" class="md:hidden text-xl">
@@ -67,11 +67,11 @@
         </aside>
 
         <!-- Main Iframe Content -->
-        <section class="flex-1 overflow-hidden neumorphic m-4">
-            <iframe id="tool-iframe" src="about:blank" class="w-full h-full border-0" frameborder="0"></iframe>
+        <section class="flex-1 overflow-hidden neumorphic m-4" style="border-radius: 20px !important;" >
+            <iframe id="tool-iframe" src="other/welcome.html" class="w-full h-full border-0" frameborder="0"></iframe>
         </section>
     </main>
 
-    <script src="js/content.js"></script>
+    <script src="js/menu.js"></script>
 </body>
 </html>

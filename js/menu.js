@@ -1,13 +1,94 @@
 // 菜单切换按钮功能
 document.getElementById('menu-toggle').addEventListener('click', function() {
     const sidebar = document.getElementById('sidebar');
-    sidebar.classList.toggle('hidden');
-    sidebar.classList.toggle('fixed');
-    sidebar.classList.toggle('z-20');
-    sidebar.classList.toggle('h-full');
+    
+    // 初始化动画样式（仅首次执行）
+    if (!sidebar.style.transition) {
+        sidebar.style.transition = 'all 0.3s ease-in-out';
+        sidebar.style.overflow = 'hidden';
+        sidebar.style.width = sidebar.classList.contains('hidden') ? '0' : sidebar.offsetWidth + 'px';
+        sidebar.style.transform = 'translateX(0)';
+    }
+
+    if (sidebar.classList.contains('hidden')) {
+        // 展开菜单
+        sidebar.classList.remove('hidden');
+        sidebar.classList.add('fixed', 'z-20', 'h-full');
+        // 强制重绘后设置宽度触发动画
+        setTimeout(() => {
+            sidebar.style.width = '280px'; // 菜单宽度
+        }, 10);
+        // 移动设备添加遮罩层
+        if (isMobileDevice()) {
+            addOverlay();
+        }
+    } else {
+        // 收起菜单
+        closeSidebar();
+    }
 });
 
-// 从JSON文件加载菜单
+// 移动设备检测
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+// 添加遮罩层
+function addOverlay() {
+    // 移除已存在的遮罩
+    removeOverlay();
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'menu-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.3);
+        z-index: 10;
+        transition: opacity 0.3s ease;
+        opacity: 0;
+    `;
+    document.body.appendChild(overlay);
+    
+    // 触发淡入动画
+    setTimeout(() => {
+        overlay.style.opacity = '1';
+    }, 10);
+    
+    // 点击遮罩收起菜单
+    overlay.addEventListener('click', closeSidebar);
+}
+
+// 移除遮罩层
+function removeOverlay() {
+    const overlay = document.getElementById('menu-overlay');
+    if (overlay) {
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 300);
+    }
+}
+
+// 收起菜单统一方法
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar.classList.contains('hidden')) {
+        sidebar.style.width = '0';
+        // 动画结束后处理
+        setTimeout(() => {
+            sidebar.classList.add('hidden');
+            sidebar.classList.remove('fixed', 'z-20', 'h-full');
+            // 移动设备移除遮罩
+            if (isMobileDevice()) {
+                removeOverlay();
+            }
+        }, 300);
+    }
+}
+
+// 从JSON文件加载菜单（保持不变）
 async function loadMenu() {
     try {
         const response = await fetch('menu.json');
@@ -26,7 +107,7 @@ async function loadMenu() {
     }
 }
 
-// 递归渲染菜单项
+// 递归渲染菜单项（保持不变）
 function renderMenuItems(items, container) {
     items.forEach(item => {
         const menuItem = document.createElement('div');
@@ -48,10 +129,13 @@ function renderMenuItems(items, container) {
 
         // 如果有子菜单，添加展开/折叠功能
         if (item.children && item.children.length > 0) {
-            menuButton.addEventListener('click', function() {
+            menuButton.addEventListener('click', function(e) {
+                // 阻止事件冒泡，避免触发遮罩层点击
+                e.stopPropagation();
+                
                 const subMenu = menuItem.querySelector('.sub-menu');
                 if (subMenu) {
-                    const menuItem = menuButton.closest('.mb-1');
+                    const menuItemEl = menuButton.closest('.mb-1');
                     if (subMenu.classList.contains('hidden')) {
                         // 显示子菜单并添加淡入动画
                         subMenu.classList.remove('hidden');
@@ -63,7 +147,6 @@ function renderMenuItems(items, container) {
                             children.forEach(child => {
                                 height += calculateTotalHeight(child);
                             });
-                            // 添加额外间距防止内容被裁剪
                             return height + 10;
                         };
                         subMenu.style.maxHeight = calculateTotalHeight(subMenu) + 'px';
@@ -73,10 +156,9 @@ function renderMenuItems(items, container) {
                         const icon = menuButton.querySelector('.fa-chevron-down');
                         icon.classList.add('rotate-180');
                         // 添加一级菜单高亮
-                        // 确保只有一级菜单项获得高亮
-                        if (menuItem && menuItem.parentElement.id === 'menu-container' && 
-                            menuItem.parentElement.classList.contains('menu-root')) {
-                            menuItem.classList.add('menu-active');
+                        if (menuItemEl && menuItemEl.parentElement.id === 'menu-container' && 
+                            menuItemEl.parentElement.classList.contains('menu-root')) {
+                            menuItemEl.classList.add('menu-active');
                         }
                     } else {
                         // 隐藏子菜单并添加淡出动画
@@ -84,10 +166,9 @@ function renderMenuItems(items, container) {
                         subMenu.style.maxHeight = '0';
                         setTimeout(() => {
                             subMenu.classList.add('hidden');
-                            // 移除一级菜单高亮
-                            if (menuItem && menuItem.parentElement.id === 'menu-container' && 
-                                menuItem.parentElement.classList.contains('menu-root')) {
-                                menuItem.classList.remove('menu-active');
+                            if (menuItemEl && menuItemEl.parentElement.id === 'menu-container' && 
+                                menuItemEl.parentElement.classList.contains('menu-root')) {
+                                menuItemEl.classList.remove('menu-active');
                             }
                         }, 300);
                         const icon = this.querySelector('.fa-chevron-down');
@@ -106,7 +187,10 @@ function renderMenuItems(items, container) {
             renderMenuItems(item.children, subMenu);
         } else {
             // 如果是叶子节点，点击加载iframe内容
-            menuButton.addEventListener('click', function() {
+            menuButton.addEventListener('click', function(e) {
+                // 阻止事件冒泡，避免触发遮罩层点击
+                e.stopPropagation();
+                
                 // 移除其他菜单项的active状态
                 document.querySelectorAll('#tool-menu .menu-active').forEach(el => {
                     el.classList.remove('menu-active');
@@ -116,6 +200,10 @@ function renderMenuItems(items, container) {
                 // 加载iframe内容
                 if (item.url) {
                     document.getElementById('tool-iframe').src = item.url;
+                }
+                // 移动设备下点击菜单项后自动收起菜单
+                if (isMobileDevice()) {
+                    closeSidebar();
                 }
             });
         }
