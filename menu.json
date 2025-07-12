@@ -89,12 +89,12 @@
             {
                 "name": "计算器",
                 "icon": "fa-calculator",
-                "url": "https://example.com/calculator"
+                "url": "tools/other/calculator.html"
             },
             {
                 "name": "时间戳转换",
                 "icon": "fa-clock-o",
-                "url": "https://example.com/timestamp"
+                "url": "tools/other/timestamp.html"
             }
         ]
     }

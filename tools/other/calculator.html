@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>计算器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#e0e5ec',
+                        secondary: '#a3b1c6',
+                        accent: '#4a6fa5',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            /*.morph {
+                box-shadow: 8px 8px 16px #b8c1cf, -8px -8px 16px #ffffff;
+            }*/
+            .morph-inset {
+                box-shadow: inset 5px 5px 10px #b8c1cf, inset -5px -5px 10px #ffffff;
+            }
+            .morph-btn {
+                box-shadow: 5px 5px 10px #b8c1cf, -5px -5px 10px #ffffff;
+                transition: all 0.2s ease;
+            }
+            .morph-btn:active {
+                box-shadow: inset 5px 5px 10px #b8c1cf, inset -5px -5px 10px #ffffff;
+            }
+            .operator-btn {
+                box-shadow: 5px 5px 10px #b8c1cf, -5px -5px 10px #ffffff;
+                transition: all 0.2s ease;
+                background-color: #f0f4f8;
+            }
+            .operator-btn:active {
+                box-shadow: inset 5px 5px 10px #b8c1cf, inset -5px -5px 10px #ffffff;
+            }
+            .equal-btn {
+                box-shadow: 5px 5px 10px #a8b6c7, -5px -5px 10px #ffffff;
+                transition: all 0.2s ease;
+                background-color: #4a6fa5;
+                color: white;
+            }
+            .equal-btn:active {
+                box-shadow: inset 5px 5px 10px #3a5a8c, inset -5px -5px 10px #5a7fb5;
+            }
+        }
+    </style>
+</head>
+<body class="bg-primary min-h-screen flex items-center justify-center p-4 font-sans">
+    <!-- 计算器主体 -->
+    <div class="calculator w-full max-w-md morph rounded-3xl p-6">
+        <!-- 标题区域 -->
+        <div class="text-center mb-4">
+            <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-medium text-gray-700">计算器</h1>
+        </div>
+        
+        <!-- 显示区域 -->
+        <div class="mb-6">
+            <div class="morph-inset rounded-2xl p-4 h-32 flex flex-col justify-end items-end overflow-hidden">
+                <div id="history" class="text-secondary text-lg mb-1 h-8 overflow-hidden">0</div>
+                <div id="display" class="text-[clamp(2rem,5vw,3rem)] font-light text-gray-700">0</div>
+            </div>
+        </div>
+        
+        <!-- 按钮区域 -->
+        <div class="grid grid-cols-4 gap-4">
+            <!-- 第一行 -->
+            <button class="operator-btn rounded-xl p-4 text-xl">C</button>
+            <button class="operator-btn rounded-xl p-4 text-xl">⌫</button>
+            <button class="operator-btn rounded-xl p-4 text-xl">%</button>
+            <button class="operator-btn rounded-xl p-4 text-xl">÷</button>
+            
+            <!-- 第二行 -->
+            <button class="morph-btn rounded-xl p-4 text-xl">7</button>
+            <button class="morph-btn rounded-xl p-4 text-xl">8</button>
+            <button class="morph-btn rounded-xl p-4 text-xl">9</button>
+            <button class="operator-btn rounded-xl p-4 text-xl">×</button>
+            
+            <!-- 第三行 -->
+            <button class="morph-btn rounded-xl p-4 text-xl">4</button>
+            <button class="morph-btn rounded-xl p-4 text-xl">5</button>
+            <button class="morph-btn rounded-xl p-4 text-xl">6</button>
+            <button class="operator-btn rounded-xl p-4 text-xl">-</button>
+            
+            <!-- 第四行 -->
+            <button class="morph-btn rounded-xl p-4 text-xl">1</button>
+            <button class="morph-btn rounded-xl p-4 text-xl">2</button>
+            <button class="morph-btn rounded-xl p-4 text-xl">3</button>
+            <button class="operator-btn rounded-xl p-4 text-xl">+</button>
+            
+            <!-- 第五行 -->
+            <button class="morph-btn rounded-xl p-4 text-xl">±</button>
+            <button class="morph-btn rounded-xl p-4 text-xl">0</button>
+            <button class="morph-btn rounded-xl p-4 text-xl">.</button>
+            <button class="equal-btn rounded-xl p-4 text-xl">=</button>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const display = document.getElementById('display');
+        const history = document.getElementById('history');
+        const buttons = document.querySelectorAll('button');
+        
+        // 计算器状态
+        let currentValue = '0';
+        let previousValue = '';
+        let operator = null;
+        let resetOnNextInput = false;
+        
+        // 更新显示
+        function updateDisplay() {
+            // 限制显示长度
+            if (currentValue.length > 10) {
+                // 处理大数字为科学计数法
+                currentValue = parseFloat(currentValue).toExponential(5);
+            }
+            display.textContent = currentValue;
+        }
+        
+        // 更新历史记录
+        function updateHistory() {
+            history.textContent = previousValue + (operator ? ' ' + operator : '');
+        }
+        
+        // 数字按钮处理
+        function handleNumber(num) {
+            if (resetOnNextInput) {
+                currentValue = num;
+                resetOnNextInput = false;
+            } else {
+                currentValue = currentValue === '0' ? num : currentValue + num;
+            }
+            updateDisplay();
+        }
+        
+        // 运算符处理
+        function handleOperator(op) {
+            if (operator && !resetOnNextInput) {
+                // 计算当前结果
+                calculate();
+            }
+            
+            previousValue = currentValue;
+            operator = op;
+            resetOnNextInput = true;
+            updateHistory();
+        }
+        
+        // 计算结果
+        function calculate() {
+            if (!operator || !previousValue) return;
+            
+            const prev = parseFloat(previousValue);
+            const current = parseFloat(currentValue);
+            let result;
+            
+            switch(operator) {
+                case '+':
+                    result = prev + current;
+                    break;
+                case '-':
+                    result = prev - current;
+                    break;
+                case '×':
+                    result = prev * current;
+                    break;
+                case '÷':
+                    if (current === 0) {
+                        result = '错误';
+                    } else {
+                        result = prev / current;
+                    }
+                    break;
+                case '%':
+                    result = prev % current;
+                    break;
+                default:
+                    return;
+            }
+            
+            // 处理结果
+            currentValue = result.toString();
+            previousValue = '';
+            operator = null;
+            resetOnNextInput = true;
+            
+            updateDisplay();
+            updateHistory();
+        }
+        
+        // 清除功能
+        function clearAll() {
+            currentValue = '0';
+            previousValue = '';
+            operator = null;
+            resetOnNextInput = false;
+            updateDisplay();
+            updateHistory();
+        }
+        
+        // 删除最后一位
+        function deleteLast() {
+            if (currentValue.length > 1) {
+                currentValue = currentValue.slice(0, -1);
+            } else {
+                currentValue = '0';
+            }
+            updateDisplay();
+        }
+        
+        // 小数点处理
+        function handleDecimal() {
+            if (resetOnNextInput) {
+                currentValue = '0.';
+                resetOnNextInput = false;
+            } else if (!currentValue.includes('.')) {
+                currentValue += '.';
+            }
+            updateDisplay();
+        }
+        
+        // 正负号处理
+        function toggleSign() {
+            currentValue = currentValue.startsWith('-') 
+                ? currentValue.slice(1) 
+                : '-' + currentValue;
+            updateDisplay();
+        }
+        
+        // 按钮点击事件
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                const value = button.textContent;
+                
+                // 数字
+                if (!isNaN(value) || value === '.') {
+                    if (value === '.') {
+                        handleDecimal();
+                    } else {
+                        handleNumber(value);
+                    }
+                } 
+                // 运算符
+                else if (['+', '-', '×', '÷', '%'].includes(value)) {
+                    handleOperator(value);
+                } 
+                // 等于
+                else if (value === '=') {
+                    calculate();
+                } 
+                // 清除
+                else if (value === 'C') {
+                    clearAll();
+                } 
+                // 删除
+                else if (value === '⌫') {
+                    deleteLast();
+                } 
+                // 正负号
+                else if (value === '±') {
+                    toggleSign();
+                }
+            });
+        });
+        
+        // 键盘支持
+        document.addEventListener('keydown', (e) => {
+            const key = e.key;
+            
+            // 数字键
+            if (!isNaN(key) && key !== ' ') {
+                handleNumber(key);
+            } 
+            // 运算符
+            else if (['+', '-', '*', '/', '%'].includes(key)) {
+                const op = key === '*' ? '×' : key === '/' ? '÷' : key;
+                handleOperator(op);
+            } 
+            // 等于或回车
+            else if (key === '=' || key === 'Enter') {
+                e.preventDefault();
+                calculate();
+            } 
+            // 清除
+            else if (key === 'Escape') {
+                clearAll();
+            } 
+            // 删除
+            else if (key === 'Backspace') {
+                deleteLast();
+            } 
+            // 小数点
+            else if (key === '.') {
+                handleDecimal();
+            }
+        });
+    </script>
+</body>
+</html>

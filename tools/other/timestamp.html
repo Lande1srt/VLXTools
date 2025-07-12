@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日期时间格式转换工具</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义颜色和字体 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366f1',
+            secondary: '#8b5cf6',
+            neutral: '#f3f4f6',
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /*.neumorphic {
+        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6),
+                   -9px -9px 16px rgba(255, 255, 255, 0.5);
+      }*/
+      .neumorphic-inset {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                   inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6),
+                   -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transition: all 0.2s ease;
+      }
+      .neumorphic-btn:hover {
+        box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.7),
+                   -7px -7px 14px rgba(255, 255, 255, 0.6);
+        transform: translateY(-2px);
+      }
+      .neumorphic-btn:active {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                   inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transform: translateY(1px);
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-neutral min-h-screen font-inter flex items-center justify-center p-4 text-gray-700">
+  <div class="w-full max-w-md neumorphic rounded-2xl p-6 md:p-8">
+    <div class="text-center mb-8">
+      <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-primary mb-2">日期时间格式转换</h1>
+      <p class="text-gray-500">支持本地时间准确转换</p>
+    </div>
+    
+    <!-- 转换区域 -->
+    <div class="space-y-6">
+      <!-- 输入区域 -->
+      <div class="space-y-4">
+        <div>
+          <label class="block mb-2 font-medium">输入日期时间</label>
+          <div class="relative">
+            <input type="text" id="inputDateTime" 
+                  class="w-full px-4 py-3 rounded-xl neumorphic-inset bg-neutral border-0 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  placeholder="例如: 2025-07-12 18:53:08">
+            <button id="currentTimeBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary hover:text-secondary transition-colors">
+              <i class="fa fa-clock-o"></i>
+            </button>
+          </div>
+        </div>
+        
+        <!-- 源格式选择 -->
+        <div>
+          <label class="block mb-2 font-medium">源格式</label>
+          <div class="grid grid-cols-3 gap-3">
+            <button class="source-format-btn neumorphic-btn rounded-xl py-2 active" data-format="common">
+              <i class="fa fa-calendar mr-1"></i> 时间
+            </button>
+            <button class="source-format-btn neumorphic-btn rounded-xl py-2" data-format="timestamp">
+              <i class="fa fa-hashtag mr-1"></i> 时间戳
+            </button>
+            <button class="source-format-btn neumorphic-btn rounded-xl py-2" data-format="utc">
+              <i class="fa fa-globe mr-1"></i> UTC
+            </button>
+          </div>
+        </div>
+        
+        <!-- 转换按钮 -->
+        <button id="convertBtn" class="w-full neumorphic-btn rounded-xl py-3 font-medium text-primary hover:text-secondary transition-colors">
+          <i class="fa fa-exchange mr-2"></i> 转换
+        </button>
+      </div>
+      
+      <!-- 结果区域 -->
+      <div class="pt-4 border-t border-gray-200">
+        <h3 class="font-medium mb-3">转换结果</h3>
+        <div class="space-y-3">
+          <div class="neumorphic-inset rounded-xl p-3">
+            <div class="text-sm text-gray-500 mb-1">ISO 格式 (本地时间)</div>
+            <div id="isoResult" class="break-all">--</div>
+          </div>
+          <div class="neumorphic-inset rounded-xl p-3">
+            <div class="text-sm text-gray-500 mb-1">时间戳 (秒)</div>
+            <div id="timestampResult" class="break-all">--</div>
+          </div>
+          <div class="neumorphic-inset rounded-xl p-3">
+            <div class="text-sm text-gray-500 mb-1">UTC 格式</div>
+            <div id="utcResult" class="break-all">--</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 获取DOM元素
+    const inputDateTime = document.getElementById('inputDateTime');
+    const currentTimeBtn = document.getElementById('currentTimeBtn');
+    const sourceFormatBtns = document.querySelectorAll('.source-format-btn');
+    const convertBtn = document.getElementById('convertBtn');
+    const isoResult = document.getElementById('isoResult');
+    const timestampResult = document.getElementById('timestampResult');
+    const utcResult = document.getElementById('utcResult');
+    
+    let selectedSourceFormat = 'common';
+    let autoUpdateInterval; // 自动更新计时器
+    let conversionDone = false; // 标记是否已执行过转换
+    
+    // 初始化 - 启动自动更新系统时间（仅在未转换前）
+    window.addEventListener('load', () => {
+      startAutoUpdate();
+    });
+    
+    // 启动自动更新
+    function startAutoUpdate() {
+      if (conversionDone) return;
+      
+      // 立即更新一次
+      updateWithCurrentTime();
+      
+      // 每秒更新一次
+      autoUpdateInterval = setInterval(updateWithCurrentTime, 1000);
+    }
+    
+    // 用当前系统时间更新结果
+    function updateWithCurrentTime() {
+      if (conversionDone) return;
+      
+      const now = new Date();
+      isoResult.textContent = formatLocalISO(now);
+      timestampResult.textContent = Math.floor(now.getTime() / 1000); // 秒级时间戳
+      utcResult.textContent = now.toUTCString();
+    }
+    
+    // 格式化本地时间为ISO格式（不含时区信息）
+    function formatLocalISO(date) {
+      return date.getFullYear() + '-' +
+             String(date.getMonth() + 1).padStart(2, '0') + '-' +
+             String(date.getDate()).padStart(2, '0') + 'T' +
+             String(date.getHours()).padStart(2, '0') + ':' +
+             String(date.getMinutes()).padStart(2, '0') + ':' +
+             String(date.getSeconds()).padStart(2, '0');
+    }
+    
+    // 解析本地日期时间字符串
+    function parseLocalDateTime(input) {
+      // 支持的日期分隔符: /, -, .
+      // 支持的时间分隔符: :
+      // 支持日期和时间之间用空格或T分隔
+      
+      // 替换所有可能的分隔符为标准格式
+      const normalized = input
+        .replace(/[\/.\-]/g, '-')    // 将所有日期分隔符替换为-
+        .replace(/\s+/g, 'T')        // 将空格替换为T
+        .replace(/T+/g, 'T');        // 确保只有一个T分隔符
+        
+      // 分割日期和时间部分
+      const [datePart, timePart = '00:00:00'] = normalized.split('T');
+      
+      // 处理日期部分
+      const [year, month, day] = datePart.split('-').map(Number);
+      
+      // 处理时间部分
+      const timeSegments = timePart.split(':').map(Number);
+      const hours = timeSegments[0] || 0;
+      const minutes = timeSegments[1] || 0;
+      const seconds = timeSegments[2] || 0;
+      
+      // 创建本地日期对象
+      return new Date(year, month - 1, day, hours, minutes, seconds);
+    }
+    
+    // 设置当前时间到输入框（本地格式）
+    currentTimeBtn.addEventListener('click', () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      
+      inputDateTime.value = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      setActiveSourceFormat('common');
+    });
+    
+    // 源格式选择
+    sourceFormatBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const format = btn.getAttribute('data-format');
+        setActiveSourceFormat(format);
+      });
+    });
+    
+    // 设置活跃的源格式按钮
+    function setActiveSourceFormat(format) {
+      selectedSourceFormat = format;
+      sourceFormatBtns.forEach(btn => {
+        if (btn.getAttribute('data-format') === format) {
+          btn.classList.add('bg-primary/10');
+        } else {
+          btn.classList.remove('bg-primary/10');
+        }
+      });
+    }
+    
+    // 转换日期时间
+    function convertDateTime() {
+      const inputValue = inputDateTime.value.trim();
+      if (!inputValue) {
+        showError('请输入日期时间');
+        return;
+      }
+      
+      // 停止自动更新
+      clearInterval(autoUpdateInterval);
+      conversionDone = true;
+      
+      let date;
+      
+      try {
+        // 根据源格式解析日期
+        switch (selectedSourceFormat) {
+          case 'common':
+            // 解析本地日期时间
+            date = parseLocalDateTime(inputValue);
+            break;
+          case 'timestamp':
+            // 处理秒或毫秒时间戳
+            const num = parseInt(inputValue);
+            date = num.toString().length > 10 ? new Date(num) : new Date(num * 1000);
+            break;
+          case 'utc':
+            date = new Date(inputValue);
+            break;
+          default:
+            date = new Date(inputValue);
+        }
+        
+        // 检查日期是否有效
+        if (isNaN(date.getTime())) {
+          throw new Error('无法正确解析日期时间格式');
+        }
+        
+        // 显示转换结果
+        isoResult.textContent = formatLocalISO(date);
+        timestampResult.textContent = Math.floor(date.getTime() / 1000); // 秒级时间戳
+        utcResult.textContent = date.toUTCString();
+        
+        // 清除错误状态
+        clearError();
+        
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+    
+    // 显示错误信息
+    function showError(message) {
+      isoResult.textContent = message;
+      isoResult.classList.add('text-red-500');
+      timestampResult.textContent = '--';
+      utcResult.textContent = '--';
+    }
+    
+    // 清除错误状态
+    function clearError() {
+      isoResult.classList.remove('text-red-500');
+    }
+    
+    // 绑定事件
+    convertBtn.addEventListener('click', convertDateTime);
+    inputDateTime.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        convertDateTime();
+      }
+    });
+  </script>
+</body>
+</html>
