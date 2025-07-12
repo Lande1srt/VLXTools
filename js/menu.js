@@ -1,3 +1,63 @@
+// 添加搜索功能
+function setupSearch() {
+    const searchInput = document.getElementById('tool-search');
+    const menuContainer = document.getElementById('tool-menu');
+    
+    searchInput.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const menuItems = document.querySelectorAll('#tool-menu > .mb-1');
+        
+        menuItems.forEach(item => {
+            const itemName = item.querySelector('button span').textContent.toLowerCase();
+            const subItems = item.querySelectorAll('.sub-menu .mb-1');
+            let hasMatch = false;
+
+            // 检查子菜单是否匹配
+            if (subItems.length > 0) {
+                subItems.forEach(subItem => {
+                    const subItemName = subItem.querySelector('button span').textContent.toLowerCase();
+                    if (subItemName.includes(searchTerm)) {
+                        subItem.style.display = '';
+                        hasMatch = true;
+                    } else {
+                        subItem.style.display = 'none';
+                    }
+                });
+            }
+
+            // 检查当前菜单项是否匹配
+            if (itemName.includes(searchTerm)) {
+                hasMatch = true;
+            }
+
+            if (searchTerm) {
+                if (hasMatch) {
+                    item.style.display = '';
+                    // 搜索模式下不显示一级菜单，只显示匹配的子菜单
+                    if (subItems.length > 0) {
+                        item.querySelector('button').style.display = 'none';
+                        const subMenu = item.querySelector('.sub-menu');
+                        subMenu.classList.remove('hidden');
+                        subMenu.style.maxHeight = 'none';
+                        subMenu.style.opacity = '1';
+                    }
+                } else {
+                    item.style.display = 'none';
+                }
+            } else {
+                item.style.display = '';
+                if (subItems.length > 0) {
+                    item.querySelector('button').style.display = '';
+                    const subMenu = item.querySelector('.sub-menu');
+                    subMenu.classList.add('hidden');
+                    subMenu.style.maxHeight = '0';
+                    subMenu.style.opacity = '0';
+                }
+            }
+        });
+    });
+}
+
 // 菜单切换按钮功能
 document.getElementById('menu-toggle').addEventListener('click', function() {
     const sidebar = document.getElementById('sidebar');
@@ -87,6 +147,9 @@ function closeSidebar() {
         }, 300);
     }
 }
+
+// 初始化搜索功能
+setupSearch();
 
 // 从JSON文件加载菜单（保持不变）
 async function loadMenu() {

@@ -51,7 +51,7 @@
         "children": [
             {
                 "name": "JSON格式化",
-                "icon": "fa-json",
+                "icon": "fa-code",
                 "url": "https://example.com/json-formatter"
             },
             {
@@ -95,6 +95,11 @@
                 "name": "时间戳转换",
                 "icon": "fa-clock-o",
                 "url": "tools/other/timestamp.html"
+            },
+            {
+                "name": "进制转换",
+                "icon": "fa-clock-o",
+                "url": "tools/other/cbase.html"
             }
         ]
     }
