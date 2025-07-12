@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>进制转换工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 配置Tailwind自定义颜色 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#e0e5ec',
+                        secondary: '#a3b1c6',
+                        accent: '#4a6fa5',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .morph {
+                box-shadow: 8px 8px 16px #b8c1cf, -8px -8px 16px #ffffff;
+            }
+            .morph-inset {
+                box-shadow: inset 5px 5px 10px #b8c1cf, inset -5px -5px 10px #ffffff;
+            }
+            .morph-btn {
+                box-shadow: 5px 5px 10px #b8c1cf, -5px -5px 10px #ffffff;
+                transition: all 0.2s ease;
+            }
+            .morph-btn:active {
+                box-shadow: inset 5px 5px 10px #b8c1cf, inset -5px -5px 10px #ffffff;
+            }
+            .morph-input {
+                background-color: #e0e5ec;
+                border: none;
+                box-shadow: inset 5px 5px 10px #b8c1cf, inset -5px -5px 10px #ffffff;
+                transition: all 0.2s ease;
+            }
+            .morph-input:focus {
+                outline: none;
+                box-shadow: inset 4px 4px 8px #b8c1cf, inset -4px -4px 8px #ffffff;
+            }
+        }
+    </style>
+</head>
+<body class="bg-primary min-h-screen p-4 font-sans">
+    <div class="max-w-2xl mx-auto mt-8 mb-8">
+        <!-- 工具主体 -->
+        <div class="morph rounded-3xl p-6">
+            <!-- 标题 -->
+            <div class="text-center mb-8">
+                <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-medium text-gray-700">进制转换工具</h1>
+            </div>
+            
+            <!-- 输入区域 -->
+            <div class="mb-6">
+                <label class="block text-gray-600 mb-2 text-sm">输入数值</label>
+                <div class="flex gap-3">
+                    <input type="text" id="inputValue" class="morph-input rounded-xl px-4 py-3 w-full text-gray-700" placeholder="输入要转换的数值">
+                    <select id="inputBase" class="morph-btn rounded-xl px-4 py-3 text-gray-700">
+                        <option value="2">二进制</option>
+                        <option value="8">八进制</option>
+                        <option value="10" selected>十进制</option>
+                        <option value="16">十六进制</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- 转换按钮 -->
+            <div class="flex justify-center mb-8">
+                <button id="convertBtn" class="morph-btn rounded-xl px-6 py-3 text-gray-700 font-medium">转换</button>
+            </div>
+            
+            <!-- 输出区域 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 二进制输出 -->
+                <div>
+                    <label class="block text-gray-600 mb-2 text-sm">二进制</label>
+                    <div class="flex">
+                        <input type="text" id="binaryOutput" class="morph-input rounded-xl px-4 py-3 w-full text-gray-700 bg-opacity-50" readonly>
+                        <button class="copy-btn morph-btn rounded-r-xl px-3 text-gray-600" data-target="binaryOutput">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                <path d="M8 15a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 1a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 八进制输出 -->
+                <div>
+                    <label class="block text-gray-600 mb-2 text-sm">八进制</label>
+                    <div class="flex">
+                        <input type="text" id="octalOutput" class="morph-input rounded-xl px-4 py-3 w-full text-gray-700 bg-opacity-50" readonly>
+                        <button class="copy-btn morph-btn rounded-r-xl px-3 text-gray-600" data-target="octalOutput">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                <path d="M8 15a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 1a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 十进制输出 -->
+                <div>
+                    <label class="block text-gray-600 mb-2 text-sm">十进制</label>
+                    <div class="flex">
+                        <input type="text" id="decimalOutput" class="morph-input rounded-xl px-4 py-3 w-full text-gray-700 bg-opacity-50" readonly>
+                        <button class="copy-btn morph-btn rounded-r-xl px-3 text-gray-600" data-target="decimalOutput">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                <path d="M8 15a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 1a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 十六进制输出 -->
+                <div>
+                    <label class="block text-gray-600 mb-2 text-sm">十六进制</label>
+                    <div class="flex">
+                        <input type="text" id="hexOutput" class="morph-input rounded-xl px-4 py-3 w-full text-gray-700 bg-opacity-50" readonly>
+                        <button class="copy-btn morph-btn rounded-r-xl px-3 text-gray-600" data-target="hexOutput">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                <path d="M8 15a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 1a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                                <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0
