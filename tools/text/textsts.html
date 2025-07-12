@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TextStatistics</title>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-primary: #ecf0f3;
+      --shadow: 8px 8px 16px rgba(163, 177, 198, 0.6), -8px -8px 16px rgba(255, 255, 255, 0.5);
+      --shadow-inset: inset 5px 5px 10px rgba(163, 177, 198, 0.6), inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      --accent: #6366f1;
+      --text-primary: #333;
+      --text-secondary: #666;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    }
+    
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 25px;
+      border-radius: 16px;
+    }
+    
+    h1 {
+      color: var(--accent);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 16px;
+    }
+    
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+    
+    .input-section {
+      border-radius: 16px;
+      padding: 20px;
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 18px;
+      border: none;
+      border-radius: 12px;
+      resize: vertical;
+      font-size: 15px;
+      background-color: var(--bg-primary);
+      box-shadow: var(--shadow-inset);
+      transition: all 0.3s ease;
+    }
+    
+    textarea:focus {
+      outline: none;
+      box-shadow: inset 3px 3px 6px rgba(163, 177, 198, 0.7), inset -3px -3px 6px rgba(255, 255, 255, 0.8);
+    }
+    
+    .stats-section {
+      border-radius: 16px;
+      padding: 20px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    
+    .stat-card {
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-3px);
+    }
+    
+    .stat-title {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      color: var(--accent);
+      font-size: 24px;
+      font-weight: 600;
+    }
+    
+    .action-btn {
+      align-self: center;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 12px;
+      background-color: var(--bg-primary);
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow);
+      transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+      box-shadow: var(--shadow-inset);
+      transform: translateY(-2px);
+    }
+    
+    @media (max-width: 600px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      header {
+        padding: 20px 15px;
+      }
+      
+      h1 {
+        font-size: 24px;
+      }
+      
+      .stat-card {
+        padding: 15px;
+      }
+      
+      .stat-value {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>字数统计工具</h1>
+      <p class="subtitle">实时统计文本中的字符数量，区分中英文与符号</p>
+    </header>
+    
+    <div class="main-content">
+      <div class="input-section">
+        <textarea id="textInput" placeholder="请输入需要统计的文本内容..."></textarea>
+      </div>
+      
+      <button class="action-btn" id="clearBtn">
+        <i class="fa fa-trash-o"></i>
+        <span>清空内容</span>
+      </button>
+      
+      <div class="stats-section">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-title">总字符数（含符号）</div>
+            <div class="stat-value" id="totalWithSymbols">0</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-title">总字符数（不含符号）</div>
+            <div class="stat-value" id="totalWithoutSymbols">0</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-title">中文字符数</div>
+            <div class="stat-value" id="chineseChars">0</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-title">英文字符数</div>
+            <div class="stat-value" id="englishChars">0</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-title">符号数量</div>
+            <div class="stat-value" id="symbolCount">0</div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-title">空格数量</div>
+            <div class="stat-value" id="spaceCount">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const textInput = document.getElementById('textInput');
+      const clearBtn = document.getElementById('clearBtn');
+      
+      // 统计结果元素
+      const totalWithSymbols = document.getElementById('totalWithSymbols');
+      const totalWithoutSymbols = document.getElementById('totalWithoutSymbols');
+      const chineseChars = document.getElementById('chineseChars');
+      const englishChars = document.getElementById('englishChars');
+      const symbolCount = document.getElementById('symbolCount');
+      const spaceCount = document.getElementById('spaceCount');
+      
+      // 实时统计
+      textInput.addEventListener('input', updateStats);
+      clearBtn.addEventListener('click', clearText);
+      
+      // 初始化统计
+      updateStats();
+      
+      function updateStats() {
+        const text = textInput.value;
+        
+        // 总字符数（含符号）
+        const totalWith = text.length;
+        
+        // 统计空格
+        const spaces = (text.match(/\s/g) || []).length;
+        
+        // 统计中文字符（包括中文标点）
+        const chinese = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+        
+        // 统计英文字母（不区分大小写）
+        const english = (text.match(/[a-zA-Z]/g) || []).length;
+        
+        // 统计数字
+        const numbers = (text.match(/[0-9]/g) || []).length;
+        
+        // 计算符号数量（总字符 - 中文 - 英文 - 数字 - 空格）
+        const symbols = totalWith - chinese - english - numbers - spaces;
+        
+        // 不含符号的总字符数（中文 + 英文 + 数字）
+        const totalWithout = chinese + english + numbers;
+        
+        // 更新DOM
+        totalWithSymbols.textContent = totalWith;
+        totalWithoutSymbols.textContent = totalWithout;
+        chineseChars.textContent = chinese;
+        englishChars.textContent = english + numbers; // 数字归为英文统计
+        symbolCount.textContent = symbols;
+        spaceCount.textContent = spaces;
+      }
+      
+      function clearText() {
+        textInput.value = '';
+        updateStats();
+      }
+    });
+  </script>
+</body>
+</html>

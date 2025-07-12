@@ -9,6 +9,16 @@
                 "url": "tools/text/rstring.html"                
             },
             {
+                "name": "UUID生成",
+                "icon": "fa-align-justify",
+                "url": "tools/text/uuid.html"                
+            },
+            {
+                "name": "ULID生成",
+                "icon": "fa-align-justify",
+                "url": "tools/text/ulid.html"                
+            },
+            {
                 "name": "文本加密",
                 "icon": "fa-exchange",
                 "url": "tools/text/enc.html"                
@@ -21,17 +31,17 @@
             {
                 "name": "文本对比",
                 "icon": "fa-files-o",
-                "url": "https://example.com/text-compare"
+                "url": "tools/text/contrast.html"
             },
             {
                 "name": "字数统计",
                 "icon": "fa-bar-chart",
-                "url": "https://example.com/word-count"
+                "url": "tools/text/textsts.html"
             },
             {
-                "name": "文本编码/解码",
+                "name": "密码分析工具",
                 "icon": "fa-code",
-                "url": "https://example.com/text-encode"
+                "url": "tools/text/passanaly.html"
             }
         ]
     },

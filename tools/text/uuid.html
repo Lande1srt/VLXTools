@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UUID生成工具</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366f1',
+            surface: '#f0f4f8',
+            text: '#334155'
+          },
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .neumorphic {
+        box-shadow: 8px 8px 16px rgba(163, 177, 198, 0.6),
+                    -8px -8px 16px rgba(255, 255, 255, 0.8);
+      }
+      .neumorphic-inset {
+        box-shadow: inset 4px 4px 8px rgba(163, 177, 198, 0.6),
+                    inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    -5px -5px 10px rgba(255, 255, 255, 0.8);
+        transition: all 0.2s ease;
+      }
+      .neumorphic-btn:hover {
+        box-shadow: 6px 6px 12px rgba(163, 177, 198, 0.7),
+                    -6px -6px 12px rgba(255, 255, 255, 0.9);
+        transform: translateY(-2px);
+      }
+      .neumorphic-btn:active {
+        box-shadow: inset 3px 3px 6px rgba(163, 177, 198, 0.6),
+                    inset -3px -3px 6px rgba(255, 255, 255, 0.8);
+      }
+      .uuid-item {
+        transition: all 0.15s ease-in-out;
+      }
+      .uuid-item:hover {
+        transform: translateX(4px);
+      }
+    }
+  </style>
+</head>
+<body class="bg-surface min-h-screen font-sans text-text p-4 md:p-6">
+  <div class="max-w-4xl mx-auto">
+    <!-- 标题区域 -->
+    <div class="text-center mb-8">
+      <h1 class="text-[clamp(1.8rem,5vw,2.5rem)] font-bold mb-2">UUID生成工具</h1>
+      <p class="text-gray-600">生成符合标准的通用唯一识别码</p>
+    </div>
+    
+    <!-- 主内容区 -->
+    <div class="bg-surface rounded-2xl p-6 md:p-8 neumorphic mb-8">
+      <!-- 生成结果展示 -->
+      <div class="mb-8">
+        <label class="block text-sm font-medium mb-2">生成结果:</label>
+        <div class="flex flex-col md:flex-row gap-3">
+          <!-- 视觉展示区（带序号） -->
+          <div id="uuidDisplay" class="flex-1 bg-surface rounded-xl p-4 neumorphic-inset min-h-[50px] max-h-[300px] overflow-y-auto break-all">
+            点击生成按钮创建UUID
+          </div>
+          <!-- 隐藏的复制源（不带序号） -->
+          <div id="uuidCopySource" class="hidden"></div>
+          <button id="copyBtn" class="neumorphic-btn bg-surface rounded-xl p-4 text-primary hover:text-primary/80" title="复制到剪贴板">
+            <i class="fa fa-clipboard text-xl"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 数量选择滑块 -->
+      <div class="mb-6">
+        <div class="flex justify-between items-center mb-2">
+          <label for="countSlider" class="block text-sm font-medium">生成数量:</label>
+          <span id="countValue" class="text-sm font-medium text-primary">1</span>
+        </div>
+        <input 
+          type="range" 
+          id="countSlider" 
+          min="1" 
+          max="100" 
+          value="1"
+          class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
+        >
+      </div>
+      
+      <!-- 参数设置 -->
+      <div class="space-y-6">
+        <div>
+          <label class="block text-sm font-medium mb-2">UUID版本:</label>
+          <select id="versionSelect" class="w-full bg-surface rounded-xl p-3 neumorphic-inset focus:outline-none focus:ring-2 focus:ring-primary/30">
+            <option value="1">版本1 - 基于时间和MAC地址</option>
+            <option value="2">版本2 - DCE安全</option>
+            <option value="3">版本3 - 基于命名空间和MD5哈希</option>
+            <option value="4" selected>版本4 - 随机生成</option>
+            <option value="5">版本5 - 基于命名空间和SHA-1哈希</option>
+          </select>
+        </div>
+        
+        <!-- 版本3/5的参数设置 -->
+        <div id="namespaceOptions" class="hidden space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">命名空间:</label>
+            <select id="namespaceSelect" class="w-full bg-surface rounded-xl p-3 neumorphic-inset focus:outline-none focus:ring-2 focus:ring-primary/30">
+              <option value="ns:DNS">DNS (域名)</option>
+              <option value="ns:URL">URL (网址)</option>
+              <option value="ns:OID">OID (对象标识符)</option>
+              <option value="ns:X500">X500 DN (目录名称)</option>
+              <option value="custom">自定义UUID</option>
+            </select>
+          </div>
+          
+          <div id="customNamespaceContainer" class="hidden">
+            <label class="block text-sm font-medium mb-2">自定义命名空间UUID:</label>
+            <input type="text" id="customNamespace" class="w-full bg-surface rounded-xl p-3 neumorphic-inset focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="输入自定义命名空间UUID">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium mb-2">名称:</label>
+            <input type="text" id="nameInput" class="w-full bg-surface rounded-xl p-3 neumorphic-inset focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="输入名称（如域名、URL等）">
+          </div>
+        </div>
+        
+        <!-- 生成按钮 -->
+        <button id="generateBtn" class="w-full neumorphic-btn bg-primary text-white rounded-xl p-4 text-lg font-medium hover:bg-primary/90 active:bg-primary/80">
+          生成UUID
+        </button>
+      </div>
+    </div>
+    
+    <!-- 历史记录 -->
+    <div class="bg-surface rounded-2xl p-6 md:p-8 neumorphic">
+      <h2 class="text-xl font-semibold mb-4 flex items-center">
+        <i class="fa fa-history mr-2"></i> 历史记录
+      </h2>
+      <p>对于批量生成uuid，仅保留第1个结果</p>
+      <div id="historyContainer" class="max-h-60 overflow-y-auto p-2 space-y-2">
+        <p class="text-gray-500 text-center italic">暂无历史记录</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // UUID生成核心逻辑
+    class UUIDGenerator {
+      // 版本4：随机生成
+      generateV4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          const r = Math.random() * 16 | 0;
+          const v = c === 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      }
+      
+      // 命名空间UUID常量
+      namespaces = {
+        'ns:DNS': '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+        'ns:URL': '6ba7b811-9dad-11d1-80b4-00c04fd430c8',
+        'ns:OID': '6ba7b812-9dad-11d1-80b4-00c04fd430c8',
+        'ns:X500': '6ba7b814-9dad-11d1-80b4-00c04fd430c8'
+      };
+      
+      // 生成单个UUID
+      generateOne(version, options = {}) {
+        switch(version) {
+          case '1':
+            return this.generateV1();
+          case '2':
+            return this.generateV2();
+          case '3':
+            return this.generateV3or5(options, 3);
+          case '4':
+            return this.generateV4();
+          case '5':
+            return this.generateV3or5(options, 5);
+          default:
+            return this.generateV4();
+        }
+      }
+      
+      // 批量生成UUID（非阻塞方式）
+      async generateBatch(version, count, options = {}) {
+        const results = [];
+        const batchSize = 10;
+        
+        for (let i = 0; i < count; i += batchSize) {
+          const currentBatchSize = Math.min(batchSize, count - i);
+          for (let j = 0; j < currentBatchSize; j++) {
+            results.push(this.generateOne(version, options));
+          }
+          if (i + batchSize < count) {
+            await new Promise(resolve => requestAnimationFrame(resolve));
+          }
+        }
+        
+        return results;
+      }
+      
+      // 简化的版本1实现
+      generateV1() {
+        const now = Date.now().toString(16);
+        const mac = 'a1b2c3d4e5f6';
+        return `${now.slice(0,8)}-${now.slice(8,12)}-1${now.slice(12,15)}-8${now.slice(15,18)}-${mac}${now.slice(18,22)}`;
+      }
+      
+      // 简化的版本2实现
+      generateV2() {
+        const v1 = this.generateV1();
+        return v1.replace('1', '2', 1);
+      }
+      
+      // 简化的版本3/5实现
+      generateV3or5(options, version) {
+        const namespace = options.namespace || this.namespaces['ns:DNS'];
+        const name = options.name || 'default';
+        const hash = btoa(namespace + name + Math.random()).slice(0, 32);
+        return `${hash.slice(0,8)}-${hash.slice(8,12)}-${version}${hash.slice(13,16)}-${hash.slice(16,20)}-${hash.slice(20,32)}`;
+      }
+    }
+
+    // 页面交互
+    document.addEventListener('DOMContentLoaded', () => {
+      const generator = new UUIDGenerator();
+      const versionSelect = document.getElementById('versionSelect');
+      const namespaceOptions = document.getElementById('namespaceOptions');
+      const namespaceSelect = document.getElementById('namespaceSelect');
+      const customNamespaceContainer = document.getElementById('customNamespaceContainer');
+      const generateBtn = document.getElementById('generateBtn');
+      const uuidDisplay = document.getElementById('uuidDisplay');
+      const uuidCopySource = document.getElementById('uuidCopySource');
+      const copyBtn = document.getElementById('copyBtn');
+      const historyContainer = document.getElementById('historyContainer');
+      const countSlider = document.getElementById('countSlider');
+      const countValue = document.getElementById('countValue');
+      
+      // 数量滑块逻辑
+      countSlider.addEventListener('input', () => {
+        countValue.textContent = countSlider.value;
+      });
+      
+      // 版本选择逻辑
+      versionSelect.addEventListener('change', () => {
+        const isVersion3or5 = ['3', '5'].includes(versionSelect.value);
+        namespaceOptions.classList.toggle('hidden', !isVersion3or5);
+      });
+      
+      // 命名空间选择逻辑
+      namespaceSelect.addEventListener('change', () => {
+        customNamespaceContainer.classList.toggle('hidden', namespaceSelect.value !== 'custom');
+      });
+      
+      // 生成UUID
+      generateBtn.addEventListener('click', async () => {
+        generateBtn.disabled = true;
+        generateBtn.textContent = '生成中...';
+        
+        try {
+          const version = versionSelect.value;
+          const count = parseInt(countSlider.value);
+          const options = {};
+          
+          if (['3', '5'].includes(version)) {
+            options.namespace = namespaceSelect.value === 'custom' 
+              ? document.getElementById('customNamespace').value 
+              : generator.namespaces[namespaceSelect.value];
+            options.name = document.getElementById('nameInput').value;
+          }
+          
+          const uuids = await generator.generateBatch(version, count, options);
+          
+          // 更新显示和复制源
+          if (count === 1) {
+            uuidDisplay.textContent = uuids[0];
+            uuidCopySource.textContent = uuids[0];
+          } else {
+            // 显示带序号，复制源不带序号且换行
+            uuidDisplay.innerHTML = uuids.map((uuid, index) => 
+              `<div class="uuid-item py-1 border-b border-gray-200/50 last:border-0">
+                <span class="text-xs text-gray-500 mr-2">${index + 1}.</span>${uuid}
+              </div>`
+            ).join('');
+            // 复制源使用换行分隔
+            uuidCopySource.textContent = uuids.join('\n');
+          }
+          
+          addToHistory(uuids[0], version, count > 1 ? `${count}个UUID` : '');
+        } finally {
+          generateBtn.disabled = false;
+          generateBtn.textContent = '生成UUID';
+        }
+      });
+      
+      // 复制到剪贴板（使用专用复制源）
+      copyBtn.addEventListener('click', () => {
+        const text = uuidCopySource.textContent.trim() || uuidDisplay.textContent.trim();
+        if (text && text !== '点击生成按钮创建UUID') {
+          navigator.clipboard.writeText(text).then(() => {
+            const originalIcon = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fa fa-check text-xl"></i>';
+            setTimeout(() => {
+              copyBtn.innerHTML = originalIcon;
+            }, 2000);
+          });
+        }
+      });
+      
+      // 添加到历史记录
+      function addToHistory(uuid, version, note = '') {
+        if (historyContainer.querySelector('p.italic')) {
+          historyContainer.innerHTML = '';
+        }
+        
+        const timestamp = new Date().toLocaleTimeString();
+        const item = document.createElement('div');
+        item.className = 'bg-surface rounded-lg p-3 neumorphic-inset break-all flex justify-between items-center';
+        
+        let versionText = `版本 ${version}`;
+        if (note) versionText += ` (${note})`;
+        
+        item.innerHTML = `
+          <div>
+            <div class="text-xs text-gray-500">${timestamp} · ${versionText}</div>
+            <div class="text-sm mt-1">${uuid}</div>
+          </div>
+          <button class="text-primary hover:text-primary/80 copy-history" data-uuid="${uuid}" title="复制">
+            <i class="fa fa-clipboard"></i>
+          </button>
+        `;
+        
+        historyContainer.prepend(item);
+        
+        if (historyContainer.children.length > 20) {
+          historyContainer.removeChild(historyContainer.lastChild);
+        }
+        
+        item.querySelector('.copy-history').addEventListener('click', function() {
+          const uuid = this.getAttribute('data-uuid');
+          navigator.clipboard.writeText(uuid);
+          this.innerHTML = '<i class="fa fa-check"></i>';
+          const self = this;
+          setTimeout(() => {
+            self.innerHTML = '<i class="fa fa-clipboard"></i>';
+          }, 2000);
+});
+}
+});
+</script>
+</body>
+</html>

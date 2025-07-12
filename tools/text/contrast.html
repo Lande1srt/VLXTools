@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TextContrast</title>
+    <style>
+        :root {
+            --bg-primary: #ecf0f3;
+            --card-bg: #ecf0f3;
+            --accent: #4285f4;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --shadow-inset: inset 5px 5px 10px rgba(163, 177, 198, 0.6), inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background-color: var(--card-bg);
+            border-radius: 16px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .comparison-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .text-column {
+            flex: 1;
+            min-width: 300px;
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .text-column:hover {
+            transform: translateY(-3px);
+        }
+
+        .text-column h2 {
+            margin-bottom: 15px;
+            color: var(--accent);
+            font-size: 18px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #left-column h2:before {
+            content: "📄";
+        }
+
+        #right-column h2:before {
+            content: "📄";
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            resize: vertical;
+            font-size: 14px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow-inset);
+            background-color: var(--card-bg);
+            transition: box-shadow 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            box-shadow: inset 3px 3px 6px rgba(163, 177, 198, 0.6), inset -3px -3px 6px rgba(255, 255, 255, 0.8);
+        }
+
+        .compare-btn {
+            background-color: var(--card-bg);
+            color: var(--accent);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.5);
+            margin: 0 auto;
+        }
+
+        .compare-btn:hover {
+            box-shadow: var(--shadow-inset);
+            transform: translateY(-2px);
+        }
+
+        .compare-btn:active {
+            transform: translateY(1px);
+        }
+
+        .results-container {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .results-container h2 {
+            margin-bottom: 15px;
+            color: var(--accent);
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .comparison-results {
+            font-family: monospace;
+            white-space: pre-wrap;
+            padding: 15px;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            overflow: auto;
+            max-height: 400px;
+            box-shadow: var(--shadow-inset);
+        }
+
+        .comparison-results .match {
+            color: #2e7d32;
+        }
+
+        .comparison-results .mismatch {
+            color: #c62828;
+            background-color: rgba(239, 68, 68, 0.1);
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .comparison-stats {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(163, 177, 198, 0.2);
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            min-width: 100px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent);
+            display: block;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>文本对比工具</h1>
+        <p>输入两段文本，查看相似点和不同点</p>
+    </header>
+
+    <div class="comparison-container">
+        <div id="left-column" class="text-column">
+            <h2>原始文本</h2>
+            <textarea id="text-left" placeholder="输入原始文本..."></textarea>
+        </div>
+
+        <div id="right-column" class="text-column">
+            <h2>修改后文本</h2>
+            <textarea id="text-right" placeholder="输入修改后文本..."></textarea>
+        </div>
+    </div>
+
+    <div class="comparison-container">
+        <button class="compare-btn" id="compare-btn">
+            对比文本
+        </button>
+    </div>
+
+    <div class="results-container" id="results-container">
+        <h2>对比结果</h2>
+        <div class="comparison-results" id="result-content">等待计算结果...
+        </div>
+        <div class="comparison-stats" id="stats-container">
+            <div class="stat-item">
+                <div>总字数</div>
+                <span class="stat-value" id="total-words">0</span>
+            </div>
+            <div class="stat-item">
+                <div>相同字数</div>
+                <span class="stat-value" id="matching-words">0</span>
+            </div>
+            <div class="stat-item">
+                <div>不同字数</div>
+                <span class="stat-value" id="different-words">0</span>
+            </div>
+            <div class="stat-item">
+                <div>相似度</div>
+                <span class="stat-value" id="similarity">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const leftText = document.getElementById('text-left');
+            const rightText = document.getElementById('text-right');
+            const compareBtn = document.getElementById('compare-btn');
+            const resultContent = document.getElementById('result-content');
+            const totalWordsElem = document.getElementById('total-words');
+            const matchingWordsElem = document.getElementById('matching-words');
+            const differentWordsElem = document.getElementById('different-words');
+            const similarityElem = document.getElementById('similarity');
+
+            compareBtn.addEventListener('click', function() {
+                compareTexts();
+            });
+
+            function compareTexts() {
+                const left = leftText.value;
+                const right = rightText.value;
+                
+                if (!left && !right) {
+                    resultContent.textContent = "请输入至少一个文本";
+                    return;
+                }
+
+                if (!left) {
+                    resultContent.textContent = "右: " + right
+                    updateStats(0, 0, right.length, 0);
+                    return;
+                }
+
+                if (!right) {
+                    resultContent.textContent = "左: " + left;
+                    updateStats(0, 0, left.length, 0);
+                    return;
+                }
+
+                // 简单的逐字符比较
+                const maxLength = Math.max(left.length, right.length);
+                let result = "";
+                let total = 0;
+                let matchCount = 0;
+                let diffCount = 0;
+
+                for (let i = 0; i < maxLength; i++) {
+                    const charLeft = left[i] || "";
+                    const charRight = right[i] || "";
+                    total++;
+                    
+                    if (charLeft === charRight) {
+                        result += `<span class="match">${charLeft}</span>`;
+                        matchCount++;
+                    } else {
+                        result += `<span class="mismatch">${charLeft || " "}</span>`;
+                        diffCount++;
+                    }
+                }
+
+                // 计算相似度
+                const similarity = ((matchCount / total) * 100).toFixed(0);
+                
+                // 更新结果区域
+                resultContent.innerHTML = result;
+                updateStats(total, matchCount, diffCount, similarity);
+            }
+
+            function updateStats(total, matching, different, similarity) {
+                totalWordsElem.textContent = total;
+                matchingWordsElem.textContent = matching;
+                differentWordsElem.textContent = different;
+                similarityElem.textContent = similarity + "%";
+            }
+
+            // 输入变化时更新统计信息
+            leftText.addEventListener('input', updateInitialStats);
+            rightText.addEventListener('input', updateInitialStats);
+
+            function updateInitialStats() {
+                const left = leftText.value;
+                const right = rightText.value;
+                const total = left.length + right.length;
+                totalWordsElem.textContent = total;
+                matchingWordsElem.textContent = "0";
+                differentWordsElem.textContent = "0";
+                similarityElem.textContent = "0%";
+            }
+        });
+    </script>
+</body>
+</html>

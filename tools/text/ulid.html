@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ULID生成工具</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#10b981',
+            surface: '#f0f4f8',
+            text: '#334155'
+          },
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .neumorphic {
+        box-shadow: 8px 8px 16px rgba(163, 177, 198, 0.6),
+                    -8px -8px 16px rgba(255, 255, 255, 0.8);
+      }
+      .neumorphic-inset {
+        box-shadow: inset 4px 4px 8px rgba(163, 177, 198, 0.6),
+                    inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    -5px -5px 10px rgba(255, 255, 255, 0.8);
+        transition: all 0.2s ease;
+      }
+      .neumorphic-btn:hover {
+        box-shadow: 6px 6px 12px rgba(163, 177, 198, 0.7),
+                    -6px -6px 12px rgba(255, 255, 255, 0.9);
+        transform: translateY(-2px);
+      }
+      .neumorphic-btn:active {
+        box-shadow: inset 3px 3px 6px rgba(163, 177, 198, 0.6),
+                    inset -3px -3px 6px rgba(255, 255, 255, 0.8);
+      }
+      .uuid-item {
+        transition: all 0.15s ease-in-out;
+      }
+      .uuid-item:hover {
+        transform: translateX(4px);
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+      }
+    }
+  </style>
+</head>
+<body class="bg-surface min-h-screen font-sans text-text p-4 md:p-6">
+  <div class="max-w-4xl mx-auto">
+    <!-- 标题区域 -->
+    <div class="text-center mb-8">
+      <h1 class="text-[clamp(1.8rem,5vw,2.5rem)] font-bold mb-2">ULID生成工具</h1>
+      <p class="text-gray-600">生成符合标准的通用唯一词典排序标识符</p>
+    </div>
+    
+    <!-- 主内容区 -->
+    <div class="bg-surface rounded-2xl p-6 md:p-8 neumorphic mb-8">
+      <!-- 生成结果展示 -->
+      <div class="mb-8">
+        <label class="block text-sm font-medium mb-2">生成结果:</label>
+        <div class="flex flex-col md:flex-row gap-3">
+          <!-- 视觉展示区 -->
+          <div id="ulidDisplay" class="flex-1 bg-surface rounded-xl p-4 neumorphic-inset min-h-[50px] max-h-[300px] overflow-y-auto break-all">
+            点击生成按钮创建ULID
+          </div>
+          <!-- 隐藏的复制源（不含序号） -->
+          <div id="ulidCopySource" class="hidden"></div>
+          <button id="copyBtn" class="neumorphic-btn bg-surface rounded-xl p-4 text-primary hover:text-primary/80" title="复制到剪贴板">
+            <i class="fa fa-clipboard text-xl"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 数量选择滑块 -->
+      <div class="mb-6">
+        <div class="flex justify-between items-center mb-2">
+          <label for="countSlider" class="block text-sm font-medium">生成数量:</label>
+          <span id="countValue" class="text-sm font-medium text-primary">1</span>
+        </div>
+        <input 
+          type="range" 
+          id="countSlider" 
+          min="1" 
+          max="100" 
+          value="1"
+          class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
+        >
+      </div>
+      
+      <!-- 格式选择 -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium mb-2">输出格式:</label>
+        <div class="flex gap-4">
+          <label class="flex items-center cursor-pointer">
+            <input type="radio" name="format" value="text" checked class="w-4 h-4 accent-primary">
+            <span class="ml-2">纯文本</span>
+          </label>
+          <label class="flex items-center cursor-pointer">
+            <input type="radio" name="format" value="json" class="w-4 h-4 accent-primary">
+            <span class="ml-2">JSON</span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- 生成按钮 -->
+      <button id="generateBtn" class="w-full neumorphic-btn bg-primary text-white rounded-xl p-4 text-lg font-medium hover:bg-primary/90 active:bg-primary/80">
+        生成ULID
+      </button>
+    </div>
+    
+    <!-- 历史记录 -->
+    <div class="bg-surface rounded-2xl p-6 md:p-8 neumorphic">
+      <h2 class="text-xl font-semibold mb-4 flex items-center">
+        <i class="fa fa-history mr-2"></i> 历史记录
+      </h2>
+      <p>对于批量生成ulid，仅保留第1个纯文本结果</p>
+      <div id="historyContainer" class="max-h-60 overflow-y-auto p-2 space-y-2">
+        <p class="text-gray-500 text-center italic">暂无历史记录</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ULID生成核心逻辑
+    class ULIDGenerator {
+      // 编码字符集
+      static CHARS = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+      
+      // 生成单个ULID
+      generateOne() {
+        const timestamp = Date.now();
+        let ulid = '';
+        
+        // 生成时间部分（10个字符）
+        let time = timestamp;
+        for (let i = 0; i < 10; i++) {
+          const mod = time % 32;
+          ulid = ULIDGenerator.CHARS[mod] + ulid;
+          time = Math.floor(time / 32);
+        }
+        
+        // 生成随机部分（16个字符）
+        for (let i = 0; i < 16; i++) {
+          const random = Math.floor(Math.random() * 32);
+          ulid += ULIDGenerator.CHARS[random];
+        }
+        
+        return ulid;
+      }
+      
+      // 批量生成ULID（非阻塞方式）
+      async generateBatch(count) {
+        const results = [];
+        // 分块生成，避免长时间阻塞主线程
+        const batchSize = 10;
+        
+        for (let i = 0; i < count; i += batchSize) {
+          const currentBatchSize = Math.min(batchSize, count - i);
+          // 生成当前批次的ULID
+          for (let j = 0; j < currentBatchSize; j++) {
+            results.push(this.generateOne());
+          }
+          // 让出主线程
+          if (i + batchSize < count) {
+            await new Promise(resolve => requestAnimationFrame(resolve));
+          }
+        }
+        
+        return results;
+      }
+    }
+
+    // 页面交互
+    document.addEventListener('DOMContentLoaded', () => {
+      const generator = new ULIDGenerator();
+      const generateBtn = document.getElementById('generateBtn');
+      const ulidDisplay = document.getElementById('ulidDisplay');
+      const ulidCopySource = document.getElementById('ulidCopySource');
+      const copyBtn = document.getElementById('copyBtn');
+      const historyContainer = document.getElementById('historyContainer');
+      const countSlider = document.getElementById('countSlider');
+      const countValue = document.getElementById('countValue');
+      
+      // 数量滑块逻辑
+      countSlider.addEventListener('input', () => {
+        countValue.textContent = countSlider.value;
+      });
+      
+      // 生成ULID
+      generateBtn.addEventListener('click', async () => {
+        // 禁用按钮防止重复点击
+        generateBtn.disabled = true;
+        generateBtn.textContent = '生成中...';
+        
+        try {
+          const count = parseInt(countSlider.value);
+          // 获取选中的格式
+          const format = document.querySelector('input[name="format"]:checked').value;
+          
+          // 批量生成ULID
+          const ulids = await generator.generateBatch(count);
+          
+          // 根据格式更新显示和复制源
+          if (format === 'json') {
+            const jsonStr = JSON.stringify(ulids, null, 2);
+            ulidDisplay.textContent = jsonStr;
+            ulidCopySource.textContent = jsonStr;
+          } else {
+            if (count === 1) {
+              // 单个ULID
+              ulidDisplay.textContent = ulids[0];
+              ulidCopySource.textContent = ulids[0];
+            } else {
+              // 多个ULID - 显示带序号，复制源不带序号且换行
+              ulidDisplay.innerHTML = ulids.map((ulid, index) => 
+                `<div class="uuid-item py-1 border-b border-gray-200/50 last:border-0">
+                  <span class="text-xs text-gray-500 mr-2">${index + 1}.</span>${ulid}
+                </div>`
+              ).join('');
+              // 复制源使用换行分隔
+              ulidCopySource.textContent = ulids.join('\n');
+            }
+          }
+          
+          // 添加到历史记录
+          addToHistory(ulids, count);
+        } finally {
+          // 恢复按钮状态
+          generateBtn.disabled = false;
+          generateBtn.textContent = '生成ULID';
+        }
+      });
+      
+      // 复制到剪贴板 - 使用专用复制源
+      copyBtn.addEventListener('click', () => {
+        const text = ulidCopySource.textContent.trim() || ulidDisplay.textContent.trim();
+        if (text && text !== '点击生成按钮创建ULID') {
+          navigator.clipboard.writeText(text).then(() => {
+            const originalIcon = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fa fa-check text-xl"></i>';
+            setTimeout(() => {
+              copyBtn.innerHTML = originalIcon;
+            }, 2000);
+          });
+        }
+      });
+      
+      // 添加到历史记录
+      function addToHistory(ulids, count) {
+        // 清除初始提示
+        if (historyContainer.querySelector('p.italic')) {
+          historyContainer.innerHTML = '';
+        }
+        
+        const timestamp = new Date().toLocaleTimeString();
+        const item = document.createElement('div');
+        item.className = 'bg-surface rounded-lg p-3 neumorphic-inset break-all flex justify-between items-center';
+        
+        item.innerHTML = `
+          <div>
+            <div class="text-xs text-gray-500">${timestamp} · 生成了 ${count} 个ULID</div>
+            <div class="text-sm mt-1">${ulids[0]}${count > 1 ? '...' : ''}</div>
+          </div>
+          <button class="text-primary hover:text-primary/80 copy-history" data-ulid="${ulids[0]}" title="复制第一个">
+            <i class="fa fa-clipboard"></i>
+          </button>
+        `;
+        
+        historyContainer.prepend(item);
+        
+        // 限制历史记录数量为20条
+        if (historyContainer.children.length > 20) {
+          historyContainer.removeChild(historyContainer.lastChild);
+        }
+        
+        // 历史记录复制功能
+        item.querySelector('.copy-history').addEventListener('click', function() {
+          const ulid = this.getAttribute('data-ulid');
+          navigator.clipboard.writeText(ulid);
+          this.innerHTML = '<i class="fa fa-check"></i>';
+          const self = this;
+          setTimeout(() => {
+            self.innerHTML = '<i class="fa fa-clipboard"></i>';
+          }, 2000);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
