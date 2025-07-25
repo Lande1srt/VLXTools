@@ -12,7 +12,6 @@ function setupSearch() {
             const subItems = item.querySelectorAll('.sub-menu .mb-1');
             let hasMatch = false;
 
-            // 检查子菜单是否匹配
             if (subItems.length > 0) {
                 subItems.forEach(subItem => {
                     const subItemName = subItem.querySelector('button span').textContent.toLowerCase();
@@ -25,24 +24,18 @@ function setupSearch() {
                 });
             }
 
-            // 检查当前菜单项是否匹配
             if (itemName.includes(searchTerm)) {
                 hasMatch = true;
             }
 
             if (searchTerm) {
-                if (hasMatch) {
-                    item.style.display = '';
-                    // 搜索模式下不显示一级菜单，只显示匹配的子菜单
-                    if (subItems.length > 0) {
-                        item.querySelector('button').style.display = 'none';
-                        const subMenu = item.querySelector('.sub-menu');
-                        subMenu.classList.remove('hidden');
-                        subMenu.style.maxHeight = 'none';
-                        subMenu.style.opacity = '1';
-                    }
-                } else {
-                    item.style.display = 'none';
+                item.style.display = hasMatch ? '' : 'none';
+                if (subItems.length > 0 && hasMatch) {
+                    item.querySelector('button').style.display = 'none';
+                    const subMenu = item.querySelector('.sub-menu');
+                    subMenu.classList.remove('hidden');
+                    subMenu.style.maxHeight = 'none';
+                    subMenu.style.opacity = '1';
                 }
             } else {
                 item.style.display = '';
@@ -58,32 +51,56 @@ function setupSearch() {
     });
 }
 
+// 统一打开侧边栏方法（供原生按钮和iframe调用）
+function openSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('menu-toggle');
+    const toggleIcon = toggleBtn?.querySelector('i');
+    
+    // 已打开则返回
+    if (!sidebar.classList.contains('hidden')) return;
+
+    // 初始化动画样式
+    if (!sidebar.style.transition) {
+        sidebar.style.transition = 'all 0.3s ease-in-out';
+        sidebar.style.overflowY = 'auto';
+        sidebar.style.width = '0';
+        sidebar.style.transform = 'translateX(0)';
+    }
+
+    // 重置状态
+    sidebar.classList.remove('hidden');
+    sidebar.classList.add('fixed', 'z-20', 'h-full');
+    sidebar.style.width = '0'; // 从0开始
+    if (toggleIcon) {
+        toggleIcon.style.transition = 'transform 0.3s ease-in-out';
+        toggleIcon.style.transform = 'rotate(0)';
+    }
+
+    // 强制重绘
+    void sidebar.offsetWidth;
+
+    // 执行展开动画
+    setTimeout(() => {
+        sidebar.style.width = '280px';
+        if (toggleIcon) toggleIcon.style.transform = 'rotate(180deg)';
+    }, 10);
+
+    // 移动设备添加遮罩
+    if (isMobileDevice()) {
+        addOverlay();
+    }
+}
+
 // 菜单切换按钮功能
 document.getElementById('menu-toggle').addEventListener('click', function() {
     const sidebar = document.getElementById('sidebar');
     
-    // 初始化动画样式（仅首次执行）
-    if (!sidebar.style.transition) {
-        sidebar.style.transition = 'all 0.3s ease-in-out';
-        sidebar.style.overflow = 'hidden';
-        sidebar.style.width = sidebar.classList.contains('hidden') ? '0' : sidebar.offsetWidth + 'px';
-        sidebar.style.transform = 'translateX(0)';
-    }
-
     if (sidebar.classList.contains('hidden')) {
-        // 展开菜单
-        sidebar.classList.remove('hidden');
-        sidebar.classList.add('fixed', 'z-20', 'h-full');
-        // 强制重绘后设置宽度触发动画
-        setTimeout(() => {
-            sidebar.style.width = '280px'; // 菜单宽度
-        }, 10);
-        // 移动设备添加遮罩层
-        if (isMobileDevice()) {
-            addOverlay();
-        }
+        // 打开侧边栏
+        openSidebar();
     } else {
-        // 收起菜单
+        // 收起侧边栏
         closeSidebar();
     }
 });
@@ -95,8 +112,7 @@ function isMobileDevice() {
 
 // 添加遮罩层
 function addOverlay() {
-    // 移除已存在的遮罩
-    removeOverlay();
+    removeOverlay(); // 先移除已存在的
     
     const overlay = document.createElement('div');
     overlay.id = 'menu-overlay';
@@ -106,20 +122,20 @@ function addOverlay() {
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0,0,0,0.3);
+        background: rgba(0,0,0,0.2);
         z-index: 10;
         transition: opacity 0.3s ease;
         opacity: 0;
     `;
     document.body.appendChild(overlay);
     
-    // 触发淡入动画
-    setTimeout(() => {
-        overlay.style.opacity = '1';
-    }, 10);
+    setTimeout(() => overlay.style.opacity = '1', 10);
     
-    // 点击遮罩收起菜单
-    overlay.addEventListener('click', closeSidebar);
+    overlay.addEventListener('click', () => {
+        closeSidebar();
+        const toggleIcon = document.querySelector('#menu-toggle i');
+        if (toggleIcon) toggleIcon.style.transform = 'rotate(0)';
+    });
 }
 
 // 移除遮罩层
@@ -131,27 +147,137 @@ function removeOverlay() {
     }
 }
 
-// 收起菜单统一方法
+// 收起菜单方法
 function closeSidebar() {
     const sidebar = document.getElementById('sidebar');
-    if (!sidebar.classList.contains('hidden')) {
-        sidebar.style.width = '0';
-        // 动画结束后处理
-        setTimeout(() => {
-            sidebar.classList.add('hidden');
-            sidebar.classList.remove('fixed', 'z-20', 'h-full');
-            // 移动设备移除遮罩
-            if (isMobileDevice()) {
-                removeOverlay();
-            }
-        }, 300);
+    const toggleIcon = document.querySelector('#menu-toggle i');
+    
+    if (sidebar.classList.contains('hidden')) return;
+
+    // 执行收起动画
+    sidebar.style.width = '0';
+    if (toggleIcon) toggleIcon.style.transform = 'rotate(0)';
+
+    // 动画结束后处理
+    setTimeout(() => {
+        sidebar.classList.add('hidden');
+        sidebar.classList.remove('fixed', 'z-20', 'h-full');
+        if (isMobileDevice()) {
+            removeOverlay();
+        }
+    }, 300);
+}
+
+// 检测图片是否可访问且为图片类型
+async function isImageUrl(url) {
+    try {
+        const response = await fetch(url, { method: 'HEAD', mode: 'cors' });
+        if (!response.ok) return false;
+        const contentType = response.headers.get('Content-Type');
+        return contentType && contentType.startsWith('image/');
+    } catch {
+        return false;
     }
+}
+
+// 生成图标HTML
+function getIconHtml(icon) {
+    const baseStyle = 'width:22px;height:22px;flex-shrink:0;background-color:#ffe2ff;border-radius:4px;padding:2px;border:1px solid #00e2ff';
+    
+    if (!icon) {
+        return `<i class="fa fa-cog" style="${baseStyle}"></i>`;
+    }
+    
+    if (typeof icon === 'string' && (icon.startsWith('http://') || icon.startsWith('https://'))) {
+        const tempId = 'icon-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        const loadingHtml = `<i class="fa fa-spinner fa-spin" style="${baseStyle}"></i>`;
+        
+        isImageUrl(icon).then(isValidImage => {
+            const container = document.getElementById(tempId);
+            if (container) {
+                container.outerHTML = isValidImage 
+                    ? `<img src="${icon}" style="${baseStyle} object-fit:contain;" onError="this.outerHTML='<i class=\'fa fa-cog\' style=\'${baseStyle}\'></i>'" alt="icon">`
+                    : `<i class="fa fa-cog" style="${baseStyle}"></i>`;
+            }
+        });
+        
+        return `<span id="${tempId}">${loadingHtml}</span>`;
+    }
+    
+    if (typeof icon === 'string' && icon.startsWith('fa-')) {
+        return `<i class="fa ${icon}" style="${baseStyle}"></i>`;
+    }
+    
+    return `<div style="${baseStyle}">${icon}</div>`;
+}
+
+// 递归渲染菜单项
+function renderMenuItems(items, container) {
+    items.forEach(item => {
+        const menuItem = document.createElement('div');
+        menuItem.className = 'mb-1';
+
+        const menuButton = document.createElement('button');
+        menuButton.className = 'w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-between';
+        
+        menuButton.innerHTML = `
+            <div class="flex items-center">
+                ${getIconHtml(item.icon)}
+                <span class="ml-3">${item.name}</span>
+            </div>
+            ${item.children ? '<i class="fa fa-chevron-down text-xs text-gray-400 transition-transform duration-200"></i>' : ''}
+        `;
+
+        menuItem.appendChild(menuButton);
+
+        if (item.children && item.children.length > 0) {
+            menuButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const subMenu = menuItem.querySelector('.sub-menu');
+                const icon = menuButton.querySelector('.fa-chevron-down');
+                
+                if (subMenu) {
+                    if (subMenu.classList.contains('hidden')) {
+                        subMenu.classList.remove('hidden');
+                        subMenu.style.opacity = '0';
+                        const height = subMenu.scrollHeight + 10;
+                        subMenu.style.maxHeight = height + 'px';
+                        void subMenu.offsetWidth;
+                        subMenu.style.opacity = '1';
+                        if (icon) icon.classList.add('rotate-180');
+                    } else {
+                        subMenu.style.opacity = '0';
+                        subMenu.style.maxHeight = '0';
+                        if (icon) icon.classList.remove('rotate-180');
+                        setTimeout(() => subMenu.classList.add('hidden'), 300);
+                    }
+                }
+            });
+
+            const subMenu = document.createElement('div');
+            subMenu.className = 'sub-menu hidden pl-6 mt-1 space-y-1 transition-all duration-300 ease-in-out';
+            subMenu.style.maxHeight = '0';
+            subMenu.style.overflow = 'hidden';
+            menuItem.appendChild(subMenu);
+            renderMenuItems(item.children, subMenu);
+        } else {
+            menuButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                document.querySelectorAll('#tool-menu .menu-active').forEach(el => el.classList.remove('menu-active'));
+                this.classList.add('menu-active');
+                if (item.url) document.getElementById('tool-iframe').src = item.url;
+                if (isMobileDevice()) closeSidebar();
+            });
+        }
+
+        container.appendChild(menuItem);
+    });
 }
 
 // 初始化搜索功能
 setupSearch();
 
-// 从JSON文件加载菜单（保持不变）
+// 从JSON文件加载菜单
 async function loadMenu() {
     try {
         const response = await fetch('menu.json');
@@ -170,110 +296,14 @@ async function loadMenu() {
     }
 }
 
-// 递归渲染菜单项（保持不变）
-function renderMenuItems(items, container) {
-    items.forEach(item => {
-        const menuItem = document.createElement('div');
-        menuItem.className = 'mb-1';
-
-        // 菜单项按钮
-        const menuButton = document.createElement('button');
-        menuButton.className = 'w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-between';
-        menuButton.innerHTML = `
-            <div class="flex items-center">
-                <i class="fa ${item.icon || 'fa-cog'} mr-3"></i>
-                <span>${item.name}</span>
-            </div>
-            ${item.children ? '<i class="fa fa-chevron-down text-xs text-gray-400 transition-transform duration-200"></i>' : ''}
-        `;
-
-        // 先添加按钮到菜单项
-        menuItem.appendChild(menuButton);
-
-        // 如果有子菜单，添加展开/折叠功能
-        if (item.children && item.children.length > 0) {
-            menuButton.addEventListener('click', function(e) {
-                // 阻止事件冒泡，避免触发遮罩层点击
-                e.stopPropagation();
-                
-                const subMenu = menuItem.querySelector('.sub-menu');
-                if (subMenu) {
-                    const menuItemEl = menuButton.closest('.mb-1');
-                    if (subMenu.classList.contains('hidden')) {
-                        // 显示子菜单并添加淡入动画
-                        subMenu.classList.remove('hidden');
-                        subMenu.style.opacity = '0';
-                        // 递归计算所有子菜单的总高度
-                        const calculateTotalHeight = (element) => {
-                            let height = element.scrollHeight;
-                            const children = element.querySelectorAll('.sub-menu:not(.hidden)');
-                            children.forEach(child => {
-                                height += calculateTotalHeight(child);
-                            });
-                            return height + 10;
-                        };
-                        subMenu.style.maxHeight = calculateTotalHeight(subMenu) + 'px';
-                        // 强制重排后设置透明度以触发过渡
-                        void subMenu.offsetHeight;
-                        subMenu.style.opacity = '1';
-                        const icon = menuButton.querySelector('.fa-chevron-down');
-                        icon.classList.add('rotate-180');
-                        // 添加一级菜单高亮
-                        if (menuItemEl && menuItemEl.parentElement.id === 'menu-container' && 
-                            menuItemEl.parentElement.classList.contains('menu-root')) {
-                            menuItemEl.classList.add('menu-active');
-                        }
-                    } else {
-                        // 隐藏子菜单并添加淡出动画
-                        subMenu.style.opacity = '0';
-                        subMenu.style.maxHeight = '0';
-                        setTimeout(() => {
-                            subMenu.classList.add('hidden');
-                            if (menuItemEl && menuItemEl.parentElement.id === 'menu-container' && 
-                                menuItemEl.parentElement.classList.contains('menu-root')) {
-                                menuItemEl.classList.remove('menu-active');
-                            }
-                        }, 300);
-                        const icon = this.querySelector('.fa-chevron-down');
-                        icon.classList.remove('rotate-180');
-                    }
-                }
-            });
-
-            // 创建子菜单容器
-            const subMenu = document.createElement('div');
-            subMenu.className = 'sub-menu hidden pl-6 mt-1 space-y-1 transition-all duration-300 ease-in-out';
-            subMenu.style.maxHeight = '0';
-            menuItem.appendChild(subMenu);
-
-            // 递归渲染子菜单
-            renderMenuItems(item.children, subMenu);
-        } else {
-            // 如果是叶子节点，点击加载iframe内容
-            menuButton.addEventListener('click', function(e) {
-                // 阻止事件冒泡，避免触发遮罩层点击
-                e.stopPropagation();
-                
-                // 移除其他菜单项的active状态
-                document.querySelectorAll('#tool-menu .menu-active').forEach(el => {
-                    el.classList.remove('menu-active');
-                });
-                // 添加当前菜单项的active状态
-                this.classList.add('menu-active');
-                // 加载iframe内容
-                if (item.url) {
-                    document.getElementById('tool-iframe').src = item.url;
-                }
-                // 移动设备下点击菜单项后自动收起菜单
-                if (isMobileDevice()) {
-                    closeSidebar();
-                }
-            });
-        }
-
-        container.appendChild(menuItem);
-    });
-}
-
-// 页面加载完成后加载菜单
-document.addEventListener('DOMContentLoaded', loadMenu);
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    loadMenu();
+    
+    // 初始化侧边栏样式
+    const sidebar = document.getElementById('sidebar');
+    sidebar.style.height = '100vh';
+    sidebar.style.overflowY = 'auto';
+    sidebar.style.scrollbarWidth = 'thin';
+    sidebar.style.scrollbarColor = '#ccc transparent';
+});

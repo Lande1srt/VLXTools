@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML符号转义工具</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366f1',
+            secondary: '#8b5cf6',
+            neutral: '#f3f4f6',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /*.neumorphic {
+        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6),
+                   -9px -9px 16px rgba(255, 255, 255, 0.5);
+      }*/
+      .neumorphic-inset {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                   inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6),
+                   -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transition: all 0.3s ease;
+      }
+      .neumorphic-btn:hover {
+        box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.7),
+                   -7px -7px 14px rgba(255, 255, 255, 0.6);
+        transform: translateY(-2px);
+      }
+      .neumorphic-btn:active {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                   inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body class="bg-neutral min-h-screen font-sans p-4 md:p-6">
+  <div class="max-w-7xl mx-auto">
+    <header class="text-center mb-6 md:mb-8">
+      <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-gray-700 mb-2">
+        <i class="fa fa-code mr-2 text-primary"></i>HTML转义符号转换
+      </h1>
+      <p class="text-gray-600 text-sm md:text-base">
+        支持所有HTML实体字符的转义和反转义
+      </p>
+    </header>
+    
+    <main class="neumorphic rounded-2xl p-4 md:p-6">
+      <div class="flex flex-wrap justify-center gap-4 mb-6">
+        <button id="escapeBtn" class="neumorphic-btn bg-white text-primary px-6 py-3 rounded-xl font-medium flex items-center">
+          <i class="fa fa-arrow-right mr-2"></i>转义
+        </button>
+        <button id="unescapeBtn" class="neumorphic-btn bg-white text-secondary px-6 py-3 rounded-xl font-medium flex items-center">
+          <i class="fa fa-arrow-left mr-2"></i>反转义
+        </button>
+        <button id="swapBtn" class="neumorphic-btn bg-white text-gray-600 px-6 py-3 rounded-xl font-medium flex items-center">
+          <i class="fa fa-exchange mr-2"></i>交换内容
+        </button>
+        <button id="clearBtn" class="neumorphic-btn bg-white text-gray-600 px-6 py-3 rounded-xl font-medium flex items-center">
+          <i class="fa fa-trash mr-2"></i>清空
+        </button>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="flex flex-col">
+          <label for="inputText" class="text-gray-700 font-medium mb-3 flex items-center">
+            <i class="fa fa-pencil-square-o mr-2 text-primary"></i>输入文本
+          </label>
+          <div class="neumorphic-inset rounded-xl flex-1">
+            <textarea 
+              id="inputText" 
+              class="w-full h-64 md:h-80 p-4 bg-transparent border-none outline-none resize-none text-gray-700"
+              placeholder="在此输入需要转义或反转义的文本..."
+            ></textarea>
+          </div>
+          <button id="copyInputBtn" class="mt-3 self-end text-sm text-gray-500 hover:text-primary transition-colors">
+            <i class="fa fa-copy mr-1"></i>复制输入
+          </button>
+        </div>
+        
+        <div class="flex flex-col">
+          <label for="outputText" class="text-gray-700 font-medium mb-3 flex items-center">
+            <i class="fa fa-file-text-o mr-2 text-secondary"></i>输出结果
+          </label>
+          <div class="neumorphic-inset rounded-xl flex-1">
+            <textarea 
+              id="outputText" 
+              class="w-full h-64 md:h-80 p-4 bg-transparent border-none outline-none resize-none text-gray-700"
+              placeholder="结果将显示在这里..."
+              readonly
+            ></textarea>
+          </div>
+          <button id="copyOutputBtn" class="mt-3 self-end text-sm text-gray-500 hover:text-secondary transition-colors">
+            <i class="fa fa-copy mr-1"></i>复制结果
+          </button>
+        </div>
+      </div>
+      
+      <!-- 常用符号参考表 -->
+      <div class="mt-8 p-4 neumorphic-inset rounded-xl">
+        <h3 class="text-gray-700 font-medium mb-3 flex items-center">
+          <i class="fa fa-book mr-2 text-gray-500"></i>常用HTML实体参考
+        </h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-sm">
+          <div class="flex justify-between"><span>&lt;</span><span class="text-primary">&amp;lt;</span></div>
+          <div class="flex justify-between"><span>&gt;</span><span class="text-primary">&amp;gt;</span></div>
+          <div class="flex justify-between"><span>&amp;</span><span class="text-primary">&amp;amp;</span></div>
+          <div class="flex justify-between"><span>"</span><span class="text-primary">&amp;quot;</span></div>
+          <div class="flex justify-between"><span>'</span><span class="text-primary">&amp;#039;</span></div>
+          <div class="flex justify-between"><span> </span><span class="text-primary">&amp;nbsp;</span></div>
+          <div class="flex justify-between"><span>©</span><span class="text-primary">&amp;copy;</span></div>
+          <div class="flex justify-between"><span>®</span><span class="text-primary">&amp;reg;</span></div>
+          <div class="flex justify-between"><span>™</span><span class="text-primary">&amp;trade;</span></div>
+          <div class="flex justify-between"><span>±</span><span class="text-primary">&amp;plusmn;</span></div>
+          <div class="flex justify-between"><span>×</span><span class="text-primary">&amp;times;</span></div>
+          <div class="flex justify-between"><span>÷</span><span class="text-primary">&amp;divide;</span></div>
+        </div>
+      </div>
+    </main>
+    
+    <div id="notification" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 transition-opacity duration-300 flex items-center">
+      <i id="notificationIcon" class="fa mr-2"></i>
+      <span id="notificationText"></span>
+    </div>
+  </div>
+
+  <script>
+    const inputText = document.getElementById('inputText');
+    const outputText = document.getElementById('outputText');
+    const escapeBtn = document.getElementById('escapeBtn');
+    const unescapeBtn = document.getElementById('unescapeBtn');
+    const swapBtn = document.getElementById('swapBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const copyInputBtn = document.getElementById('copyInputBtn');
+    const copyOutputBtn = document.getElementById('copyOutputBtn');
+    const notification = document.getElementById('notification');
+    const notificationIcon = document.getElementById('notificationIcon');
+    const notificationText = document.getElementById('notificationText');
+    
+    // 显示通知
+    function showNotification(message, isSuccess = true) {
+      notificationText.textContent = message;
+      notificationIcon.className = isSuccess ? 'fa fa-check-circle mr-2' : 'fa fa-exclamation-circle mr-2';
+      notification.classList.add(isSuccess ? 'bg-green-600' : 'bg-red-600');
+      notification.classList.remove('opacity-0');
+      
+      setTimeout(() => {
+        notification.classList.add('opacity-0');
+        setTimeout(() => {
+          notification.classList.remove('bg-green-600', 'bg-red-600');
+        }, 300);
+      }, 2000);
+    }
+    
+    // 完整HTML转义函数（支持所有特殊字符）
+    function escapeHtml(unsafe) {
+      if (!unsafe) return '';
+      return unsafe.replace(/[&<>"'`=\/]/g, char => {
+        const entities = {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;',
+          '`': '&#x60;',
+          '=': '&#x3D;',
+          '/': '&#x2F;'
+        };
+        return entities[char] || char;
+      });
+    }
+    
+    // 完整HTML反转义函数（支持所有实体）
+    function unescapeHtml(safe) {
+      if (!safe) return '';
+      const doc = new DOMParser().parseFromString(safe, 'text/html');
+      return doc.documentElement.textContent;
+    }
+    
+    // 事件绑定
+    escapeBtn.addEventListener('click', () => {
+      outputText.value = escapeHtml(inputText.value);
+      showNotification('转义完成');
+    });
+    
+    unescapeBtn.addEventListener('click', () => {
+      outputText.value = unescapeHtml(inputText.value);
+      showNotification('反转义完成');
+    });
+    
+    swapBtn.addEventListener('click', () => {
+      const temp = inputText.value;
+      inputText.value = outputText.value;
+      outputText.value = temp;
+      showNotification('已交换内容');
+    });
+    
+    clearBtn.addEventListener('click', () => {
+      inputText.value = '';
+      outputText.value = '';
+      showNotification('已清空内容');
+    });
+    
+    copyInputBtn.addEventListener('click', () => {
+      if (inputText.value.trim() === '') {
+        showNotification('没有可复制的内容', false);
+        return;
+      }
+      navigator.clipboard.writeText(inputText.value)
+        .then(() => showNotification('输入内容已复制'))
+        .catch(() => showNotification('复制失败', false));
+    });
+    
+    copyOutputBtn.addEventListener('click', () => {
+      if (outputText.value.trim() === '') {
+        showNotification('没有可复制的内容', false);
+        return;
+      }
+      navigator.clipboard.writeText(outputText.value)
+        .then(() => showNotification('结果已复制'))
+        .catch(() => showNotification('复制失败', false));
+    });
+    
+    inputText.addEventListener('paste', () => {
+      setTimeout(() => showNotification('内容已粘贴'), 100);
+    });
+  </script>
+</body>
+</html>

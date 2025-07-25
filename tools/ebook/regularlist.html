@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>正则表达式规则工具</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义颜色和工具类 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366f1',
+            secondary: '#8b5cf6',
+            neutral: '#f3f4f6',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /*.morph {
+        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6),
+                    -9px -9px 16px rgba(255, 255, 255, 0.5);
+      }*/
+      .morph-inset {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+      .morph-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transition: all 0.2s ease;
+      }
+      .morph-btn:hover {
+        box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.7),
+                    -7px -7px 14px rgba(255, 255, 255, 0.6);
+        transform: translateY(-2px);
+      }
+      .morph-btn:active {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-neutral min-h-screen font-sans text-gray-800">
+  <div class="container mx-auto px-4 py-8 max-w-7xl">
+    <!-- 页面标题 -->
+    <header class="text-center mb-8">
+      <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gray-700">
+        <i class="fa fa-code mr-2 text-primary"></i>正则表达式规则工具
+      </h1>
+      <p class="text-gray-600 mt-2">快速查询正则表达式语法和规则</p>
+    </header>
+
+    <!-- 主要内容区 -->
+    <main class="flex flex-col lg:flex-row gap-6">
+      <!-- 左侧导航 - 规则分类 -->
+      <div class="lg:w-1/4">
+        <div class="rounded-2xl p-5 morph h-full">
+          <div class="mb-6">
+            <div class="relative">
+              <input 
+                type="text" 
+                id="search-input" 
+                placeholder="搜索规则..." 
+                class="w-full px-4 py-3 rounded-xl morph-inset bg-neutral border-none focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+              >
+              <i class="fa fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+            </div>
+          </div>
+          
+          <h2 class="text-lg font-semibold mb-4 text-gray-700 border-b border-gray-200 pb-2">规则分类</h2>
+          <ul id="category-list" class="space-y-2">
+            <!-- 分类将通过JS动态生成 -->
+            <li class="flex justify-center p-4">
+              <i class="fa fa-spinner fa-spin text-gray-500"></i>
+              <span class="ml-2 text-gray-500">加载规则中...</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 右侧内容 - 规则详情 -->
+      <div class="lg:w-3/4">
+        <div class="rounded-2xl p-6 morph h-full min-h-[600px]">
+          <div id="rule-detail" class="space-y-6">
+            <div class="text-center py-10">
+              <i class="fa fa-info-circle text-4xl text-gray-400 mb-4"></i>
+              <p class="text-gray-500">请从左侧选择一个正则表达式规则查看详情</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // 全局变量存储正则表达式规则数据
+    let regexRules = null;
+
+    // DOM元素
+    const categoryList = document.getElementById('category-list');
+    const ruleDetail = document.getElementById('rule-detail');
+    const searchInput = document.getElementById('search-input');
+
+    // 初始化页面
+    async function init() {
+      try {
+        // 从外部JSON文件加载数据
+        const response = await fetch('data/zzlist.json');
+        if (!response.ok) {
+          throw new Error('加载规则数据失败');
+        }
+        regexRules = await response.json();
+        
+        // 渲染分类列表
+        renderCategories();
+        
+        // 添加搜索功能
+        searchInput.addEventListener('input', handleSearch);
+      } catch (error) {
+        categoryList.innerHTML = `
+          <li class="flex justify-center p-4 text-red-500">
+            <i class="fa fa-exclamation-circle mr-2"></i>
+            <span>数据加载失败: ${error.message}</span>
+          </li>
+        `;
+        console.error('加载规则数据时出错:', error);
+      }
+    }
+
+    // 渲染分类列表
+    function renderCategories() {
+      categoryList.innerHTML = '';
+      
+      Object.keys(regexRules).forEach(category => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <button class="morph-btn w-full text-left px-4 py-2 rounded-lg text-gray-700 hover:text-primary transition-colors" 
+                  data-category="${category}">
+            ${category} (${regexRules[category].length})
+          </button>
+        `;
+        categoryList.appendChild(li);
+        
+        // 添加点击事件
+        li.querySelector('button').addEventListener('click', () => {
+          renderRulesByCategory(category);
+          // 在移动设备上点击分类后可以滚动到内容区
+          if (window.innerWidth < 1024) {
+            ruleDetail.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
+      });
+    }
+
+    // 根据分类渲染规则
+    function renderRulesByCategory(category) {
+      const rules = regexRules[category];
+      
+      ruleDetail.innerHTML = `
+        <div class="flex items-center mb-6">
+          <h2 class="text-xl font-bold text-gray-700">${category}</h2>
+          <span class="ml-3 px-2 py-1 bg-primary/10 text-primary rounded-full text-sm">${rules.length} 条规则</span>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          ${rules.map(rule => `
+            <div class="p-4 rounded-xl morph-inset hover:shadow-lg transition-shadow">
+              <div class="flex items-center mb-2">
+                <span class="px-3 py-1 bg-primary/20 text-primary rounded-lg font-mono font-medium">${escapeHtml(rule.符号)}</span>
+              </div>
+              <p class="text-gray-700 mb-3">${rule.描述}</p>
+              <div class="bg-gray-100 p-3 rounded-lg text-sm">
+                <p class="text-gray-600 font-medium mb-1">示例:</p>
+                <p class="font-mono text-gray-800">${escapeHtml(rule.示例)}</p>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // 搜索功能
+    function handleSearch(e) {
+      const searchTerm = e.target.value.toLowerCase().trim();
+      
+      if (searchTerm === '') {
+        renderCategories();
+        ruleDetail.innerHTML = `
+          <div class="text-center py-10">
+            <i class="fa fa-info-circle text-4xl text-gray-400 mb-4"></i>
+            <p class="text-gray-500">请从左侧选择一个正则表达式规则查看详情</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // 搜索所有规则
+      const results = [];
+      
+      Object.keys(regexRules).forEach(category => {
+        regexRules[category].forEach(rule => {
+          if (rule.符号.toLowerCase().includes(searchTerm) || 
+              rule.描述.toLowerCase().includes(searchTerm) ||
+              rule.示例.toLowerCase().includes(searchTerm)) {
+            results.push({ ...rule, category });
+          }
+        });
+      });
+      
+      // 显示搜索结果
+      if (results.length > 0) {
+        // 显示结果数量
+        categoryList.innerHTML = `
+          <li class="text-center py-2 text-gray-600">
+            找到 ${results.length} 个匹配结果
+          </li>
+        `;
+        
+        // 显示匹配的规则
+        ruleDetail.innerHTML = `
+          <div class="flex items-center mb-6">
+            <h2 class="text-xl font-bold text-gray-700">搜索结果: "${searchTerm}"</h2>
+            <span class="ml-3 px-2 py-1 bg-primary/10 text-primary rounded-full text-sm">${results.length} 条匹配规则</span>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${results.map(rule => `
+              <div class="p-4 rounded-xl morph-inset hover:shadow-lg transition-shadow">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="px-3 py-1 bg-primary/20 text-primary rounded-lg font-mono font-medium">${escapeHtml(rule.符号)}</span>
+                  <span class="px-2 py-0.5 bg-gray-200 text-gray-600 rounded text-xs">${rule.category}</span>
+                </div>
+                <p class="text-gray-700 mb-3">${rule.描述}</p>
+                <div class="bg-gray-100 p-3 rounded-lg text-sm">
+                  <p class="text-gray-600 font-medium mb-1">示例:</p>
+                  <p class="font-mono text-gray-800">${escapeHtml(rule.示例)}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        // 没有匹配结果
+        categoryList.innerHTML = `
+          <li class="text-center py-2 text-gray-600">
+            没有找到匹配"${searchTerm}"的结果
+          </li>
+        `;
+        
+        ruleDetail.innerHTML = `
+          <div class="text-center py-10">
+            <i class="fa fa-search text-4xl text-gray-400 mb-4"></i>
+            <p class="text-gray-500">没有找到与"${searchTerm}"匹配的规则</p>
+            <p class="text-gray-500 mt-2">请尝试其他搜索词</p>
+          </div>
+        `;
+      }
+    }
+
+    // HTML转义函数，防止XSS
+    function escapeHtml(unsafe) {
+      if (!unsafe) return '';
+      return unsafe.toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

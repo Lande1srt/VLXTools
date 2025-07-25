@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL编码解码工具</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind拟态UI样式 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#4f46e5',
+            secondary: '#7c3aed',
+          },
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /*.neumorphic {
+        box-shadow: 8px 8px 16px rgba(163, 177, 198, 0.6), 
+                   -8px -8px 16px rgba(255, 255, 255, 0.5);
+        background: #ecf0f3;
+        border-radius: 16px;
+      }*/
+      .neumorphic-circle
+      {
+        box-shadow: 8px 8px 16px rgba(163, 177, 198, 0.6), 
+                   -8px -8px 16px rgba(255, 255, 255, 0.5);
+        background: #ecf0f3;
+        border-radius: 16px;
+      }
+      .neumorphic-inset {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6), 
+                   inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+        background: #ecf0f3;
+        border-radius: 12px;
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6), 
+                   -5px -5px 10px rgba(255, 255, 255, 0.5);
+        background: #ecf0f3;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+      }
+      .neumorphic-btn:hover {
+        box-shadow: 6px 6px 12px rgba(163, 177, 198, 0.7), 
+                   -6px -6px 12px rgba(255, 255, 255, 0.6);
+        transform: translateY(-1px);
+      }
+      .neumorphic-btn:active {
+        box-shadow: inset 2px 2px 5px rgba(163, 177, 198, 0.6), 
+                   inset -2px -2px 5px rgba(255, 255, 255, 0.5);
+        transform: translateY(1px);
+      }
+      /* 滑块样式 */
+      .toggle-slider {
+        position: relative;
+        width: 200px;
+        height: 50px;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+      }
+      .toggle-thumb {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+        z-index: 10;
+      }
+      .toggle-text {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        z-index: 5;
+        transition: all 0.3s ease;
+      }
+    }
+  </style>
+</head>
+<body class="bg-[#ecf0f3] min-h-screen p-4 md:p-6 font-sans text-gray-700">
+  <div class="max-w-5xl mx-auto">
+    <!-- 标题区域 -->
+    <div class="neumorphic p-5 md:p-6 mb-6 text-center">
+      <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+        URL编码工具
+      </h1>
+      <p class="text-gray-500 mt-2">轻松进行URL编码与解码转换</p>
+    </div>
+    
+    <!-- 滑块切换区域 -->
+    <div class="flex justify-center mb-6">
+      <div id="toggle-container" class="toggle-slider neumorphic-inset">
+        <div id="toggle-thumb" class="toggle-thumb neumorphic-circle"></div>
+        <div id="toggle-text" class="toggle-text">
+          <span id="encode-text" class="text-primary font-medium">编码</span>
+          <span id="decode-text" class="ml-4 text-gray-400 font-medium">解码</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 主内容区域 - PC端左右布局，移动端上下布局 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <!-- 输入区域 -->
+      <div class="neumorphic p-5 flex flex-col h-full">
+        <h3 class="text-lg font-medium mb-4 flex items-center">
+          <i class="fa fa-input text-primary mr-2"></i>输入内容
+        </h3>
+        <textarea id="input-text" class="flex-grow p-4 neumorphic-inset resize-none outline-none" 
+                  placeholder="请输入要编码的文本..."></textarea>
+        <div id="input-error" class="mt-2 text-red-500 text-sm hidden neumorphic-inset p-2"></div>
+      </div>
+      
+      <!-- 输出区域 -->
+      <div class="neumorphic p-5 flex flex-col h-full">
+        <h3 class="text-lg font-medium mb-4 flex items-center">
+          <i class="fa fa-output text-secondary mr-2"></i>转换结果
+        </h3>
+        <textarea id="output-text" class="flex-grow p-4 neumorphic-inset resize-none outline-none bg-opacity-50" 
+                  placeholder="转换结果将显示在这里..." readonly></textarea>
+        <div class="mt-4 flex justify-between">
+          <button id="copy-btn" class="neumorphic-btn py-2 px-4 text-gray-700" disabled>
+            <i class="fa fa-copy mr-1"></i>复制结果
+          </button>
+          <button id="swap-btn" class="neumorphic-btn py-2 px-4 text-gray-700">
+            <i class="fa fa-exchange mr-1"></i>交换内容
+          </button>
+          <button id="clear-btn" class="neumorphic-btn py-2 px-4 text-gray-700">
+            <i class="fa fa-trash mr-1"></i>清空
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 转换按钮 -->
+    <div class="text-center mb-6">
+      <button id="convert-btn" class="neumorphic-btn py-3 px-8 text-primary font-medium text-lg">
+        <i class="fa fa-refresh mr-2"></i>开始转换
+      </button>
+    </div>
+    
+    <!-- 状态提示 -->
+    <div id="status-message" class="neumorphic p-3 text-center hidden"></div>
+  </div>
+
+  <script>
+    // DOM元素引用
+    const toggleContainer = document.getElementById('toggle-container');
+    const toggleThumb = document.getElementById('toggle-thumb');
+    const encodeText = document.getElementById('encode-text');
+    const decodeText = document.getElementById('decode-text');
+    const inputText = document.getElementById('input-text');
+    const outputText = document.getElementById('output-text');
+    const convertBtn = document.getElementById('convert-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const swapBtn = document.getElementById('swap-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const statusMessage = document.getElementById('status-message');
+    const inputError = document.getElementById('input-error');
+    
+    // 状态变量
+    let currentMode = 'encode'; // 'encode' 或 'decode'
+    let isDragging = false;
+    
+    // 滑块点击事件
+    toggleContainer.addEventListener('click', toggleMode);
+    
+    // 滑块拖拽事件
+    toggleThumb.addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', endDrag);
+    
+    // 触摸设备支持
+    toggleThumb.addEventListener('touchstart', startDrag, { passive: true });
+    document.addEventListener('touchmove', drag, { passive: true });
+    document.addEventListener('touchend', endDrag);
+    
+    // 开始拖拽
+    function startDrag(e) {
+      isDragging = true;
+      toggleThumb.style.transition = 'none';
+    }
+    
+    // 拖拽中
+    function drag(e) {
+      if (!isDragging) return;
+      
+      const containerRect = toggleContainer.getBoundingClientRect();
+      let clientX;
+      
+      // 处理鼠标和触摸事件
+      if (e.type.includes('mouse')) {
+        clientX = e.clientX;
+      } else {
+        clientX = e.touches[0].clientX;
+      }
+      
+      // 计算滑块位置
+      let position = clientX - containerRect.left - toggleThumb.offsetWidth / 2;
+      const maxPosition = containerRect.width - toggleThumb.offsetWidth;
+      
+      // 限制滑块范围
+      position = Math.max(0, Math.min(position, maxPosition));
+      
+      // 更新滑块位置
+      toggleThumb.style.left = `${position}px`;
+      
+      // 根据位置更新模式
+      if (position > maxPosition / 2 && currentMode !== 'decode') {
+        setMode('decode');
+      } else if (position <= maxPosition / 2 && currentMode !== 'encode') {
+        setMode('encode');
+      }
+    }
+    
+    // 结束拖拽
+    function endDrag() {
+      if (!isDragging) return;
+      
+      isDragging = false;
+      toggleThumb.style.transition = 'all 0.3s ease';
+      
+      // 自动调整到最近的位置
+      const containerWidth = toggleContainer.offsetWidth;
+      const maxPosition = containerWidth - toggleThumb.offsetWidth;
+      
+      if (currentMode === 'decode') {
+        toggleThumb.style.left = `${maxPosition}px`;
+      } else {
+        toggleThumb.style.left = '4px';
+      }
+    }
+    
+    // 切换模式
+    function toggleMode() {
+      currentMode = currentMode === 'encode' ? 'decode' : 'encode';
+      updateToggleUI();
+    }
+    
+    // 设置模式
+    function setMode(mode) {
+      currentMode = mode;
+      updateToggleUI();
+    }
+    
+    // 更新滑块UI
+    function updateToggleUI() {
+      const containerWidth = toggleContainer.offsetWidth;
+      const maxPosition = containerWidth - toggleThumb.offsetWidth;
+      
+      // 更新滑块位置
+      if (currentMode === 'decode') {
+        toggleThumb.style.left = `${maxPosition}px`;
+        encodeText.classList.remove('text-primary');
+        encodeText.classList.add('text-gray-400');
+        decodeText.classList.remove('text-gray-400');
+        decodeText.classList.add('text-primary');
+        inputText.placeholder = '请输入要解码的文本...';
+      } else {
+        toggleThumb.style.left = '4px';
+        encodeText.classList.remove('text-gray-400');
+        encodeText.classList.add('text-primary');
+        decodeText.classList.remove('text-primary');
+        decodeText.classList.add('text-gray-400');
+        inputText.placeholder = '请输入要编码的文本...';
+      }
+      
+      hideError();
+    }
+    
+    // 转换按钮点击事件
+    convertBtn.addEventListener('click', () => {
+      hideError();
+      const input = inputText.value.trim();
+      
+      if (!input) {
+        showError('请输入内容后再进行转换');
+        return;
+      }
+      
+      try {
+        let result;
+        if (currentMode === 'encode') {
+          result = encodeURIComponent(input);
+        } else {
+          // 尝试解码，如果失败则处理异常
+          try {
+            result = decodeURIComponent(input);
+          } catch (e) {
+            // 处理不完整的编码序列
+            result = decodeURIComponent(input.replace(/%(?![0-9A-Fa-f]{2})/g, '%25'));
+          }
+        }
+        
+        outputText.value = result;
+        updateCopyButton();
+        showStatus('转换成功', 'success');
+      } catch (error) {
+        showError(`转换失败: ${error.message}`);
+        console.error(error);
+      }
+    });
+    
+    // 复制结果
+    copyBtn.addEventListener('click', () => {
+      if (outputText.value) {
+        outputText.select();
+        document.execCommand('copy');
+        showStatus('已复制到剪贴板', 'success');
+      }
+    });
+    
+    // 交换输入输出内容
+    swapBtn.addEventListener('click', () => {
+      const temp = inputText.value;
+      inputText.value = outputText.value;
+      outputText.value = temp;
+      updateCopyButton();
+      hideError();
+    });
+    
+    // 清空内容
+    clearBtn.addEventListener('click', () => {
+      inputText.value = '';
+      outputText.value = '';
+      updateCopyButton();
+      hideError();
+      showStatus('已清空所有内容', 'info');
+    });
+    
+    // 更新复制按钮状态
+    function updateCopyButton() {
+      if (outputText.value) {
+        copyBtn.disabled = false;
+        copyBtn.classList.add('text-primary');
+        copyBtn.classList.remove('text-gray-700');
+      } else {
+        copyBtn.disabled = true;
+        copyBtn.classList.remove('text-primary');
+        copyBtn.classList.add('text-gray-700');
+      }
+    }
+    
+    // 显示错误信息
+    function showError(message) {
+      inputError.textContent = message;
+      inputError.classList.remove('hidden');
+    }
+    
+    // 隐藏错误信息
+    function hideError() {
+      inputError.classList.add('hidden');
+    }
+    
+    // 显示状态消息
+    function showStatus(message, type = 'info') {
+      statusMessage.textContent = message;
+      statusMessage.classList.remove('hidden', 'bg-green-100', 'text-green-700', 
+                                    'bg-blue-100', 'text-blue-700', 'bg-red-100', 'text-red-700');
+      
+      switch (type) {
+        case 'success':
+          statusMessage.classList.add('bg-green-100', 'text-green-700');
+          break;
+        case 'error':
+          statusMessage.classList.add('bg-red-100', 'text-red-700');
+          break;
+        default:
+          statusMessage.classList.add('bg-blue-100', 'text-blue-700');
+      }
+      
+      // 3秒后隐藏消息
+      clearTimeout(window.statusTimeout);
+      window.statusTimeout = setTimeout(() => {
+        statusMessage.classList.add('hidden');
+      }, 3000);
+    }
+    
+    // 输入内容变化时更新复制按钮状态
+    inputText.addEventListener('input', hideError);
+    outputText.addEventListener('input', updateCopyButton);
+    
+    // 初始化
+    updateCopyButton();
+  </script>
+</body>
+</html>

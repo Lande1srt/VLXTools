@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>二维码解码器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  
+  <!-- 配置Tailwind自定义颜色和字体 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366f1',
+            secondary: '#8b5cf6',
+            neutral: '#f3f4f6',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /*.neumorphic {
+        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6),
+                    -9px -9px 16px rgba(255, 255, 255, 0.5);
+      }*/
+      .neumorphic-inset {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transition: all 0.3s ease;
+      }
+      .neumorphic-btn:hover {
+        box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.7),
+                    -7px -7px 14px rgba(255, 255, 255, 0.6);
+        transform: translateY(-2px);
+      }
+      .neumorphic-btn:active {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body class="bg-neutral min-h-screen font-sans text-gray-700 p-4 md:p-6">
+  <div class="max-w-6xl mx-auto">
+    <!-- 标题区域 -->
+    <header class="mb-6 md:mb-8 text-center">
+      <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gray-700 mb-2">
+        <i class="fa fa-qrcode text-primary mr-3"></i>二维码解码器
+      </h1>
+      <p class="text-gray-500 max-w-md mx-auto">选择包含二维码的图片文件，快速解析其中的信息</p>
+    </header>
+    
+    <!-- 主内容区域 -->
+    <main class="flex flex-col md:flex-row gap-6 md:gap-8">
+      <!-- 左侧：图片上传区域 -->
+      <section class="w-full md:w-1/2 neumorphic rounded-2xl p-5 md:p-6">
+        <h2 class="text-xl font-semibold mb-4 flex items-center">
+          <i class="fa fa-upload text-primary mr-2"></i>上传二维码图片
+        </h2>
+        
+        <!-- 图片预览区域 -->
+        <div id="image-container" class="neumorphic-inset rounded-xl aspect-square h-auto flex items-center justify-center mb-5 overflow-hidden">
+          <div id="upload-placeholder" class="text-center p-4">
+            <i class="fa fa-picture-o text-5xl text-gray-400 mb-3"></i>
+            <p class="text-gray-500">点击下方按钮选择图片<br>或直接拖放图片到此处</p>
+          </div>
+          <img id="preview-image" class="hidden max-w-full max-h-full object-contain" alt="二维码预览">
+        </div>
+        
+        <!-- 上传控制区域 -->
+        <div class="flex flex-col sm:flex-row gap-3">
+          <label for="file-input" class="neumorphic-btn bg-white rounded-xl py-3 px-6 text-center cursor-pointer flex-1">
+            <i class="fa fa-file-image-o mr-2"></i>选择图片
+          </label>
+          <input type="file" id="file-input" accept="image/*" class="hidden">
+          
+          <button id="decode-btn" class="neumorphic-btn bg-primary text-white rounded-xl py-3 px-6 flex-1 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <i class="fa fa-search mr-2"></i>解析二维码
+          </button>
+        </div>
+        
+        <p class="text-xs text-gray-400 mt-4 text-center">支持JPG、PNG、WEBP等常见图片格式</p>
+      </section>
+      
+      <!-- 右侧：结果显示区域 -->
+      <section class="w-full md:w-1/2 neumorphic rounded-2xl p-5 md:p-6">
+        <h2 class="text-xl font-semibold mb-4 flex items-center">
+          <i class="fa fa-info-circle text-primary mr-2"></i>解析结果
+        </h2>
+        
+        <!-- 结果显示区域 -->
+        <div id="result-container" class="neumorphic-inset rounded-xl h-64 md:h-80 p-4 overflow-auto">
+          <div id="empty-result" class="h-full flex flex-col items-center justify-center text-gray-400">
+            <i class="fa fa-question-circle text-5xl mb-3"></i>
+            <p>解析结果将显示在这里</p>
+          </div>
+          
+          <div id="loading-result" class="h-full flex flex-col items-center justify-center hidden">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-3"></div>
+            <p>正在解析二维码...</p>
+          </div>
+          
+          <div id="success-result" class="hidden">
+            <div class="mb-3 pb-3 border-b border-gray-200">
+              <p class="text-sm text-gray-500">解析类型：<span id="result-type" class="font-medium text-primary"></span></p>
+            </div>
+            <div id="result-content" class="whitespace-pre-wrap break-all"></div>
+            
+            <!-- 针对URL类型的额外操作按钮 -->
+            <div id="url-actions" class="mt-4 hidden">
+              <a id="open-url" href="#" target="_blank" class="neumorphic-btn inline-block bg-white rounded-lg py-2 px-4 text-sm">
+                <i class="fa fa-external-link mr-1"></i>打开链接
+              </a>
+            </div>
+            
+            <!-- 针对WiFi类型的额外操作按钮 -->
+            <div id="wifi-actions" class="mt-4 hidden">
+              <button id="copy-wifi" class="neumorphic-btn inline-block bg-white rounded-lg py-2 px-4 text-sm">
+                <i class="fa fa-copy mr-1"></i>复制WiFi信息
+              </button>
+            </div>
+          </div>
+          
+          <div id="error-result" class="h-full flex flex-col items-center justify-center text-red-500 hidden">
+            <i class="fa fa-exclamation-triangle text-5xl mb-3"></i>
+            <p id="error-message">解析失败，请尝试其他图片</p>
+          </div>
+        </div>
+        
+        <div class="mt-4 flex justify-center">
+          <button id="copy-result" class="neumorphic-btn bg-white rounded-xl py-2 px-5 text-sm hidden">
+            <i class="fa fa-copy mr-2"></i>复制结果
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // 获取DOM元素
+    const fileInput = document.getElementById('file-input');
+    const imageContainer = document.getElementById('image-container');
+    const previewImage = document.getElementById('preview-image');
+    const uploadPlaceholder = document.getElementById('upload-placeholder');
+    const decodeBtn = document.getElementById('decode-btn');
+    const copyResultBtn = document.getElementById('copy-result');
+    
+    // 结果显示相关元素
+    const emptyResult = document.getElementById('empty-result');
+    const loadingResult = document.getElementById('loading-result');
+    const successResult = document.getElementById('success-result');
+    const errorResult = document.getElementById('error-result');
+    const errorMessage = document.getElementById('error-message');
+    const resultType = document.getElementById('result-type');
+    const resultContent = document.getElementById('result-content');
+    const urlActions = document.getElementById('url-actions');
+    const openUrlBtn = document.getElementById('open-url');
+    const wifiActions = document.getElementById('wifi-actions');
+    const copyWifiBtn = document.getElementById('copy-wifi');
+    
+    // 变量存储
+    let selectedImage = null;
+    let currentResult = null;
+    
+    // 初始化拖放功能
+    function initDragDrop() {
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        imageContainer.addEventListener(eventName, preventDefaults, false);
+      });
+      
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      
+      ['dragenter', 'dragover'].forEach(eventName => {
+        imageContainer.addEventListener(eventName, highlight, false);
+      });
+      
+      ['dragleave', 'drop'].forEach(eventName => {
+        imageContainer.addEventListener(eventName, unhighlight, false);
+      });
+      
+      function highlight() {
+        imageContainer.classList.add('ring-2', 'ring-primary');
+      }
+      
+      function unhighlight() {
+        imageContainer.classList.remove('ring-2', 'ring-primary');
+      }
+      
+      imageContainer.addEventListener('drop', handleDrop, false);
+      
+      function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const file = dt.files[0];
+        
+        if (file && file.type.startsWith('image/')) {
+          handleImageFile(file);
+        }
+      }
+    }
+    
+    // 处理图片文件
+    function handleImageFile(file) {
+      selectedImage = file;
+      
+      // 显示预览
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        previewImage.src = e.target.result;
+        previewImage.classList.remove('hidden');
+        uploadPlaceholder.classList.add('hidden');
+        decodeBtn.removeAttribute('disabled');
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    // 解析二维码
+    async function decodeQrCode() {
+      if (!selectedImage) return;
+      
+      // 显示加载状态
+      showLoadingState();
+      
+      try {
+        // 读取图片并解析
+        const image = await loadImage(previewImage.src);
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        
+        canvas.width = image.width;
+        canvas.height = image.height;
+        context.drawImage(image, 0, 0);
+        
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert",
+        });
+        
+        if (code) {
+          processResult(code.data);
+        } else {
+          showErrorState("未检测到二维码，请确保图片清晰且包含二维码");
+        }
+      } catch (error) {
+        console.error("解析错误:", error);
+        showErrorState("解析过程出错，请重试");
+      }
+    }
+    
+    // 加载图片
+    function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+      });
+    }
+    
+    // 处理解析结果 - 修复类型识别顺序，WiFi优先于URL识别
+    function processResult(data) {
+      currentResult = data;
+      
+      // 确定结果类型 - 优先检测WiFi格式
+      let type = "文本";
+      let displayData = data;
+      
+      // 1. 优先检测WiFi信息 (格式: WIFI:S:ssid;T:type;P:password;H:hidden;)
+      if (data.startsWith("WIFI:")) {
+        type = "WiFi";
+        displayData = parseWifiString(data);
+      }
+      // 2. 再检测URL
+      else {
+        try {
+          new URL(data);
+          type = "URL";
+        } catch (_) {
+          // 不是URL，保持文本类型
+          type = "文本";
+        }
+      }
+      
+      // 显示结果
+      resultType.textContent = type;
+      resultContent.textContent = displayData;
+      
+      // 显示对应的操作按钮
+      urlActions.classList.add('hidden');
+      wifiActions.classList.add('hidden');
+      
+      if (type === "URL") {
+        openUrlBtn.href = currentResult;
+        urlActions.classList.remove('hidden');
+      } else if (type === "WiFi") {
+        wifiActions.classList.remove('hidden');
+      }
+      
+      copyResultBtn.classList.remove('hidden');
+      showSuccessState();
+    }
+    
+    // 解析WiFi字符串
+    function parseWifiString(wifiString) {
+      // 移除开头的"WIFI:"和结尾的";"
+      let str = wifiString.replace(/^WIFI:/, '').replace(/;$/, '');
+      let result = "";
+      
+      // 分割各个参数
+      const parts = str.split(';');
+      parts.forEach(part => {
+        const [key, value] = part.split(':');
+        if (key && value) {
+          switch(key) {
+            case 'S': result += `网络名称: ${value}\n`; break;
+            case 'T': result += `加密类型: ${value || '无'}\n`; break;
+            case 'P': result += `密码: ${value || '无'}\n`; break;
+            case 'H': result += `隐藏网络: ${value === 'true' ? '是' : '否'}\n`; break;
+          }
+        }
+      });
+      
+      return result || wifiString;
+    }
+    
+    // 状态显示函数
+    function showLoadingState() {
+      emptyResult.classList.add('hidden');
+      successResult.classList.add('hidden');
+      errorResult.classList.add('hidden');
+      loadingResult.classList.remove('hidden');
+    }
+    
+    function showSuccessState() {
+      emptyResult.classList.add('hidden');
+      loadingResult.classList.add('hidden');
+      errorResult.classList.add('hidden');
+      successResult.classList.remove('hidden');
+    }
+    
+    function showErrorState(message) {
+      errorMessage.textContent = message;
+      emptyResult.classList.add('hidden');
+      loadingResult.classList.add('hidden');
+      successResult.classList.add('hidden');
+      errorResult.classList.remove('hidden');
+      copyResultBtn.classList.add('hidden');
+    }
+    
+    // 复制结果到剪贴板
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        // 显示复制成功提示
+        const originalText = copyResultBtn.innerHTML;
+        copyResultBtn.innerHTML = '<i class="fa fa-check mr-2"></i>已复制';
+        
+        setTimeout(() => {
+          copyResultBtn.innerHTML = originalText;
+        }, 2000);
+      });
+    }
+    
+    // 事件监听
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleImageFile(e.target.files[0]);
+      }
+    });
+    
+    decodeBtn.addEventListener('click', decodeQrCode);
+    
+    copyResultBtn.addEventListener('click', () => {
+      if (currentResult) {
+        copyToClipboard(currentResult);
+      }
+    });
+    
+    copyWifiBtn.addEventListener('click', () => {
+      if (currentResult) {
+        copyToClipboard(resultContent.textContent);
+      }
+    });
+    
+    // 初始化拖放功能
+    initDragDrop();
+  </script>
+</body>
+</html>

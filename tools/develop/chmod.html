@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chmod 权限计算器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义颜色和字体 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#e0e5ec',
+            secondary: '#a3b1c6',
+            accent: '#4a6fa5',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /*.neumorphic {
+        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6),
+                    -9px -9px 16px rgba(255, 255, 255, 0.5);
+      }*/
+      .neumorphic-inset {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transition: all 0.2s ease;
+      }
+      .neumorphic-btn:hover {
+        box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.7),
+                    -7px -7px 14px rgba(255, 255, 255, 0.6);
+      }
+      .neumorphic-btn.active {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+        background-color: rgba(74, 111, 165, 0.1);
+      }
+    }
+  </style>
+</head>
+<body class="bg-primary min-h-screen p-4 md:p-8 font-sans text-gray-700">
+  <div class="max-w-6xl mx-auto">
+    <!-- 标题区域 -->
+    <div class="text-center mb-8 md:mb-12">
+      <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gray-700 mb-2">Chmod 权限计算器</h1>
+      <p class="text-gray-500 max-w-lg mx-auto">通过选择用户组和权限，自动计算对应的Linux文件权限数值和符号表示</p>
+    </div>
+    
+    <!-- 主内容区域 -->
+    <div class="flex flex-col md:flex-row gap-6">
+      <!-- 左侧：权限选择区域 -->
+      <div class="flex-1 neumorphic rounded-2xl p-6 md:p-8">
+        <h2 class="text-xl font-semibold mb-6 pb-2 border-b border-gray-200">选择权限</h2>
+        
+        <div class="space-y-8">
+          <!-- 所有者权限 -->
+          <div>
+            <h3 class="text-lg font-medium mb-4 flex items-center">
+              <i class="fa fa-user mr-2 text-accent"></i>所有者 (Owner)
+            </h3>
+            <div class="grid grid-cols-3 gap-3" id="owner-perms">
+              <div class="neumorphic-btn rounded-xl p-4 text-center cursor-pointer hover:scale-105 transition-transform" data-perm="read" data-group="owner">
+                <i class="fa fa-eye text-xl mb-2 text-accent"></i>
+                <div>读取 (r)</div>
+                <div class="text-sm text-gray-500">4</div>
+              </div>
+              <div class="neumorphic-btn rounded-xl p-4 text-center cursor-pointer hover:scale-105 transition-transform" data-perm="write" data-group="owner">
+                <i class="fa fa-pencil text-xl mb-2 text-accent"></i>
+                <div>写入 (w)</div>
+                <div class="text-sm text-gray-500">2</div>
+              </div>
+              <div class="neumorphic-btn rounded-xl p-4 text-center cursor-pointer hover:scale-105 transition-transform" data-perm="execute" data-group="owner">
+                <i class="fa fa-play text-xl mb-2 text-accent"></i>
+                <div>执行 (x)</div>
+                <div class="text-sm text-gray-500">1</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 组权限 -->
+          <div>
+            <h3 class="text-lg font-medium mb-4 flex items-center">
+              <i class="fa fa-users mr-2 text-accent"></i>组 (Group)
+            </h3>
+            <div class="grid grid-cols-3 gap-3" id="group-perms">
+              <div class="neumorphic-btn rounded-xl p-4 text-center cursor-pointer hover:scale-105 transition-transform" data-perm="read" data-group="group">
+                <i class="fa fa-eye text-xl mb-2 text-accent"></i>
+                <div>读取 (r)</div>
+                <div class="text-sm text-gray-500">4</div>
+              </div>
+              <div class="neumorphic-btn rounded-xl p-4 text-center cursor-pointer hover:scale-105 transition-transform" data-perm="write" data-group="group">
+                <i class="fa fa-pencil text-xl mb-2 text-accent"></i>
+                <div>写入 (w)</div>
+                <div class="text-sm text-gray-500">2</div>
+              </div>
+              <div class="neumorphic-btn rounded-xl p-4 text-center cursor-pointer hover:scale-105 transition-transform" data-perm="execute" data-group="group">
+                <i class="fa fa-play text-xl mb-2 text-accent"></i>
+                <div>执行 (x)</div>
+                <div class="text-sm text-gray-500">1</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 其他用户权限 -->
+          <div>
+            <h3 class="text-lg font-medium mb-4 flex items-center">
+              <i class="fa fa-globe mr-2 text-accent"></i>其他用户 (Others)
+            </h3>
+            <div class="grid grid-cols-3 gap-3" id="others-perms">
+              <div class="neumorphic-btn rounded-xl p-4 text-center cursor-pointer hover:scale-105 transition-transform" data-perm="read" data-group="others">
+                <i class="fa fa-eye text-xl mb-2 text-accent"></i>
+                <div>读取 (r)</div>
+                <div class="text-sm text-gray-500">4</div>
+              </div>
+              <div class="neumorphic-btn rounded-xl p-4 text-center cursor-pointer hover:scale-105 transition-transform" data-perm="write" data-group="others">
+                <i class="fa fa-pencil text-xl mb-2 text-accent"></i>
+                <div>写入 (w)</div>
+                <div class="text-sm text-gray-500">2</div>
+              </div>
+              <div class="neumorphic-btn rounded-xl p-4 text-center cursor-pointer hover:scale-105 transition-transform" data-perm="execute" data-group="others">
+                <i class="fa fa-play text-xl mb-2 text-accent"></i>
+                <div>执行 (x)</div>
+                <div class="text-sm text-gray-500">1</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 右侧：结果显示区域 -->
+      <div class="w-full md:w-80 neumorphic rounded-2xl p-6 md:p-8 flex flex-col">
+        <h2 class="text-xl font-semibold mb-6 pb-2 border-b border-gray-200">计算结果</h2>
+        
+        <div class="space-y-6 flex-grow">
+          <!-- 数值表示 -->
+          <div>
+            <h3 class="text-sm text-gray-500 mb-2">数值表示</h3>
+            <div class="neumorphic-inset rounded-xl p-4 h-16 flex items-center justify-center">
+              <div id="numeric-result" class="text-3xl font-mono font-bold">000</div>
+            </div>
+          </div>
+          
+          <!-- 符号表示 -->
+          <div>
+            <h3 class="text-sm text-gray-500 mb-2">符号表示</h3>
+            <div class="neumorphic-inset rounded-xl p-4 h-16 flex items-center justify-center">
+              <div id="symbolic-result" class="text-3xl font-mono font-bold">- - -</div>
+            </div>
+          </div>
+          
+          <!-- 命令示例 -->
+          <div>
+            <h3 class="text-sm text-gray-500 mb-2">chmod 命令</h3>
+            <div class="neumorphic-inset rounded-xl p-4 min-h-16 flex items-center">
+              <div id="command-result" class="font-mono text-gray-700">chmod 000 filename</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 重置按钮 -->
+        <div class="mt-8">
+          <button id="reset-btn" class="w-full neumorphic-btn rounded-xl p-4 text-center font-medium hover:scale-105 transition-transform">
+            <i class="fa fa-refresh mr-2"></i>重置选择
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 说明信息 -->
+    <div class="mt-8 neumorphic rounded-2xl p-5 text-sm text-gray-600">
+      <p class="text-center">Chmod权限由三位数字组成，分别代表所有者、组和其他用户的权限。读取(r)=4，写入(w)=2，执行(x)=1，数值为对应权限的总和。</p>
+    </div>
+  </div>
+
+  <script>
+    // 存储选中的权限
+    const selectedPerms = {
+      owner: { read: false, write: false, execute: false },
+      group: { read: false, write: false, execute: false },
+      others: { read: false, write: false, execute: false }
+    };
+    
+    // 权限值映射
+    const permValues = {
+      read: 4,
+      write: 2,
+      execute: 1
+    };
+    
+    // 权限符号映射
+    const permSymbols = {
+      read: 'r',
+      write: 'w',
+      execute: 'x'
+    };
+    
+    // 初始化所有权限按钮的点击事件
+    document.querySelectorAll('[data-perm][data-group]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const perm = btn.dataset.perm;
+        const group = btn.dataset.group;
+        
+        // 切换选中状态
+        selectedPerms[group][perm] = !selectedPerms[group][perm];
+        
+        // 更新UI状态
+        if (selectedPerms[group][perm]) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+        
+        // 计算并更新结果
+        updateResults();
+      });
+    });
+    
+    // 重置按钮事件
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      // 重置所有选中状态
+      Object.keys(selectedPerms).forEach(group => {
+        Object.keys(selectedPerms[group]).forEach(perm => {
+          selectedPerms[group][perm] = false;
+        });
+      });
+      
+      // 重置UI状态
+      document.querySelectorAll('[data-perm][data-group]').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // 更新结果
+      updateResults();
+    });
+    
+    // 计算并更新结果
+    function updateResults() {
+      // 计算数值结果
+      const ownerValue = calculateGroupValue('owner');
+      const groupValue = calculateGroupValue('group');
+      const othersValue = calculateGroupValue('others');
+      const numericResult = `${ownerValue}${groupValue}${othersValue}`;
+      
+      // 计算符号结果
+      const ownerSymbol = calculateGroupSymbol('owner');
+      const groupSymbol = calculateGroupSymbol('group');
+      const othersSymbol = calculateGroupSymbol('others');
+      const symbolicResult = `${ownerSymbol}${groupSymbol}${othersSymbol}`;
+      
+      // 更新命令结果
+      const commandResult = `chmod ${numericResult} filename`;
+      
+      // 更新UI
+      document.getElementById('numeric-result').textContent = numericResult;
+      document.getElementById('symbolic-result').textContent = symbolicResult;
+      document.getElementById('command-result').textContent = commandResult;
+    }
+    
+    // 计算用户组的数值权限
+    function calculateGroupValue(group) {
+      let value = 0;
+      Object.keys(selectedPerms[group]).forEach(perm => {
+        if (selectedPerms[group][perm]) {
+          value += permValues[perm];
+        }
+      });
+      return value;
+    }
+    
+    // 计算用户组的符号权限
+    function calculateGroupSymbol(group) {
+      let symbol = '';
+      ['read', 'write', 'execute'].forEach(perm => {
+        symbol += selectedPerms[group][perm] ? permSymbols[perm] : '-';
+      });
+      return symbol;
+    }
+    
+    // 初始化页面
+    updateResults();
+  </script>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KeyCode捕获工具</title>
+    <style>
+        :root {
+            --bg-color: #e0e5ec;
+            --shadow-light: 8px 8px 16px #b8c1cf, -8px -8px 16px #ffffff;
+            --shadow-dark: inset 5px 5px 10px #b8c1cf, inset -5px -5px 10px #ffffff;
+            --text-primary: #4a5568;
+            --text-secondary: #6b7280;
+            --accent: #4f46e5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+       .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+       .card-container {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            width: 100%;
+        }
+
+       .card {
+            flex: 1;
+            background-color: var(--bg-color);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: var(--shadow-light);
+            transition: all 0.3s ease;
+        }
+
+       .card:hover {
+            transform: translateY(-3px);
+        }
+
+       .card h2 {
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+       .key-display {
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-dark);
+            margin-bottom: 25px;
+        }
+
+       .key {
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-light);
+            font-size: 1.1rem;
+            min-width: 120px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+       .key.active {
+            box-shadow: var(--shadow-dark);
+            transform: scale(0.98);
+        }
+
+       .info-group {
+            margin-bottom: 15px;
+        }
+
+       .info-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+       .info-display {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-dark);
+            min-height: 45px;
+            font-family: 'Consolas', monospace;
+        }
+
+        @media (max-width: 768px) {
+           .card-container {
+                flex-direction: column;
+            }
+            
+           .card {
+                padding: 20px;
+            }
+            
+           .key-display {
+                min-height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>KeyCode捕获工具</h1>
+        <div class="card-container">
+            <div class="card">
+                <h2>按键状态</h2>
+                <div class="key-display">
+                    <div class="key" id="key1">等待按键...</div>
+                    <div class="key" id="key2"></div>
+                    <div class="key" id="key3"></div>
+                </div>
+                <div class="info-group">
+                    <label>当前按下的键</label>
+                    <div class="info-display" id="keyNames">未按下任何键</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>键位代码</h2>
+                <div class="info-group">
+                    <label>key</label>
+                    <div class="info-display" id="keyValue">-</div>
+                </div>
+                <div class="info-group">
+                    <label>keyCode</label>
+                    <div class="info-display" id="keyCode">-</div>
+                </div>
+                <div class="info-group">
+                    <label>code</label>
+                    <div class="info-display" id="codeValue">-</div>
+                </div>
+                <div class="info-group">
+                    <label>组合键代码</label>
+                    <div class="info-display" id="combination">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 存储当前按下的键（最多3个）
+        let pressedKeys = new Set();
+        
+        // DOM元素
+        const key1 = document.getElementById('key1');
+        const key2 = document.getElementById('key2');
+        const key3 = document.getElementById('key3');
+        const keyNames = document.getElementById('keyNames');
+        const keyValue = document.getElementById('keyValue');
+        const keyCode = document.getElementById('keyCode');
+        const codeValue = document.getElementById('codeValue');
+        const combination = document.getElementById('combination');
+
+        // 更新按键显示
+        function updateKeyDisplay() {
+            const keysArray = Array.from(pressedKeys);
+            
+            // 重置所有键显示
+            [key1, key2, key3].forEach(key => {
+                key.textContent = '';
+                key.classList.remove('active');
+            });
+            
+            // 更新按键显示
+            keysArray.forEach((key, index) => {
+                if (index < 3) {
+                    const keyEl = [key1, key2, key3][index];
+                    keyEl.textContent = key.name || key.key;
+                    keyEl.classList.add('active');
+                }
+            });
+            
+            // 更新当前按下的键文本
+            if (keysArray.length === 0) {
+                key1.textContent = '等待按键...';
+                keyNames.textContent = '未按下任何键';
+                keyValue.textContent = '-';
+                keyCode.textContent = '-';
+                codeValue.textContent = '-';
+                combination.textContent = '-';
+            } else {
+                const keyNamesText = keysArray.map(k => k.name || k.key).join(' + ');
+                keyNames.textContent = keyNamesText;
+                
+                // 最后一个按下的键的详细信息
+                const lastKey = keysArray[keysArray.length - 1];
+                keyValue.textContent = lastKey.key;
+                keyCode.textContent = lastKey.keyCode;
+                codeValue.textContent = lastKey.code;
+                
+                // 组合键代码
+                combination.textContent = keysArray.map(k => k.keyCode).join(' + ');
+            }
+        }
+
+        // 键盘按下事件
+        document.addEventListener('keydown', (e) => {
+            // 防止重复添加相同键
+            if (!pressedKeys.has(e)) {
+                // 限制最多3个键
+                if (pressedKeys.size < 3) {
+                    pressedKeys.add(e);
+                    updateKeyDisplay();
+                }
+            }
+            // 阻止默认行为，避免浏览器快捷键冲突
+            // e.preventDefault();
+        });
+
+        // 键盘释放事件
+        document.addEventListener('keyup', (e) => {
+            // 从集合中移除释放的键
+            pressedKeys.forEach(key => {
+                if (key.keyCode === e.keyCode) {
+                    pressedKeys.delete(key);
+                }
+            });
+            updateKeyDisplay();
+        });
+
+        // 窗口失去焦点时清除所有按键
+        window.addEventListener('blur', () => {
+            pressedKeys.clear();
+            updateKeyDisplay();
+        });
+
+        // 初始化显示
+        updateKeyDisplay();
+    </script>
+</body>
+</html>

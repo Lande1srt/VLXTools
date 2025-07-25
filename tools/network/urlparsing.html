@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL参数分析工具</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义主题 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366f1',
+            secondary: '#8b5cf6',
+            neutral: '#f3f4f6',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /*.neumorphic {
+        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6),
+                   -9px -9px 16px rgba(255, 255, 255, 0.5);
+      }*/
+      .neumorphic-inset {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                   inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6),
+                   -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transition: all 0.3s ease;
+      }
+      .neumorphic-btn:hover {
+        box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.7),
+                   -7px -7px 14px rgba(255, 255, 255, 0.6);
+        transform: translateY(-2px);
+      }
+      .neumorphic-btn:active {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                   inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body class="bg-neutral min-h-screen p-4 md:p-6 font-sans text-gray-700">
+  <div class="max-w-7xl mx-auto">
+    <!-- 标题部分 -->
+    <header class="text-center mb-6 md:mb-8">
+      <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-primary mb-2">URL参数分析工具</h1>
+      <p class="text-gray-500">解析URL的各个组成部分，轻松查看参数信息</p>
+    </header>
+    
+    <!-- 主内容区 -->
+    <main class="neumorphic rounded-2xl p-4 md:p-6 bg-neutral">
+      <div class="flex flex-col md:flex-row gap-6">
+        <!-- 左侧输入区域 -->
+        <div class="w-full md:w-1/2">
+          <div class="neumorphic-inset rounded-xl p-4 h-full">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+              <i class="fa fa-link mr-2 text-primary"></i>输入URL
+            </h2>
+            <textarea 
+              id="urlInput" 
+              class="w-full h-40 p-3 rounded-lg bg-neutral border-none neumorphic focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+              placeholder="请输入URL，例如：https://user:pass@example.com:8080/path?query=1&param=2#fragment"
+            ></textarea>
+            <div class="flex gap-3 mt-4">
+              <button 
+                id="parseBtn" 
+                class="neumorphic-btn bg-primary text-white px-6 py-2 rounded-lg flex-1 font-medium"
+              >
+                <i class="fa fa-search mr-1"></i>解析
+              </button>
+              <button 
+                id="clearBtn" 
+                class="neumorphic-btn px-6 py-2 rounded-lg flex-1 font-medium"
+              >
+                <i class="fa fa-eraser mr-1"></i>清空
+              </button>
+            </div>
+            <div class="mt-4">
+              <button 
+                id="exampleBtn" 
+                class="neumorphic-btn px-4 py-1 rounded-lg text-sm"
+              >
+                <i class="fa fa-lightbulb-o mr-1"></i>加载示例
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 右侧结果区域 -->
+        <div class="w-full md:w-1/2">
+          <div class="neumorphic-inset rounded-xl p-4 h-full">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+              <i class="fa fa-code mr-2 text-primary"></i>解析结果
+            </h2>
+            <div id="resultContainer" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+              <div class="text-gray-500 text-center py-10">
+                等待解析数据
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // DOM元素
+    const urlInput = document.getElementById('urlInput');
+    const parseBtn = document.getElementById('parseBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const exampleBtn = document.getElementById('exampleBtn');
+    const resultContainer = document.getElementById('resultContainer');
+    
+    // 解析URL函数
+    function parseUrl(url) {
+      try {
+        const urlObj = new URL(url);
+        
+        // 解析查询参数
+        const params = {};
+        urlObj.searchParams.forEach((value, key) => {
+          params[key] = value;
+        });
+        
+        return {
+          完整URL: urlObj.href,
+          协议: urlObj.protocol.replace(':', ''),
+          用户名: urlObj.username || '无',
+          密码: urlObj.password || '无',
+          主机名: urlObj.hostname,
+          端口: urlObj.port || '默认',
+          来源: urlObj.origin,
+          路径: urlObj.pathname,
+          查询参数: params,
+          哈希: urlObj.hash.replace('#', '') || '无'
+        };
+      } catch (e) {
+        return { 错误: '无效的URL格式，请检查输入' };
+      }
+    }
+    
+    // 显示解析结果
+    function displayResult(result) {
+      resultContainer.innerHTML = '';
+      
+      for (const [key, value] of Object.entries(result)) {
+        const item = document.createElement('div');
+        item.className = 'mb-3 pb-3 border-b border-gray-200 last:border-0 last:mb-0 last:pb-0';
+        
+        const keyElement = document.createElement('div');
+        keyElement.className = 'font-medium text-primary mb-1';
+        keyElement.textContent = key;
+        
+        const valueElement = document.createElement('div');
+        valueElement.className = 'text-sm bg-gray-100 p-2 rounded neumorphic';
+        
+        if (typeof value === 'object' && value !== null && !(value instanceof String)) {
+          // 如果是对象，格式化显示
+          if (Object.keys(value).length === 0) {
+            valueElement.textContent = '无';
+          } else {
+            valueElement.innerHTML = Object.entries(value)
+              .map(([k, v]) => `<div class="mb-1 last:mb-0"><span class="text-gray-600">${k}:</span> <span class="font-mono">${v}</span></div>`)
+              .join('');
+          }
+        } else {
+          valueElement.textContent = value;
+        }
+        
+        item.appendChild(keyElement);
+        item.appendChild(valueElement);
+        resultContainer.appendChild(item);
+      }
+    }
+    
+    // 事件监听
+    parseBtn.addEventListener('click', () => {
+      const url = urlInput.value.trim();
+      if (url) {
+        const result = parseUrl(url);
+        displayResult(result);
+      } else {
+        resultContainer.innerHTML = '<div class="text-gray-500 text-center py-4">请输入URL后解析</div>';
+      }
+    });
+    
+    clearBtn.addEventListener('click', () => {
+      urlInput.value = '';
+      resultContainer.innerHTML = '<div class="text-gray-500 text-center py-10">解析结果将显示在这里</div>';
+    });
+    
+    exampleBtn.addEventListener('click', () => {
+      urlInput.value = 'https://admin:123456@example.com:8080/products/list?category=electronics&sort=price&page=2#featured';
+      parseBtn.click();
+    });
+    
+    // 按Enter键解析
+    urlInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        parseBtn.click();
+      }
+    });
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      // 示例URL
+      const exampleUrl = 'https://user:pass@example.com:8080/path/subpath?query=1&param=2&filter=active#section-1';
+      urlInput.placeholder = exampleUrl;
+    });
+  </script>
+</body>
+</html>

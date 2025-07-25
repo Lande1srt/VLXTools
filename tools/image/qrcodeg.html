@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>二维码生成工具</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 引入QRCode.js库 -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+  
+  <!-- 配置Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366f1',
+            secondary: '#8b5cf6',
+            neutral: '#f3f4f6',
+            dark: '#374151'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          }
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .neumorphic {
+        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.5);
+        background-color: #f0f4f8;
+        border-radius: 16px;
+      }
+      .neumorphic-inset {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6), inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+        background-color: #f0f4f8;
+        border-radius: 12px;
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6), -5px -5px 10px rgba(255, 255, 255, 0.5);
+        background-color: #f0f4f8;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+      }
+      .neumorphic-btn:hover {
+        box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.6), -7px -7px 14px rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+      }
+      .neumorphic-btn:active {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6), inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+      .input-field {
+        @apply neumorphic-inset px-4 py-3 w-full focus:outline-none transition-all duration-300;
+      }
+    }
+  </style>
+</head>
+<body class="bg-neutral font-inter text-dark min-h-screen p-4 md:p-6">
+  <div class="max-w-6xl mx-auto">
+    <!-- 标题部分 -->
+    <header class="text-center mb-8 md:mb-12">
+      <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-primary mb-2">二维码生成工具</h1>
+      <p class="text-gray-600 max-w-2xl mx-auto">轻松生成文本、链接和WiFi二维码，支持自定义颜色和添加Logo</p>
+    </header>
+    
+    <!-- 主内容区 -->
+    <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- 左侧：设置面板 -->
+      <section class="neumorphic p-6 md:p-8">
+        <h2 class="text-xl font-semibold mb-6 flex items-center">
+          <i class="fa fa-sliders mr-3 text-primary"></i>生成设置
+        </h2>
+        
+        <!-- 二维码类型选择 -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">二维码类型</label>
+          <div class="grid grid-cols-3 gap-3">
+            <button id="text-type" class="neumorphic-btn p-3">
+              <i class="fa fa-font block text-center mb-1"></i>
+              <span class="text-sm">文本</span>
+            </button>
+            <button id="url-type" class="neumorphic-btn p-3">
+              <i class="fa fa-link block text-center mb-1"></i>
+              <span class="text-sm">链接</span>
+            </button>
+            <button id="wifi-type" class="neumorphic-btn p-3">
+              <i class="fa fa-wifi block text-center mb-1"></i>
+              <span class="text-sm">WiFi</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- 文本输入区域 -->
+        <div id="text-input-group" class="input-group mb-6">
+          <label for="text-content" class="block text-sm font-medium text-gray-700 mb-2">文本内容</label>
+          <textarea id="text-content" class="input-field h-32" placeholder="请输入要生成二维码的文本内容..."></textarea>
+        </div>
+        
+        <!-- 链接输入区域 -->
+        <div id="url-input-group" class="input-group mb-6 hidden">
+          <label for="url-content" class="block text-sm font-medium text-gray-700 mb-2">网址链接</label>
+          <input type="url" id="url-content" class="input-field" placeholder="https://example.com" />
+        </div>
+        
+        <!-- WiFi输入区域 -->
+        <div id="wifi-input-group" class="input-group mb-6 hidden">
+          <label class="block text-sm font-medium text-gray-700 mb-2">WiFi信息</label>
+          <div class="space-y-4">
+            <div>
+              <input type="text" id="wifi-ssid" class="input-field" placeholder="WiFi名称" />
+            </div>
+            <div>
+              <input type="text" id="wifi-password" class="input-field" placeholder="WiFi密码" />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">加密类型</label>
+              <select id="wifi-encryption" class="input-field">
+                <option value="WPA">WPA/WPA2</option>
+                <option value="WEP">WEP</option>
+                <option value="nopass">无密码</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 颜色设置 -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-3">颜色设置</label>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="foreground-color" class="block text-xs text-gray-500 mb-1">前景色</label>
+              <div class="flex gap-3">
+                <input type="color" id="foreground-color" class="w-12 h-12 p-0 neumorphic border-0" value="#000000">
+                <input type="text" id="foreground-color-text" class="input-field flex-1" value="#000000">
+              </div>
+            </div>
+            <div>
+              <label for="background-color" class="block text-xs text-gray-500 mb-1">背景色</label>
+              <div class="flex gap-3">
+                <input type="color" id="background-color" class="w-12 h-12 p-0 neumorphic border-0" value="#FFFFFF">
+                <input type="text" id="background-color-text" class="input-field flex-1" value="#FFFFFF">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Logo上传 -->
+        <div class="mb-8">
+          <label class="block text-sm font-medium text-gray-700 mb-2">添加Logo</label>
+          <div class="flex items-center gap-4">
+            <div class="neumorphic-inset w-20 h-20 flex items-center justify-center overflow-hidden">
+              <img id="logo-preview" src="" alt="Logo预览" class="max-w-full max-h-full object-contain hidden" />
+              <span id="logo-placeholder" class="text-gray-400 text-sm">无Logo</span>
+            </div>
+            <div class="flex-1">
+              <label for="logo-upload" class="neumorphic-btn px-4 py-2 inline-block cursor-pointer">
+                <i class="fa fa-upload mr-2"></i>选择图片
+              </label>
+              <input type="file" id="logo-upload" accept="image/*" class="hidden" />
+              <button id="remove-logo" class="text-sm text-gray-500 ml-3 hidden">移除</button>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">建议使用方形图片，大小不应超过200KB</p>
+        </div>
+        
+        <!-- 生成按钮 -->
+        <button id="generate-btn" class="neumorphic-btn w-full py-4 font-medium text-primary hover:text-secondary transition-colors">
+          <i class="fa fa-qrcode mr-2"></i>生成二维码
+        </button>
+      </section>
+      
+      <!-- 右侧：预览和结果 -->
+      <section class="neumorphic p-6 md:p-8 flex flex-col">
+        <h2 class="text-xl font-semibold mb-6 flex items-center">
+          <i class="fa fa-eye mr-3 text-primary"></i>二维码预览
+        </h2>
+        
+        <!-- 二维码预览区域 -->
+        <div class="flex-1 flex flex-col items-center justify-center mb-6">
+          <div id="qrcode-container" class="neumorphic p-6 mb-6" style="border-radius: 20px;">
+            <div id="qrcode" class="w-64 h-64 mx-auto"></div>
+            <!-- 添加空状态元素 -->
+            <div id="empty-state" class="w-full h-full flex items-center justify-center text-gray-400">
+            </div>
+          </div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="grid grid-cols-2 gap-4">
+          <button id="download-png" class="neumorphic-btn py-3 flex items-center justify-center text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <i class="fa fa-download mr-2"></i>下载PNG
+          </button>
+          <button id="download-svg" class="neumorphic-btn py-3 flex items-center justify-center text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <i class="fa fa-file-image-o mr-2"></i>下载SVG
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // 全局变量
+let currentQrCode = null;
+let logoImage = null;
+let currentType = 'text'; // 默认类型为文本
+
+// DOM元素获取
+const typeButtons = {
+  text: document.getElementById('text-type'),
+  url: document.getElementById('url-type'),
+  wifi: document.getElementById('wifi-type')
+};
+
+const inputGroups = {
+  text: document.getElementById('text-input-group'),
+  url: document.getElementById('url-input-group'),
+  wifi: document.getElementById('wifi-input-group')
+};
+
+const contentInputs = {
+  text: document.getElementById('text-content'),
+  url: document.getElementById('url-content'),
+  wifiSsid: document.getElementById('wifi-ssid'),
+  wifiPassword: document.getElementById('wifi-password'),
+  wifiEncryption: document.getElementById('wifi-encryption')
+};
+
+const colorInputs = {
+  foreground: document.getElementById('foreground-color'),
+  foregroundText: document.getElementById('foreground-color-text'),
+  background: document.getElementById('background-color'),
+  backgroundText: document.getElementById('background-color-text')
+};
+
+const logoElements = {
+  upload: document.getElementById('logo-upload'),
+  preview: document.getElementById('logo-preview'),
+  placeholder: document.getElementById('logo-placeholder'),
+  remove: document.getElementById('remove-logo')
+};
+
+const qrElements = {
+  container: document.getElementById('qrcode-container'),
+  element: document.getElementById('qrcode'),
+  emptyState: document.getElementById('empty-state')
+};
+
+const buttons = {
+  generate: document.getElementById('generate-btn'),
+  downloadPng: document.getElementById('download-png'),
+  downloadSvg: document.getElementById('download-svg')
+};
+
+// 初始化类型选择
+function setActiveType(type) {
+  currentType = type;
+  
+  // 重置所有按钮样式
+  Object.values(typeButtons).forEach(btn => {
+    btn.classList.remove('bg-primary/10', 'text-primary');
+  });
+  
+  // 设置当前按钮样式
+  typeButtons[type].classList.add('bg-primary/10', 'text-primary');
+  
+  // 显示对应的输入组
+  Object.keys(inputGroups).forEach(key => {
+    inputGroups[key].classList.add('hidden');
+  });
+  inputGroups[type].classList.remove('hidden');
+}
+
+// 获取输入内容并验证
+function getInputContent() {
+  switch(currentType) {
+    case 'text':
+      const text = contentInputs.text.value.trim();
+      return text || null;
+      
+    case 'url':
+      const url = contentInputs.url.value.trim();
+      // 简单URL验证
+      if (!url) return null;
+      // 补全协议（如果缺少）
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        return 'https://' + url;
+      }
+      return url;
+      
+    case 'wifi':
+      const ssid = contentInputs.wifiSsid.value.trim();
+      const password = contentInputs.wifiPassword.value.trim();
+      const encryption = contentInputs.wifiEncryption.value;
+      
+      if (!ssid) return null;
+      
+      // 生成标准WiFi二维码格式
+      let wifiStr = `WIFI:S:${ssid};`;
+      wifiStr += `T:${encryption};`;
+      if (encryption !== 'nopass' && password) {
+        wifiStr += `P:${password};`;
+      }
+      wifiStr += 'H:false;'; // 非隐藏网络标记
+      return wifiStr;
+      
+    default:
+      return null;
+  }
+}
+
+// 生成二维码
+function generateQRCode() {
+  const content = getInputContent();
+  
+  // 验证内容
+  if (!content) {
+    alert('请输入有效的内容');
+    return;
+  }
+  
+  // 清除现有二维码
+  qrElements.element.innerHTML = '';
+  qrElements.emptyState.classList.add('hidden');
+  
+  // 配置二维码选项
+  const options = {
+    errorCorrectionLevel: 'H', // 高容错率，适合添加logo
+    margin: 2,
+    color: {
+      dark: colorInputs.foreground.value,
+      light: colorInputs.background.value
+    },
+    width: 256,
+    height: 256
+  };
+  
+  // 生成二维码
+  QRCode.toCanvas(content, options, (error, canvas) => {
+    if (error) {
+      console.error('二维码生成错误:', error);
+      alert('生成二维码失败: ' + (error.message || '未知错误'));
+      qrElements.emptyState.classList.remove('hidden');
+      return;
+    }
+    
+    currentQrCode = canvas;
+    qrElements.element.appendChild(canvas);
+    
+    // 添加logo（如果有）
+    if (logoImage) {
+      addLogoToCanvas(canvas);
+    }
+    
+    // 启用下载按钮
+    buttons.downloadPng.disabled = false;
+    buttons.downloadSvg.disabled = false;
+  });
+}
+
+// 添加logo到二维码
+function addLogoToCanvas(canvas) {
+  const ctx = canvas.getContext('2d');
+  const logoSize = canvas.width * 0.2; // logo大小为二维码的20%
+  const x = (canvas.width - logoSize) / 2;
+  const y = (canvas.height - logoSize) / 2;
+  
+  // 创建临时图像对象加载logo
+  const img = new Image();
+  img.crossOrigin = "anonymous"; // 解决跨域问题
+  img.src = logoImage;
+  
+  img.onload = () => {
+    // 绘制白色背景（提高对比度）
+    ctx.fillStyle = colorInputs.background.value;
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, logoSize / 2 + 5, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // 绘制logo
+    ctx.drawImage(img, x, y, logoSize, logoSize);
+  };
+  
+  img.onerror = (err) => {
+    console.error('Logo加载错误:', err);
+    alert('Logo加载失败，已生成不带Logo的二维码');
+  };
+}
+
+// 下载二维码（PNG格式）
+function downloadPNG() {
+  if (!currentQrCode) return;
+  
+  const link = document.createElement('a');
+  link.download = 'qrcode.png';
+  link.href = currentQrCode.toDataURL('image/png');
+  link.click();
+}
+
+// 下载二维码（SVG格式）
+function downloadSVG() {
+  const content = getInputContent();
+  if (!content) return;
+  
+  QRCode.toString(content, {
+    errorCorrectionLevel: 'H',
+    margin: 2,
+    color: {
+      dark: colorInputs.foreground.value,
+      light: colorInputs.background.value
+    },
+    type: 'svg'
+  }, (error, svg) => {
+    if (error) {
+      console.error('SVG生成错误:', error);
+      alert('生成SVG失败: ' + error.message);
+      return;
+    }
+    
+    // 处理SVG（如果有logo，这里会生成不带logo的基础SVG）
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.download = 'qrcode.svg';
+    link.href = url;
+    link.click();
+    
+    URL.revokeObjectURL(url);
+  });
+}
+
+// 处理logo上传
+function handleLogoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  // 验证文件类型和大小
+  if (!file.type.startsWith('image/')) {
+    alert('请上传图片文件（JPG、PNG等）');
+    logoElements.upload.value = '';
+    return;
+  }
+  
+  if (file.size > 2 * 1024 * 1024) { // 限制2MB以内
+    alert('图片大小不能超过2MB');
+    logoElements.upload.value = '';
+    return;
+  }
+  
+  // 读取图片
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    logoImage = e.target.result;
+    logoElements.preview.src = logoImage;
+    logoElements.preview.classList.remove('hidden');
+    logoElements.placeholder.classList.add('hidden');
+    logoElements.remove.classList.remove('hidden');
+    
+    // 如果已有二维码，重新生成以添加logo
+    if (currentQrCode) {
+      generateQRCode();
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+// 移除logo
+function removeLogo() {
+  logoImage = null;
+  logoElements.upload.value = '';
+  logoElements.preview.src = '';
+  logoElements.preview.classList.add('hidden');
+  logoElements.placeholder.classList.remove('hidden');
+  logoElements.remove.classList.add('hidden');
+  
+  // 如果已有二维码，重新生成
+  if (currentQrCode) {
+    generateQRCode();
+  }
+}
+
+// 颜色输入验证
+function isValidColor(color) {
+  return /^#([0-9A-F]{3}){1,2}$/i.test(color);
+}
+
+// 事件监听设置
+function setupEventListeners() {
+  // 类型切换
+  typeButtons.text.addEventListener('click', () => setActiveType('text'));
+  typeButtons.url.addEventListener('click', () => setActiveType('url'));
+  typeButtons.wifi.addEventListener('click', () => setActiveType('wifi'));
+  
+  // 颜色同步与验证
+  colorInputs.foreground.addEventListener('input', () => {
+    if (isValidColor(colorInputs.foreground.value)) {
+      colorInputs.foregroundText.value = colorInputs.foreground.value;
+    }
+  });
+  
+  colorInputs.foregroundText.addEventListener('input', () => {
+    if (isValidColor(colorInputs.foregroundText.value)) {
+      colorInputs.foreground.value = colorInputs.foregroundText.value;
+    }
+  });
+  
+  colorInputs.background.addEventListener('input', () => {
+    if (isValidColor(colorInputs.background.value)) {
+      colorInputs.backgroundText.value = colorInputs.background.value;
+    }
+  });
+  
+  colorInputs.backgroundText.addEventListener('input', () => {
+    if (isValidColor(colorInputs.backgroundText.value)) {
+      colorInputs.background.value = colorInputs.backgroundText.value;
+    }
+  });
+  
+  // Logo处理
+  logoElements.upload.addEventListener('change', handleLogoUpload);
+  logoElements.remove.addEventListener('click', removeLogo);
+  
+  // 生成和下载
+  buttons.generate.addEventListener('click', generateQRCode);
+  buttons.downloadPng.addEventListener('click', downloadPNG);
+  buttons.downloadSvg.addEventListener('click', downloadSVG);
+  
+  // 支持回车键生成二维码
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
+      generateQRCode();
+    }
+  });
+}
+
+// 初始化
+function init() {
+  setupEventListeners();
+  setActiveType('text'); // 设置默认类型
+  // 初始化空状态显示
+  qrElements.emptyState.classList.remove('hidden');
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', init);
+  </script>
+  
+  </body>
+</html>
+  

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双向罗马数字转换器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#e0e5ec',
+                        secondary: '#a3b1c6',
+                        accent: '#4a6fa5',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            /*.morph {
+                box-shadow: 8px 8px 16px #b8c1cf,
+                           -8px -8px 16px #ffffff;
+            }*/
+            .morph-inset {
+                box-shadow: inset 5px 5px 10px #b8c1cf,
+                           inset -5px -5px 10px #ffffff;
+            }
+            .morph-btn {
+                box-shadow: 5px 5px 10px #b8c1cf,
+                           -5px -5px 10px #ffffff;
+                transition: all 0.3s ease;
+            }
+            .morph-btn:hover {
+                box-shadow: 7px 7px 14px #b8c1cf,
+                           -7px -7px 14px #ffffff;
+                transform: translateY(-2px);
+            }
+            .morph-btn:active {
+                box-shadow: inset 5px 5px 10px #b8c1cf,
+                           inset -5px -5px 10px #ffffff;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-primary min-h-screen flex items-center justify-center p-4 font-sans text-gray-700">
+    <div class="w-full max-w-md">
+        <!-- 转换器主体 -->
+        <div class="morph rounded-2xl p-8 mb-6">
+            <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-center mb-8 text-accent flex items-center justify-center gap-2">
+                <i class="fa fa-exchange"></i>罗马数字转换器
+            </h1>
+            
+            <!-- 转换方向选择 -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">转换方式</label>
+                <div class="flex rounded-xl overflow-hidden morph-inset">
+                    <button id="numToRomanBtn" class="flex-1 py-2 px-4 bg-accent text-white font-medium">
+                        数字-罗马数字
+                    </button>
+                    <button id="romanToNumBtn" class="flex-1 py-2 px-4 bg-primary text-gray-600 font-medium">
+                        罗马数字-数字
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 输入区域 -->
+            <div class="mb-6">
+                <label id="inputLabel" for="inputValue" class="block text-sm font-medium mb-2">输入数字 (1-3999)</label>
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="inputValue" 
+                        placeholder="例如: 123"
+                        class="w-full px-4 py-3 rounded-xl morph-inset bg-primary border-none outline-none text-lg"
+                    >
+                </div>
+            </div>
+            
+            <!-- 按钮区域 -->
+            <div class="flex gap-4 mb-6">
+                <button id="convertBtn" class="flex-1 py-3 px-4 rounded-xl morph-btn bg-primary font-medium text-accent">
+                    转换
+                </button>
+                <button id="clearBtn" class="flex-1 py-3 px-4 rounded-xl morph-btn bg-primary font-medium text-gray-600">
+                    <i class="fa fa-refresh mr-1"></i>清除
+                </button>
+            </div>
+            
+            <!-- 结果区域 -->
+            <div>
+                <label class="block text-sm font-medium mb-2">结果</label>
+                <div id="result" class="w-full px-4 py-3 rounded-xl morph-inset bg-primary min-h-[58px] flex items-center text-lg">
+                    请输入内容并转换
+                </div>
+            </div>
+        </div>
+        
+        <!-- 说明信息 -->
+        <div class="morph rounded-xl p-4 text-sm text-gray-600">
+            <p class="text-center">支持范围: 1-3999 及对应的罗马数字 (I-MMMCMXCIX)</p>
+        </div>
+    </div>
+
+    <script>
+        // 状态变量
+        let isNumberToRoman = true;
+        
+        // 数字到罗马数字的映射
+        const romanNumerals = [
+            { value: 1000, symbol: 'M' },
+            { value: 900, symbol: 'CM' },
+            { value: 500, symbol: 'D' },
+            { value: 400, symbol: 'CD' },
+            { value: 100, symbol: 'C' },
+            { value: 90, symbol: 'XC' },
+            { value: 50, symbol: 'L' },
+            { value: 40, symbol: 'XL' },
+            { value: 10, symbol: 'X' },
+            { value: 9, symbol: 'IX' },
+            { value: 5, symbol: 'V' },
+            { value: 4, symbol: 'IV' },
+            { value: 1, symbol: 'I' }
+        ];
+
+        // 数字转换为罗马数字
+        function convertToRoman(num) {
+            let result = '';
+            
+            for (const { value, symbol } of romanNumerals) {
+                while (num >= value) {
+                    result += symbol;
+                    num -= value;
+                }
+            }
+            
+            return result;
+        }
+
+        // 罗马数字转换为数字
+        function convertToNumber(roman) {
+            // 验证罗马数字格式
+            const romanRegex = /^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/;
+            if (!romanRegex.test(roman)) {
+                return null;
+            }
+            
+            let result = 0;
+            let i = 0;
+            
+            for (const { value, symbol } of romanNumerals) {
+                while (roman.startsWith(symbol, i)) {
+                    result += value;
+                    i += symbol.length;
+                }
+            }
+            
+            return result;
+        }
+
+        // DOM 元素
+        const inputValue = document.getElementById('inputValue');
+        const convertBtn = document.getElementById('convertBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const resultElement = document.getElementById('result');
+        const numToRomanBtn = document.getElementById('numToRomanBtn');
+        const romanToNumBtn = document.getElementById('romanToNumBtn');
+        const inputLabel = document.getElementById('inputLabel');
+
+        // 切换转换方向
+        numToRomanBtn.addEventListener('click', () => {
+            isNumberToRoman = true;
+            numToRomanBtn.classList.remove('bg-primary', 'text-gray-600');
+            numToRomanBtn.classList.add('bg-accent', 'text-white');
+            romanToNumBtn.classList.remove('bg-accent', 'text-white');
+            romanToNumBtn.classList.add('bg-primary', 'text-gray-600');
+            inputLabel.textContent = '输入数字 (1-3999)';
+            inputValue.placeholder = '例如: 123';
+            inputValue.value = '';
+            resultElement.textContent = '请输入内容并转换';
+        });
+
+        romanToNumBtn.addEventListener('click', () => {
+            isNumberToRoman = false;
+            romanToNumBtn.classList.remove('bg-primary', 'text-gray-600');
+            romanToNumBtn.classList.add('bg-accent', 'text-white');
+            numToRomanBtn.classList.remove('bg-accent', 'text-white');
+            numToRomanBtn.classList.add('bg-primary', 'text-gray-600');
+            inputLabel.textContent = '输入罗马数字 (I-MMMCMXCIX)';
+            inputValue.placeholder = '例如: CXXIII';
+            inputValue.value = '';
+            resultElement.textContent = '请输入内容并转换';
+        });
+
+        // 转换按钮点击事件
+        convertBtn.addEventListener('click', () => {
+            const input = inputValue.value.trim();
+            
+            if (!input) {
+                showError('请输入内容后再转换');
+                return;
+            }
+            
+            if (isNumberToRoman) {
+                // 数字转罗马数字
+                const number = parseInt(input);
+                
+                if (isNaN(number) || number < 1 || number > 3999) {
+                    showError('请输入1-3999之间的数字');
+                    return;
+                }
+                
+                const roman = convertToRoman(number);
+                resultElement.textContent = roman;
+                resultElement.classList.remove('text-red-500');
+            } else {
+                // 罗马数字转数字
+                const roman = input.toUpperCase();
+                const number = convertToNumber(roman);
+                
+                if (number === null || number < 1 || number > 3999) {
+                    showError('请输入有效的罗马数字 (I-MMMCMXCIX)');
+                    return;
+                }
+                
+                resultElement.textContent = number;
+                resultElement.classList.remove('text-red-500');
+            }
+        });
+
+        // 清除按钮点击事件
+        clearBtn.addEventListener('click', () => {
+            inputValue.value = '';
+            resultElement.textContent = '请输入内容并转换';
+            resultElement.classList.remove('text-red-500');
+        });
+
+        // 回车键触发转换
+        inputValue.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                convertBtn.click();
+            }
+        });
+
+        // 显示错误信息
+        function showError(message) {
+            resultElement.textContent = message;
+            resultElement.classList.add('text-red-500');
+            setTimeout(() => {
+                resultElement.classList.remove('text-red-500');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

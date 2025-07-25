@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>端口生成工具</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义颜色和字体 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366f1',
+            secondary: '#8b5cf6',
+            neutral: '#f3f4f6',
+            dark: '#1f2937'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /*.neumorphic {
+        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6),
+                    -9px -9px 16px rgba(255, 255, 255, 0.5);
+      }*/
+      .neumorphic-inset {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transition: all 0.2s ease;
+      }
+      .neumorphic-btn:hover {
+        box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.7),
+                    -7px -7px 14px rgba(255, 255, 255, 0.6);
+        transform: translateY(-2px);
+      }
+      .neumorphic-btn:active {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body class="bg-neutral min-h-screen font-sans text-dark p-4 md:p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- 标题部分 -->
+    <header class="mb-6 md:mb-8">
+      <div class="neumorphic bg-neutral rounded-2xl p-5 text-center">
+        <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-primary mb-2">端口生成工具</h1>
+        <p class="text-gray-600">快速生成随机端口号并查询常用端口信息</p>
+      </div>
+    </header>
+    
+    <!-- 主要内容区域 -->
+    <main class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- 左侧：端口生成器 -->
+      <section class="neumorphic bg-neutral rounded-2xl p-5 md:p-6">
+        <h2 class="text-xl md:text-2xl font-bold mb-4 flex items-center">
+          <i class="fa fa-random text-primary mr-2"></i>端口生成器
+        </h2>
+        
+        <div class="mb-6">
+          <div class="neumorphic-inset bg-neutral rounded-xl p-4 h-24 flex items-center justify-center mb-4">
+            <span id="portNumber" class="text-3xl md:text-4xl font-mono font-bold text-primary">8080</span>
+          </div>
+          
+          <div class="flex flex-wrap gap-3">
+            <button id="generateBtn" class="neumorphic-btn bg-neutral rounded-xl px-6 py-3 text-dark font-medium flex items-center">
+              <i class="fa fa-refresh mr-2"></i>生成随机端口
+            </button>
+            <button id="copyBtn" class="neumorphic-btn bg-neutral rounded-xl px-6 py-3 text-dark font-medium flex items-center">
+              <i class="fa fa-copy mr-2"></i>复制端口号
+            </button>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="font-bold mb-3">端口范围设置</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm mb-1">起始端口</label>
+              <input type="number" id="startPort" value="1024" min="1" max="65534" 
+                class="neumorphic-inset bg-neutral rounded-lg w-full p-2 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-sm mb-1">结束端口</label>
+              <input type="number" id="endPort" value="65535" min="2" max="65535" 
+                class="neumorphic-inset bg-neutral rounded-lg w-full p-2 focus:outline-none">
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 右侧：常用端口列表 -->
+      <section class="neumorphic bg-neutral rounded-2xl p-5 md:p-6">
+        <h2 class="text-xl md:text-2xl font-bold mb-4 flex items-center">
+          <i class="fa fa-list-alt text-primary mr-2"></i>常用端口列表
+        </h2>
+        
+        <div class="neumorphic-inset bg-neutral rounded-xl p-3 mb-4">
+          <input type="text" id="searchInput" placeholder="搜索端口或服务..." 
+            class="neumorphic bg-neutral rounded-lg w-full p-3 focus:outline-none">
+        </div>
+        
+        <div class="overflow-y-auto max-h-[500px] pr-2">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-gray-200">
+                <th class="text-left py-3 px-2 font-bold">端口号</th>
+                <th class="text-left py-3 px-2 font-bold">服务/协议</th>
+                <th class="text-left py-3 px-2 font-bold">用途</th>
+              </tr>
+            </thead>
+            <tbody id="portTable">
+              <!-- 常用端口数据将通过JS动态填充 -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+  
+  <!-- 通知提示 -->
+  <div id="notification" class="fixed bottom-4 right-4 px-4 py-3 rounded-lg bg-primary text-white shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    端口号已复制到剪贴板
+  </div>
+
+  <script>
+    // 常用端口数据
+    const commonPorts = [
+      { port: 80, service: "HTTP", usage: "超文本传输协议" },
+      { port: 443, service: "HTTPS", usage: "加密的超文本传输协议" },
+      { port: 21, service: "FTP", usage: "文件传输协议" },
+      { port: 22, service: "SSH", usage: "安全外壳协议" },
+      { port: 23, service: "Telnet", usage: "远程登录服务" },
+      { port: 25, service: "SMTP", usage: "简单邮件传输协议" },
+      { port: 53, service: "DNS", usage: "域名系统" },
+      { port: 67, service: "DHCP", usage: "动态主机配置协议(服务器)" },
+      { port: 68, service: "DHCP", usage: "动态主机配置协议(客户端)" },
+      { port: 8080, service: "HTTP", usage: "常用的HTTP替代端口" },
+      { port: 3306, service: "MySQL", usage: "MySQL数据库服务" },
+      { port: 5432, service: "PostgreSQL", usage: "PostgreSQL数据库服务" },
+      { port: 27017, service: "MongoDB", usage: "MongoDB数据库服务" },
+      { port: 1521, service: "Oracle", usage: "Oracle数据库服务" },
+      { port: 3389, service: "RDP", usage: "远程桌面协议" },
+      { port: 5900, service: "VNC", usage: "虚拟网络计算" },
+      { port: 6379, service: "Redis", usage: "Redis数据库服务" },
+      { port: 9200, service: "Elasticsearch", usage: "Elasticsearch服务" },
+      { port: 2181, service: "ZooKeeper", usage: "ZooKeeper服务" },
+      { port: 5672, service: "RabbitMQ", usage: "RabbitMQ消息队列" },
+      { port: 61616, service: "ActiveMQ", usage: "ActiveMQ消息队列" },
+      { port: 8000, service: "HTTP", usage: "常用的HTTP替代端口" },
+      { port: 8443, service: "HTTPS", usage: "常用的HTTPS替代端口" },
+      { port: 111, service: "RPC", usage: "远程过程调用" },
+      { port: 123, service: "NTP", usage: "网络时间协议" }
+    ];
+
+    // DOM元素
+    const portNumberEl = document.getElementById('portNumber');
+    const generateBtn = document.getElementById('generateBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const startPortEl = document.getElementById('startPort');
+    const endPortEl = document.getElementById('endPort');
+    const portTableEl = document.getElementById('portTable');
+    const searchInput = document.getElementById('searchInput');
+    const notificationEl = document.getElementById('notification');
+
+    // 初始化端口表格
+    function renderPortTable(ports) {
+      portTableEl.innerHTML = '';
+      ports.forEach(item => {
+        const row = document.createElement('tr');
+        row.className = 'border-b border-gray-100 hover:bg-gray-100/50 transition-colors';
+        row.innerHTML = `
+          <td class="py-3 px-2 font-mono">${item.port}</td>
+          <td class="py-3 px-2">${item.service}</td>
+          <td class="py-3 px-2">${item.usage}</td>
+        `;
+        portTableEl.appendChild(row);
+      });
+    }
+
+    // 生成随机端口
+    function generateRandomPort() {
+      const start = parseInt(startPortEl.value);
+      const end = parseInt(endPortEl.value);
+      
+      // 验证端口范围
+      if (isNaN(start) || isNaN(end) || start >= end || start < 1 || end > 65535) {
+        showNotification('请输入有效的端口范围', 'error');
+        return;
+      }
+      
+      const port = Math.floor(Math.random() * (end - start + 1)) + start;
+      portNumberEl.textContent = port;
+      
+      // 添加数字变化动画
+      portNumberEl.classList.add('scale-110', 'text-secondary');
+      setTimeout(() => {
+        portNumberEl.classList.remove('scale-110', 'text-secondary');
+      }, 300);
+    }
+
+    // 复制端口号到剪贴板
+    function copyToClipboard() {
+      const port = portNumberEl.textContent;
+      navigator.clipboard.writeText(port).then(() => {
+        showNotification('端口号已复制到剪贴板');
+      }).catch(err => {
+        showNotification('复制失败，请手动复制', 'error');
+        console.error('复制失败:', err);
+      });
+    }
+
+    // 显示通知
+    function showNotification(message, type = 'success') {
+      notificationEl.textContent = message;
+      notificationEl.className = `fixed bottom-4 right-4 px-4 py-3 rounded-lg shadow-lg transform translate-y-0 opacity-100 transition-all duration-300 pointer-events-none ${
+        type === 'success' ? 'bg-primary text-white' : 'bg-red-500 text-white'
+      }`;
+      
+      setTimeout(() => {
+        notificationEl.className = 'fixed bottom-4 right-4 px-4 py-3 rounded-lg bg-primary text-white shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none';
+      }, 2000);
+    }
+
+    // 搜索端口
+    function searchPorts() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const filteredPorts = commonPorts.filter(port => 
+        port.port.toString().includes(searchTerm) || 
+        port.service.toLowerCase().includes(searchTerm) || 
+        port.usage.toLowerCase().includes(searchTerm)
+      );
+      renderPortTable(filteredPorts);
+    }
+
+    // 事件监听
+    generateBtn.addEventListener('click', generateRandomPort);
+    copyBtn.addEventListener('click', copyToClipboard);
+    searchInput.addEventListener('input', searchPorts);
+    
+    // 验证端口范围输入
+    startPortEl.addEventListener('change', () => {
+      let start = parseInt(startPortEl.value);
+      let end = parseInt(endPortEl.value);
+      
+      if (start < 1) start = 1;
+      if (start >= end) {
+        startPortEl.value = Math.max(1, end - 100);
+        showNotification('起始端口必须小于结束端口');
+      }
+    });
+    
+    endPortEl.addEventListener('change', () => {
+      let start = parseInt(startPortEl.value);
+      let end = parseInt(endPortEl.value);
+      
+      if (end > 65535) end = 65535;
+      if (end <= start) {
+        endPortEl.value = Math.min(65535, start + 100);
+        showNotification('结束端口必须大于起始端口');
+      }
+    });
+
+    // 初始化
+    renderPortTable(commonPorts);
+  </script>
+</body>
+</html>

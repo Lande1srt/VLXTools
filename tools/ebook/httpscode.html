@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP状态码查询工具</title>
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --shadow-light: 6px 6px 12px #d9e0e8, -6px -6px 12px #ffffff;
+            --shadow-dark: inset 4px 4px 8px #d9e0e8, inset -4px -4px 8px #ffffff;
+            --text-primary: #334e68;
+            --text-secondary: #627d98;
+            --accent-300: #2d72b3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+       .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7);
+        }
+
+       .card-container {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            width: 100%;
+            height: calc(100vh - 120px);
+            min-height: 500px;
+        }
+
+       .card {
+            flex: 1;
+            background-color: var(--bg-color);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: var(--shadow-light);
+            display: flex;
+            flex-direction: column;
+        }
+
+       .card h2 {
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+       .search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+       .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 10px;
+            background-color: var(--bg-color);
+            box-shadow: var(--shadow-dark);
+            color: var(--text-primary);
+            font-size: 1rem;
+            padding-right: 40px;
+        }
+
+       .search-input:focus {
+            outline: none;
+            box-shadow: inset 3px 3px 6px #d9e0e8, inset -3px -3px 6px #ffffff;
+        }
+
+       .search-btn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            border: none;
+            background-color: var(--bg-color);
+            box-shadow: var(--shadow-light);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+       .search-btn:active {
+            box-shadow: var(--shadow-dark);
+        }
+
+       .status-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            box-shadow: var(--shadow-dark);
+            border-radius: 10px;
+            scrollbar-width: thin;
+        }
+
+       .status-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+       .status-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+       .status-list::-webkit-scrollbar-thumb {
+            background-color: rgba(100, 116, 139, 0.3);
+            border-radius: 3px;
+        }
+
+       .status-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow-light);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+       .status-item:hover {
+            transform: translateX(3px);
+        }
+
+       .status-item.active {
+            box-shadow: inset 2px 2px 5px #d9e0e8, inset -2px -2px 5px #ffffff;
+            background-color: rgba(77, 157, 224, 0.1);
+        }
+
+       .status-code {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: var(--accent-300);
+        }
+
+       .status-category {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 3px;
+        }
+
+       .detail-content {
+            flex: 1;
+            box-shadow: var(--shadow-dark);
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            text-align: left;
+        }
+
+       .detail-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+       .detail-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+       .detail-content::-webkit-scrollbar-thumb {
+            background-color: rgba(100, 116, 139, 0.3);
+            border-radius: 3px;
+        }
+
+       .detail-header {
+            margin-bottom: 25px;
+        }
+
+       .detail-code {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-300);
+            margin-bottom: 10px;
+        }
+
+       .detail-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+       .detail-category {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+       .detail-description {
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+       .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+           .card-container {
+                flex-direction: column;
+                height: auto;
+                min-height: auto;
+            }
+
+           .card {
+                padding: 20px;
+                height: 50vh;
+                min-height: 300px;
+            }
+
+           .detail-code {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HTTP状态码查询工具</h1>
+        <div class="card-container">
+            <div class="card">
+                <h2>状态码列表</h2>
+                <div class="search-container">
+                    <input type="text" class="search-input" id="searchInput" placeholder="搜索状态码或描述...">
+                    <button class="search-btn" id="searchBtn">🔍</button>
+                </div>
+                <div class="status-list" id="statusList">
+                    <div class="loading">加载状态码数据中...</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>状态码详情</h2>
+                <div class="detail-content" id="detailContent">
+                    <p>请从左侧选择一个HTTP状态码查看详情</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM元素
+        const statusList = document.getElementById('statusList');
+        const detailContent = document.getElementById('detailContent');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        let statusCodes = [];
+        let activeItem = null;
+
+        // 从外部JSON加载状态码数据
+        async function loadStatusCodes() {
+            try {
+                const response = await fetch('data/httpcode.json');
+                if (!response.ok) throw new Error('加载数据失败');
+                statusCodes = await response.json();
+                renderStatusList(statusCodes);
+            } catch (error) {
+                statusList.innerHTML = `<div class="loading">数据加载失败: ${error.message}</div>`;
+                console.error('加载状态码数据出错:', error);
+            }
+        }
+
+        // 渲染状态码列表
+        function renderStatusList(codes) {
+            statusList.innerHTML = '';
+            codes.forEach(code => {
+                const item = document.createElement('div');
+                item.className = 'status-item';
+                item.innerHTML = `
+                    <div class="status-code">${code.code} ${code.title}</div>
+                    <div class="status-category">${code.category}</div>
+                `;
+                item.addEventListener('click', () => {
+                    showDetail(code);
+                    if (activeItem) activeItem.classList.remove('active');
+                    item.classList.add('active');
+                    activeItem = item;
+                });
+                statusList.appendChild(item);
+            });
+        }
+
+        // 显示状态码详情
+        function showDetail(code) {
+            detailContent.innerHTML = `
+                <div class="detail-header">
+                    <div class="detail-code">${code.code}</div>
+                    <div class="detail-title">${code.title}</div>
+                    <div class="detail-category">${code.category}</div>
+                </div>
+                <div class="detail-description">${code.description}</div>
+            `;
+        }
+
+        // 搜索功能
+        function searchCodes(query) {
+            if (!query) {
+                renderStatusList(statusCodes);
+                return;
+            }
+            const lowerQuery = query.toLowerCase();
+            const filtered = statusCodes.filter(code => 
+                code.code.toString().includes(lowerQuery) ||
+                code.title.toLowerCase().includes(lowerQuery) ||
+                code.category.toLowerCase().includes(lowerQuery) ||
+                code.description.toLowerCase().includes(lowerQuery)
+            );
+            renderStatusList(filtered);
+        }
+
+        // 事件监听
+        searchBtn.addEventListener('click', () => {
+            searchCodes(searchInput.value.trim());
+        });
+
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchCodes(searchInput.value.trim());
+            }
+        });
+
+        // 初始化加载数据
+        loadStatusCodes();
+    </script>
+</body>
+</html>

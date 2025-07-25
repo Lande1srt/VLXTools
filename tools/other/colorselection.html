@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>颜色选择器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#e0e5ec',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /*.neumorphic {
+        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6),
+                    -9px -9px 16px rgba(255, 255, 255, 0.5);
+      }*/
+      .neumorphic-inset {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transition: all 0.2s ease;
+      }
+      .neumorphic-btn:active {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+      .copy-tooltip {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .copy-container:hover .copy-tooltip {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body class="bg-primary min-h-screen p-4 md:p-8 flex flex-col items-center justify-center font-sans text-gray-700">
+  <div class="w-full max-w-md neumorphic rounded-3xl p-6 md:p-8">
+    <h1 class="text-center text-2xl font-bold mb-8">颜色选择器</h1>
+    
+    <!-- 颜色显示区域 -->
+    <div class="relative mb-8">
+      <div id="color-display" class="w-full h-40 rounded-2xl neumorphic-inset overflow-hidden"></div>
+      <div id="current-color" class="absolute inset-0 rounded-2xl bg-blue-500"></div>
+    </div>
+    
+    <!-- 颜色输入 -->
+    <div class="mb-6">
+      <label for="color-input" class="block mb-2 text-sm font-medium">HEX 颜色值</label>
+      <div class="flex">
+        <div class="flex-1 relative copy-container">
+          <input type="text" id="color-input" value="#3b82f6" 
+                 class="w-full px-4 py-3 rounded-xl neumorphic-inset border-none bg-transparent focus:outline-none text-center">
+          <button class="copy-btn absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700" 
+                  data-target="color-input">
+            <i class="fa fa-copy"></i>
+          </button>
+          <span class="copy-tooltip absolute -top-7 right-3 bg-gray-700 text-white text-xs px-2 py-1 rounded">复制</span>
+        </div>
+        <button id="random-btn" class="ml-3 p-3 rounded-xl neumorphic-btn flex items-center justify-center">
+          <i class="fa fa-random"></i>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 颜色滑块 -->
+    <div class="space-y-6 mb-8">
+      <!-- RGB 滑块 -->
+      <div>
+        <div class="flex justify-between mb-1">
+          <label class="text-sm">R <span id="r-value">59</span></label>
+          <span class="text-xs text-gray-500">0-255</span>
+        </div>
+        <input type="range" id="r-slider" min="0" max="255" value="59" 
+               class="w-full h-3 rounded-full neumorphic-inset appearance-none bg-transparent accent-red-500">
+      </div>
+      
+      <div>
+        <div class="flex justify-between mb-1">
+          <label class="text-sm">G <span id="g-value">130</span></label>
+          <span class="text-xs text-gray-500">0-255</span>
+        </div>
+        <input type="range" id="g-slider" min="0" max="255" value="130" 
+               class="w-full h-3 rounded-full neumorphic-inset appearance-none bg-transparent accent-green-500">
+      </div>
+      
+      <div>
+        <div class="flex justify-between mb-1">
+          <label class="text-sm">B <span id="b-value">246</span></label>
+          <span class="text-xs text-gray-500">0-255</span>
+        </div>
+        <input type="range" id="b-slider" min="0" max="255" value="246" 
+               class="w-full h-3 rounded-full neumorphic-inset appearance-none bg-transparent accent-blue-500">
+      </div>
+    </div>
+    
+    <!-- 颜色格式显示 -->
+    <div class="space-y-3">
+      <div class="p-3 rounded-xl neumorphic-inset relative copy-container">
+        <span class="text-sm font-medium">RGB: </span>
+        <span id="rgb-display">rgb(59, 130, 246)</span>
+        <button class="copy-btn absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700" 
+                data-target="rgb-display">
+          <i class="fa fa-copy"></i>
+        </button>
+        <span class="copy-tooltip absolute -top-7 right-3 bg-gray-700 text-white text-xs px-2 py-1 rounded">复制</span>
+      </div>
+      
+      <div class="p-3 rounded-xl neumorphic-inset relative copy-container">
+        <span class="text-sm font-medium">HSL: </span>
+        <span id="hsl-display">hsl(217, 90%, 59%)</span>
+        <button class="copy-btn absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700" 
+                data-target="hsl-display">
+          <i class="fa fa-copy"></i>
+        </button>
+        <span class="copy-tooltip absolute -top-7 right-3 bg-gray-700 text-white text-xs px-2 py-1 rounded">复制</span>
+      </div>
+      
+      <div class="p-3 rounded-xl neumorphic-inset relative copy-container">
+        <span class="text-sm font-medium">CMYK: </span>
+        <span id="cmyk-display">cmyk(76%, 47%, 0%, 3%)</span>
+        <button class="copy-btn absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700" 
+                data-target="cmyk-display">
+          <i class="fa fa-copy"></i>
+        </button>
+        <span class="copy-tooltip absolute -top-7 right-3 bg-gray-700 text-white text-xs px-2 py-1 rounded">复制</span>
+      </div>
+    </div>
+    
+    <!-- 复制提示 -->
+    <div id="copy-notification" class="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg neumorphic transform translate-x-full transition-transform duration-300" style="color: #000000;background-color: #e0e5ec00;">
+      已复制到剪贴板
+    </div>
+  </div>
+
+  <script>
+    // 获取DOM元素
+    const colorDisplay = document.getElementById('current-color');
+    const colorInput = document.getElementById('color-input');
+    const randomBtn = document.getElementById('random-btn');
+    const rSlider = document.getElementById('r-slider');
+    const gSlider = document.getElementById('g-slider');
+    const bSlider = document.getElementById('b-slider');
+    const rValue = document.getElementById('r-value');
+    const gValue = document.getElementById('g-value');
+    const bValue = document.getElementById('b-value');
+    const rgbDisplay = document.getElementById('rgb-display');
+    const hslDisplay = document.getElementById('hsl-display');
+    const cmykDisplay = document.getElementById('cmyk-display');
+    const copyButtons = document.querySelectorAll('.copy-btn');
+    const copyNotification = document.getElementById('copy-notification');
+    
+    // 复制功能
+    copyButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const targetId = button.getAttribute('data-target');
+        const targetElement = document.getElementById(targetId);
+        let textToCopy = '';
+        
+        if (targetElement.tagName === 'INPUT') {
+          textToCopy = targetElement.value;
+        } else {
+          textToCopy = targetElement.textContent;
+        }
+        
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          // 显示复制成功提示
+          copyNotification.classList.remove('translate-x-full');
+          setTimeout(() => {
+            copyNotification.classList.add('translate-x-full');
+          }, 2000);
+        });
+      });
+    });
+    
+    // 更新颜色显示
+    function updateColor() {
+      const r = parseInt(rSlider.value);
+      const g = parseInt(gSlider.value);
+      const b = parseInt(bSlider.value);
+      
+      // 更新HEX值
+      const hex = rgbToHex(r, g, b);
+      colorInput.value = hex;
+      
+      // 更新颜色显示
+      colorDisplay.style.backgroundColor = hex;
+      
+      // 更新数值显示
+      rValue.textContent = r;
+      gValue.textContent = g;
+      bValue.textContent = b;
+      
+      // 更新RGB显示
+      rgbDisplay.textContent = `rgb(${r}, ${g}, ${b})`;
+      
+      // 转换为HSL并显示
+      const hsl = rgbToHsl(r, g, b);
+      hslDisplay.textContent = `hsl(${Math.round(hsl.h)}, ${Math.round(hsl.s)}%, ${Math.round(hsl.l)}%)`;
+      
+      // 转换为CMYK并显示
+      const cmyk = rgbToCmyk(r, g, b);
+      cmykDisplay.textContent = `cmyk(${Math.round(cmyk.c)}%, ${Math.round(cmyk.m)}%, ${Math.round(cmyk.y)}%, ${Math.round(cmyk.k)}%)`;
+    }
+    
+    // RGB转HEX
+    function rgbToHex(r, g, b) {
+      return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+    }
+    
+    // HEX转RGB
+    function hexToRgb(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : null;
+    }
+    
+    // RGB转HSL
+    function rgbToHsl(r, g, b) {
+      r /= 255;
+      g /= 255;
+      b /= 255;
+      
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+      
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        
+        h *= 60;
+      }
+      
+      return { h, s: s * 100, l: l * 100 };
+    }
+    
+    // RGB转CMYK
+    function rgbToCmyk(r, g, b) {
+      r /= 255;
+      g /= 255;
+      b /= 255;
+      
+      const k = 1 - Math.max(r, g, b);
+      const c = (1 - r - k) / (1 - k) || 0;
+      const m = (1 - g - k) / (1 - k) || 0;
+      const y = (1 - b - k) / (1 - k) || 0;
+      
+      return {
+        c: c * 100,
+        m: m * 100,
+        y: y * 100,
+        k: k * 100
+      };
+    }
+    
+    // 生成随机颜色
+    function generateRandomColor() {
+      const r = Math.floor(Math.random() * 256);
+      const g = Math.floor(Math.random() * 256);
+      const b = Math.floor(Math.random() * 256);
+      
+      rSlider.value = r;
+      gSlider.value = g;
+      bSlider.value = b;
+      
+      updateColor();
+    }
+    
+    // 事件监听
+    rSlider.addEventListener('input', updateColor);
+    gSlider.addEventListener('input', updateColor);
+    bSlider.addEventListener('input', updateColor);
+    
+    colorInput.addEventListener('change', () => {
+      const rgb = hexToRgb(colorInput.value);
+      if (rgb) {
+        rSlider.value = rgb.r;
+        gSlider.value = rgb.g;
+        bSlider.value = rgb.b;
+        updateColor();
+      }
+    });
+    
+    randomBtn.addEventListener('click', generateRandomColor);
+  </script>
+</body>
+</html>

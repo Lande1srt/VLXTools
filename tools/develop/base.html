@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Base编码工具</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义颜色和工具类 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366f1',
+            secondary: '#8b5cf6',
+            danger: '#ef4444',
+          },
+          boxShadow: {
+            'neumorphic': '9px 9px 16px rgba(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.5)',
+            'neumorphic-inset': 'inset 5px 5px 10px rgba(163, 177, 198, 0.6), inset -5px -5px 10px rgba(255, 255, 255, 0.5)',
+            'neumorphic-pressed': 'inset 2px 2px 5px rgba(163, 177, 198, 0.6), inset -2px -2px 5px rgba(255, 255, 255, 0.5)',
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /*.neumorphic {
+        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.5);
+        background: #ecf0f3;
+        border-radius: 16px;
+      }*/
+      .neumorphic-inset {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6), inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+        background: #ecf0f3;
+        border-radius: 12px;
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6), -5px -5px 10px rgba(255, 255, 255, 0.5);
+        background: #ecf0f3;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+      }
+      .neumorphic-btn:hover {
+        box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.7), -7px -7px 14px rgba(255, 255, 255, 0.6);
+      }
+      .neumorphic-btn:active {
+        box-shadow: inset 2px 2px 5px rgba(163, 177, 198, 0.6), inset -2px -2px 5px rgba(255, 255, 255, 0.5);
+      }
+      .error-message {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body class="bg-[#ecf0f3] min-h-screen p-4 md:p-8 font-sans text-gray-700">
+  <div class="max-w-5xl mx-auto">
+    <!-- 标题区域 -->
+    <div class="neumorphic p-6 mb-8 text-center">
+      <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+        Base编码工具
+      </h1>
+      <p class="text-gray-500 mt-2">支持Base2/16/32/64编码与解码</p>
+    </div>
+    
+    <!-- 控制选项区域 -->
+    <div class="neumorphic p-5 mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label class="block text-sm font-medium mb-2 text-gray-600">操作类型</label>
+        <div class="flex rounded-lg neumorphic-inset p-1">
+          <button id="encode-btn" class="flex-1 py-2 px-3 rounded-md neumorphic-btn font-medium text-primary">
+            编码
+          </button>
+          <button id="decode-btn" class="flex-1 py-2 px-3 rounded-md font-medium text-gray-500">
+            解码
+          </button>
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium mb-2 text-gray-600">处理对象</label>
+        <div class="flex rounded-lg neumorphic-inset p-1">
+          <button id="string-btn" class="flex-1 py-2 px-3 rounded-md neumorphic-btn font-medium text-primary">
+            字符串
+          </button>
+          <button id="file-btn" class="flex-1 py-2 px-3 rounded-md font-medium text-gray-500">
+            文件
+          </button>
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium mb-2 text-gray-600">编码格式</label>
+        <select id="format-select" class="w-full py-2 px-4 rounded-lg neumorphic-inset bg-transparent outline-none">
+          <option value="base64">Base64</option>
+          <option value="base32">Base32</option>
+          <option value="base16">Base16</option>
+          <option value="base2">Base2 (二进制)</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- 主内容区域 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <!-- 输入区域 -->
+      <div class="neumorphic p-5">
+        <h3 class="text-lg font-semibold mb-4 flex items-center">
+          <i class="fa fa-input mr-2 text-primary"></i>输入
+        </h3>
+        
+        <!-- 字符串输入区域 -->
+        <div id="string-input-area">
+          <textarea id="input-text" class="w-full h-64 p-4 rounded-lg neumorphic-inset bg-transparent resize-none outline-none" placeholder="请输入要编码/解码的字符串..."></textarea>
+          <div id="input-error" class="error-message neumorphic-inset p-2"></div>
+        </div>
+        
+        <!-- 文件输入区域 (仅用于编码) -->
+        <div id="file-input-area" class="hidden">
+          <div id="drop-area" class="neumorphic-inset h-64 flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg transition-all">
+            <i class="fa fa-cloud-upload text-4xl text-gray-400 mb-3"></i>
+            <p class="text-center text-gray-500 mb-2">拖放文件到此处进行编码，或</p>
+            <label class="neumorphic-btn py-2 px-6 cursor-pointer text-primary font-medium">
+              <i class="fa fa-file-text-o mr-1"></i>选择文件
+              <input type="file" id="file-input" class="hidden" accept="*">
+            </label>
+            <p id="file-info" class="mt-4 text-sm text-gray-500 hidden"></p>
+          </div>
+          <div id="file-error" class="error-message neumorphic-inset p-2"></div>
+        </div>
+        
+        <div class="mt-4 flex justify-end">
+          <button id="process-btn" class="neumorphic-btn py-3 px-6 text-primary font-medium">
+            <i class="fa fa-cogs mr-1"></i>处理
+          </button>
+        </div>
+      </div>
+      
+      <!-- 输出区域 -->
+      <div class="neumorphic p-5">
+        <h3 class="text-lg font-semibold mb-4 flex items-center">
+          <i class="fa fa-output mr-2 text-secondary"></i>输出
+        </h3>
+        
+        <!-- 字符串输出区域 -->
+        <div id="string-output-area">
+          <textarea id="output-text" class="w-full h-64 p-4 rounded-lg neumorphic-inset bg-transparent resize-none outline-none" placeholder="处理结果将显示在这里..." readonly></textarea>
+        </div>
+        
+        <!-- 文件输出区域 (用于解码生成的文件) -->
+        <div id="file-output-area" class="hidden">
+          <div class="neumorphic-inset h-64 flex flex-col items-center justify-center p-4 rounded-lg">
+            <i id="output-file-icon" class="fa fa-file-o text-4xl text-gray-400 mb-3"></i>
+            <p id="output-file-name" class="text-center text-gray-600 mb-4">解码后文件将显示在这里</p>
+            <div id="file-params" class="mb-4 text-sm text-gray-500 hidden">
+              <p>请输入原始文件名（含扩展名）：</p>
+              <input type="text" id="original-filename" class="mt-2 w-full p-2 rounded neumorphic-inset bg-transparent outline-none" placeholder="例如：image.png">
+            </div>
+            <a id="download-link" class="neumorphic-btn py-2 px-6 text-primary font-medium hidden">
+              <i class="fa fa-download mr-1"></i>下载文件
+            </a>
+          </div>
+        </div>
+        
+        <div class="mt-4 flex justify-between">
+          <button id="copy-btn" class="neumorphic-btn py-2 px-4 text-gray-600" disabled>
+            <i class="fa fa-copy mr-1"></i>复制
+          </button>
+          <button id="clear-btn" class="neumorphic-btn py-2 px-4 text-gray-600">
+            <i class="fa fa-eraser mr-1"></i>清空
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 状态提示区域 -->
+    <div id="status-message" class="neumorphic p-4 text-center hidden"></div>
+  </div>
+  
+  <script>
+    // DOM元素引用
+    const encodeBtn = document.getElementById('encode-btn');
+    const decodeBtn = document.getElementById('decode-btn');
+    const stringBtn = document.getElementById('string-btn');
+    const fileBtn = document.getElementById('file-btn');
+    const formatSelect = document.getElementById('format-select');
+    const stringInputArea = document.getElementById('string-input-area');
+    const fileInputArea = document.getElementById('file-input-area');
+    const inputText = document.getElementById('input-text');
+    const inputError = document.getElementById('input-error');
+    const fileError = document.getElementById('file-error');
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('file-input');
+    const fileInfo = document.getElementById('file-info');
+    const stringOutputArea = document.getElementById('string-output-area');
+    const fileOutputArea = document.getElementById('file-output-area');
+    const outputText = document.getElementById('output-text');
+    const outputFileName = document.getElementById('output-file-name');
+    const outputFileIcon = document.getElementById('output-file-icon');
+    const originalFilename = document.getElementById('original-filename');
+    const fileParams = document.getElementById('file-params');
+    const downloadLink = document.getElementById('download-link');
+    const processBtn = document.getElementById('process-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const statusMessage = document.getElementById('status-message');
+    
+    // 状态变量
+    let currentMode = 'encode'; // encode 或 decode
+    let currentTarget = 'string'; // string 或 file
+    let selectedFile = null;
+    let decodedFileData = null;
+    
+    // 切换按钮状态函数
+    function toggleButtonGroup(activeBtn, inactiveBtn) {
+      activeBtn.classList.add('neumorphic-btn', 'text-primary');
+      activeBtn.classList.remove('text-gray-500');
+      inactiveBtn.classList.remove('neumorphic-btn', 'text-primary');
+      inactiveBtn.classList.add('text-gray-500');
+    }
+    
+    // 显示错误信息
+    function showInputError(message) {
+      hideAllErrors();
+      if (currentTarget === 'string') {
+        inputError.textContent = message;
+        inputError.style.display = 'block';
+      } else {
+        fileError.textContent = message;
+        fileError.style.display = 'block';
+      }
+      
+      // 5秒后自动隐藏错误信息
+      setTimeout(hideAllErrors, 5000);
+    }
+    
+    // 隐藏所有错误信息
+    function hideAllErrors() {
+      inputError.style.display = 'none';
+      fileError.style.display = 'none';
+    }
+    
+    // 操作类型切换
+    encodeBtn.addEventListener('click', () => {
+      currentMode = 'encode';
+      toggleButtonGroup(encodeBtn, decodeBtn);
+      hideAllErrors();
+      updateUI();
+    });
+    
+    decodeBtn.addEventListener('click', () => {
+      currentMode = 'decode';
+      toggleButtonGroup(decodeBtn, encodeBtn);
+      hideAllErrors();
+      updateUI();
+    });
+    
+    // 处理对象切换
+    stringBtn.addEventListener('click', () => {
+      currentTarget = 'string';
+      toggleButtonGroup(stringBtn, fileBtn);
+      stringInputArea.classList.remove('hidden');
+      fileInputArea.classList.add('hidden');
+      stringOutputArea.classList.remove('hidden');
+      fileOutputArea.classList.add('hidden');
+      hideAllErrors();
+      updateCopyButtonState();
+    });
+    
+    fileBtn.addEventListener('click', () => {
+      currentTarget = 'file';
+      toggleButtonGroup(fileBtn, stringBtn);
+      hideAllErrors();
+      updateUI();
+    });
+    
+    // 文件选择处理（仅用于编码）
+    fileInput.addEventListener('change', (e) => {
+      handleFileSelection(e.target.files[0]);
+    });
+    
+    // 拖放功能（仅用于编码）
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+      dropArea.classList.add('border-primary');
+      dropArea.classList.add('bg-primary/5');
+    }
+    
+    function unhighlight() {
+      dropArea.classList.remove('border-primary');
+      dropArea.classList.remove('bg-primary/5');
+    }
+    
+    dropArea.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const file = dt.files[0];
+      handleFileSelection(file);
+    });
+    
+    function handleFileSelection(file) {
+      if (file) {
+        selectedFile = file;
+        fileInfo.textContent = `已选择: ${file.name} (${formatFileSize(file.size)})`;
+        fileInfo.classList.remove('hidden');
+        showStatusMessage(`已选择文件: ${file.name}`, 'success');
+        hideAllErrors();
+      }
+    }
+    
+    // 格式化文件大小
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // 处理按钮点击
+    processBtn.addEventListener('click', processData);
+    
+    // 复制按钮
+    copyBtn.addEventListener('click', () => {
+      if (outputText.value) {
+        outputText.select();
+        document.execCommand('copy');
+        showStatusMessage('已复制到剪贴板', 'success');
+      }
+    });
+    
+    // 清空按钮
+        clearBtn.addEventListener('click', () => {
+      inputText.value = '';
+      outputText.value = '';
+      selectedFile = null;
+      decodedFileData = null;
+      fileInfo.classList.add('hidden');
+      downloadLink.classList.add('hidden');
+      outputFileName.textContent = '解码后文件将显示在这里';
+      originalFilename.value = '';
+      hideAllErrors();
+      updateCopyButtonState();
+      showStatusMessage('已清空内容', 'info');
+    });
+    
+    // 原始文件名输入变化时更新下载链接
+    originalFilename.addEventListener('input', updateDownloadLink);
+    
+    function updateDownloadLink() {
+      if (decodedFileData && originalFilename.value) {
+        downloadLink.download = originalFilename.value;
+        downloadLink.classList.remove('hidden');
+      } else {
+        downloadLink.classList.add('hidden');
+      }
+    }
+    
+    // 处理数据
+    function processData() {
+      hideAllErrors();
+      if (currentTarget === 'string') {
+        processString();
+      } else {
+        processFile();
+      }
+    }
+    
+    // 处理字符串
+    function processString() {
+      const input = inputText.value.trim();
+      if (!input) {
+        showInputError('请输入内容');
+        return;
+      }
+      
+      try {
+        let result;
+        const format = formatSelect.value;
+        
+        if (currentMode === 'encode') {
+          result = encodeString(input, format);
+        } else {
+          // 解码前先验证输入格式
+          if (!validateBaseInput(input, format)) {
+            return;
+          }
+          result = decodeString(input, format);
+        }
+        
+        outputText.value = result;
+        updateCopyButtonState();
+        showStatusMessage('处理成功', 'success');
+      } catch (error) {
+        showInputError(`处理失败: ${getUserFriendlyError(error.message, format)}`);
+        console.error(error);
+      }
+    }
+    
+    // 处理文件
+    function processFile() {
+      if (currentMode === 'encode') {
+        // 编码文件
+        if (!selectedFile) {
+          showInputError('请选择文件');
+          return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const arrayBuffer = e.target.result;
+            const format = formatSelect.value;
+            const baseString = encodeFile(arrayBuffer, format);
+            
+            outputText.value = baseString;
+            updateCopyButtonState();
+            
+            // 准备下载链接（编码结果的txt文件）
+            const blob = new Blob([baseString], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            downloadLink.href = url;
+            downloadLink.download = `${selectedFile.name}.${format}.txt`;
+            downloadLink.classList.remove('hidden');
+            
+            showStatusMessage('文件编码成功', 'success');
+          } catch (error) {
+            showInputError(`编码失败: ${error.message}`);
+            console.error(error);
+          }
+        };
+        reader.readAsArrayBuffer(selectedFile);
+      } else {
+        // 解码文件（从输入框的base数据解码）
+        const baseString = inputText.value.trim();
+        if (!baseString) {
+          showInputError('请输入Base编码数据');
+          return;
+        }
+        
+        try {
+          const format = formatSelect.value;
+          
+          // 解码前先验证输入格式
+          if (!validateBaseInput(baseString, format)) {
+            return;
+          }
+          
+          decodedFileData = decodeFile(baseString, format);
+          
+          // 显示文件信息输入区域
+          outputFileName.textContent = '请输入原始文件名以下载';
+          outputFileIcon.className = 'fa fa-file-text-o text-4xl text-primary mb-3';
+          fileParams.classList.remove('hidden');
+          
+          // 提供文件名示例
+          originalFilename.placeholder = `例如：document.pdf 或 image.jpg`;
+          
+          showStatusMessage('文件解码成功，请输入原始文件名', 'success');
+        } catch (error) {
+          showInputError(`解码失败: ${getUserFriendlyError(error.message, format)}`);
+          console.error(error);
+        }
+      }
+    }
+    
+    // 验证Base输入格式
+    function validateBaseInput(input, format) {
+      try {
+        switch (format) {
+          case 'base64':
+            // Base64验证：只包含Base64字符和填充符=，且填充符只能在末尾
+            if (!/^[A-Za-z0-9+/]+[=]{0,2}$/.test(input)) {
+              throw new Error('包含无效的Base64字符');
+            }
+            break;
+          case 'base32':
+            // Base32验证：只包含Base32字符和填充符=，且填充符只能在末尾
+            if (!/^[A-Z2-7]+[=]{0,6}$/i.test(input)) {
+              throw new Error('包含无效的Base32字符');
+            }
+            break;
+          case 'base16':
+            // Base16验证：只包含十六进制字符
+            if (!/^[0-9A-Fa-f]+$/.test(input)) {
+              throw new Error('包含无效的Base16字符');
+            }
+            // 检查长度是否为偶数
+            if (input.length % 2 !== 0) {
+              throw new Error('Base16字符串长度必须为偶数');
+            }
+            break;
+          case 'base2':
+            // Base2验证：只包含0和1
+            if (!/^[01]+$/.test(input)) {
+              throw new Error('包含无效的二进制字符（只能是0和1）');
+            }
+            // 检查长度是否为8的倍数
+            if (input.length % 8 !== 0) {
+              throw new Error('二进制字符串长度必须是8的倍数');
+            }
+            break;
+        }
+        return true;
+      } catch (error) {
+        showInputError(getUserFriendlyError(error.message, format));
+        return false;
+      }
+    }
+    
+    // 将技术错误信息转换为用户友好的信息
+    function getUserFriendlyError(errorMessage, format) {
+      const formatNames = {
+        'base64': 'Base64',
+        'base32': 'Base32',
+        'base16': 'Base16',
+        'base2': '二进制'
+      };
+      
+      const formatName = formatNames[format] || format;
+      
+      switch (true) {
+        case errorMessage.includes('无效的'):
+          return `${errorMessage}，${formatName}编码只能包含特定字符`;
+        case errorMessage.includes('长度必须'):
+          return `${formatName}${errorMessage.slice(errorMessage.indexOf('字符串') + 3)}`;
+        case errorMessage.includes('不支持的'):
+          return `不支持的${formatName}操作`;
+        default:
+          return `输入的${formatName}数据格式不正确：${errorMessage}`;
+      }
+    }
+    
+    // 更新UI状态
+    function updateUI() {
+      if (currentTarget === 'file') {
+        if (currentMode === 'encode') {
+          // 文件编码模式：输入为文件选择，输出为编码字符串
+          stringInputArea.classList.add('hidden');
+          fileInputArea.classList.remove('hidden');
+          stringOutputArea.classList.remove('hidden');
+          fileOutputArea.classList.add('hidden');
+        } else {
+          // 文件解码模式：输入为编码字符串，输出为文件下载
+          stringInputArea.classList.remove('hidden');
+          fileInputArea.classList.add('hidden');
+          stringOutputArea.classList.add('hidden');
+          fileOutputArea.classList.remove('hidden');
+          inputText.placeholder = `请输入文件的${getFormatDisplayName()}编码数据...`;
+        }
+      } else {
+        // 字符串模式
+        inputText.placeholder = currentMode === 'encode' 
+          ? `请输入要编码为${getFormatDisplayName()}的字符串...` 
+          : `请输入要解码的${getFormatDisplayName()}字符串...`;
+      }
+    }
+    
+    // 获取格式的显示名称
+    function getFormatDisplayName() {
+      const format = formatSelect.value;
+      const formatNames = {
+        'base64': 'Base64',
+        'base32': 'Base32',
+        'base16': 'Base16',
+        'base2': '二进制'
+      };
+      return formatNames[format] || format;
+    }
+    
+    // 编码字符串
+    function encodeString(str, format) {
+      const encoder = new TextEncoder();
+      const uint8Array = encoder.encode(str);
+      
+      switch (format) {
+        case 'base64':
+          return btoa(String.fromCharCode(...uint8Array));
+        case 'base32':
+          return arrayBufferToBase32(uint8Array);
+        case 'base16':
+          return arrayBufferToBase16(uint8Array);
+        case 'base2':
+          return arrayBufferToBase2(uint8Array);
+        default:
+          throw new Error('不支持的编码格式');
+      }
+    }
+    
+    // 解码字符串
+    function decodeString(str, format) {
+      let uint8Array;
+      
+      switch (format) {
+        case 'base64':
+          uint8Array = new Uint8Array(atob(str).split('').map(c => c.charCodeAt(0)));
+          break;
+        case 'base32':
+          uint8Array = base32ToArrayBuffer(str);
+          break;
+        case 'base16':
+          uint8Array = base16ToArrayBuffer(str);
+          break;
+        case 'base2':
+          uint8Array = base2ToArrayBuffer(str);
+          break;
+        default:
+          throw new Error('不支持的解码格式');
+      }
+      
+      const decoder = new TextDecoder();
+      return decoder.decode(uint8Array);
+    }
+    
+    // 编码文件
+    function encodeFile(arrayBuffer, format) {
+      const uint8Array = new Uint8Array(arrayBuffer);
+      
+      switch (format) {
+        case 'base64':
+          return btoa(String.fromCharCode(...uint8Array));
+        case 'base32':
+          return arrayBufferToBase32(uint8Array);
+        case 'base16':
+          return arrayBufferToBase16(uint8Array);
+        case 'base2':
+          return arrayBufferToBase2(uint8Array);
+        default:
+          throw new Error('不支持的编码格式');
+      }
+    }
+    
+    // 解码文件
+    function decodeFile(baseString, format) {
+      let uint8Array;
+      
+      switch (format) {
+        case 'base64':
+          uint8Array = new Uint8Array(atob(baseString).split('').map(c => c.charCodeAt(0)));
+          break;
+        case 'base32':
+          uint8Array = base32ToArrayBuffer(baseString);
+          break;
+        case 'base16':
+          uint8Array = base16ToArrayBuffer(baseString);
+          break;
+        case 'base2':
+          uint8Array = base2ToArrayBuffer(baseString);
+          break;
+        default:
+          throw new Error('不支持的解码格式');
+      }
+      
+      // 创建下载链接
+      const blob = new Blob([uint8Array.buffer]);
+      const url = URL.createObjectURL(blob);
+      downloadLink.href = url;
+      
+      return uint8Array.buffer;
+    }
+    
+    // Base32 编码
+    function arrayBufferToBase32(uint8Array) {
+      const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+      let result = '';
+      let bits = 0;
+      let value = 0;
+      
+      for (const byte of uint8Array) {
+        value = (value << 8) | byte;
+        bits += 8;
+        
+        while (bits >= 5) {
+          result += base32Chars[(value >>> (bits - 5)) & 0x1F];
+          bits -= 5;
+        }
+      }
+      
+      // 处理剩余的位
+      if (bits > 0) {
+        value <<= (5 - bits);
+        result += base32Chars[value & 0x1F];
+      }
+      
+      // 添加填充
+      while (result.length % 8 !== 0) {
+        result += '=';
+      }
+      
+      return result;
+    }
+    
+    // Base32 解码
+    function base32ToArrayBuffer(base32Str) {
+      const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+      const paddingRegex = /=+$/;
+      const cleaned = base32Str.toUpperCase().replace(paddingRegex, '');
+      
+      const bytes = [];
+      let bits = 0;
+      let value = 0;
+      
+      for (const char of cleaned) {
+        const index = base32Chars.indexOf(char);
+        if (index === -1) {
+          throw new Error('无效的Base32字符');
+        }
+        
+        value = (value << 5) | index;
+        bits += 5;
+        
+        if (bits >= 8) {
+          bytes.push((value >>> (bits - 8)) & 0xFF);
+          bits -= 8;
+        }
+      }
+      
+      return new Uint8Array(bytes);
+    }
+    
+    // Base16 编码
+    function arrayBufferToBase16(uint8Array) {
+      return Array.from(uint8Array, byte => 
+        byte.toString(16).padStart(2, '0')
+      ).join('').toUpperCase();
+    }
+    
+    // Base16 解码
+    function base16ToArrayBuffer(base16Str) {
+      if (base16Str.length % 2 !== 0) {
+        throw new Error('Base16字符串长度必须为偶数');
+      }
+      
+      const bytes = [];
+      for (let i = 0; i < base16Str.length; i += 2) {
+        const hex = base16Str.substr(i, 2);
+        const byte = parseInt(hex, 16);
+        if (isNaN(byte)) {
+          throw new Error(`无效的Base16字符: ${hex}`);
+        }
+        bytes.push(byte);
+      }
+      
+      return new Uint8Array(bytes);
+    }
+    
+    // Base2 (二进制) 编码
+    function arrayBufferToBase2(uint8Array) {
+      return Array.from(uint8Array, byte => 
+        byte.toString(2).padStart(8, '0')
+      ).join('');
+    }
+    
+    // Base2 (二进制) 解码
+    function base2ToArrayBuffer(base2Str) {
+      if (base2Str.length % 8 !== 0) {
+        throw new Error('二进制字符串长度必须是8的倍数');
+      }
+      
+      const bytes = [];
+      for (let i = 0; i < base2Str.length; i += 8) {
+        const byteStr = base2Str.substr(i, 8);
+        const byte = parseInt(byteStr, 2);
+        if (isNaN(byte)) {
+          throw new Error(`无效的二进制字符: ${byteStr}`);
+        }
+        bytes.push(byte);
+      }
+      
+      return new Uint8Array(bytes);
+    }
+    
+    // 更新复制按钮状态
+    function updateCopyButtonState() {
+      if (outputText.value) {
+        copyBtn.disabled = false;
+        copyBtn.classList.add('text-primary');
+        copyBtn.classList.remove('text-gray-400');
+      } else {
+        copyBtn.disabled = true;
+        copyBtn.classList.remove('text-primary');
+        copyBtn.classList.add('text-gray-400');
+      }
+    }
+    
+    // 显示状态消息
+    function showStatusMessage(text, type = 'info') {
+      statusMessage.textContent = text;
+      statusMessage.classList.remove('hidden', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700', 'bg-blue-100', 'text-blue-700');
+      
+      switch (type) {
+        case 'success':
+          statusMessage.classList.add('bg-green-100', 'text-green-700');
+          break;
+        case 'error':
+          statusMessage.classList.add('bg-red-100', 'text-red-700');
+          break;
+        default:
+          statusMessage.classList.add('bg-blue-100', 'text-blue-700');
+      }
+      
+      // 3秒后隐藏消息
+      clearTimeout(window.statusTimeout);
+      window.statusTimeout = setTimeout(() => {
+        statusMessage.classList.add('hidden');
+      }, 3000);
+    }
+    
+    // 隐藏所有错误
+    function hideAllErrors() {
+      inputError.style.display = 'none';
+      fileError.style.display = 'none';
+    }
+    
+    // 输入文本变化时更新复制按钮状态
+    outputText.addEventListener('input', updateCopyButtonState);
+    
+    // 当编码格式改变时更新UI
+    formatSelect.addEventListener('change', updateUI);
+    
+    // 初始化
+    updateCopyButtonState();
+    updateUI();
+  </script>
+</body>
+</html>

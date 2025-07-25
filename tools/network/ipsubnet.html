@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ip子网信息计算</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义颜色和字体 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#e0e5ec',
+            secondary: '#a3b1c6',
+            accent: '#4a6fa5',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /*.neumorphic {
+        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6),
+                    -9px -9px 16px rgba(255, 255, 255, 0.5);
+      }*/
+      .neumorphic-inset {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transition: all 0.2s ease;
+      }
+      .neumorphic-btn:hover {
+        box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.7),
+                    -7px -7px 14px rgba(255, 255, 255, 0.6);
+        transform: translateY(-2px);
+      }
+      .neumorphic-btn:active {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transform: translateY(1px);
+      }
+      .binary-text {
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-primary min-h-screen p-4 md:p-8 font-sans text-gray-700">
+  <div class="max-w-6xl mx-auto">
+    <!-- 标题区域 -->
+    <div class="mb-8 text-center">
+      <h1 class="text-[clamp(1.8rem,5vw,2.5rem)] font-bold text-accent mb-2">IP子网信息计算工具</h1>
+      <p class="text-gray-600">支持IPv4子网计算、二进制显示及IPv6格式转换</p>
+    </div>
+    
+    <!-- 主容器 - 移动端垂直布局，PC端水平布局 -->
+    <div class="flex flex-col md:flex-row gap-6">
+      
+      <!-- 左侧输入区域 -->
+      <div class="w-full md:w-1/2 neumorphic rounded-2xl p-6">
+        <h2 class="text-xl font-semibold mb-6 flex items-center">
+          <i class="fa fa-keyboard-o mr-2 text-accent"></i>输入IP信息
+        </h2>
+        
+        <div class="space-y-6">
+          <!-- IP地址输入 -->
+          <div>
+            <label class="block mb-2 font-medium">IPv4地址</label>
+            <div class="neumorphic-inset rounded-xl p-3">
+              <input type="text" id="ipAddress" placeholder="例如: 192.168.1.1" 
+                     class="w-full bg-transparent outline-none text-lg">
+            </div>
+          </div>
+          
+          <!-- 子网掩码输入 -->
+          <div>
+            <label class="block mb-2 font-medium">子网掩码</label>
+            <div class="flex gap-3">
+              <div class="neumorphic-inset rounded-xl p-3 flex-1">
+                <input type="text" id="subnetMask" placeholder="例如: 255.255.255.0" 
+                       class="w-full bg-transparent outline-none text-lg">
+              </div>
+              <div class="neumorphic-inset rounded-xl p-3 w-20">
+                <input type="number" id="cidr" min="0" max="32" placeholder="/24" 
+                       class="w-full bg-transparent outline-none text-lg text-center">
+              </div>
+            </div>
+          </div>
+          
+          <!-- 计算按钮 -->
+          <button id="calculateBtn" class="neumorphic-btn bg-primary rounded-xl p-4 w-full text-accent font-medium text-lg">
+            <i class="fa fa-calculator mr-2"></i>计算子网信息
+          </button>
+        </div>
+      </div>
+      
+      <!-- 右侧结果区域 -->
+      <div class="w-full md:w-1/2 neumorphic rounded-2xl p-6">
+        <h2 class="text-xl font-semibold mb-6 flex items-center">
+          <i class="fa fa-info-circle mr-2 text-accent"></i>子网信息结果
+        </h2>
+        
+        <div id="resultArea" class="space-y-4">
+          <!-- 结果将通过JS动态填充 -->
+          <div class="neumorphic-inset rounded-xl p-4 min-h-[400px] flex items-center justify-center">
+            <p class="text-gray-500 text-center">请输入IP地址和子网掩码并点击计算按钮</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 计算按钮点击事件
+    document.getElementById('calculateBtn').addEventListener('click', calculateSubnet);
+    
+    // 监听CIDR输入变化，自动更新子网掩码
+    document.getElementById('cidr').addEventListener('input', function() {
+      const cidr = parseInt(this.value);
+      if (cidr >= 0 && cidr <= 32) {
+        document.getElementById('subnetMask').value = cidrToSubnetMask(cidr);
+      }
+    });
+    
+    // 监听子网掩码变化，自动更新CIDR
+    document.getElementById('subnetMask').addEventListener('input', function() {
+      const cidr = subnetMaskToCidr(this.value);
+      if (cidr !== null) {
+        document.getElementById('cidr').value = cidr;
+      }
+    });
+    
+    // CIDR转子网掩码
+    function cidrToSubnetMask(cidr) {
+      if (cidr < 0 || cidr > 32) return '';
+      
+      let mask = [];
+      for (let i = 0; i < 4; i++) {
+        let bits = Math.min(8, cidr);
+        mask.push(256 - Math.pow(2, 8 - bits));
+        cidr -= bits;
+      }
+      return mask.join('.');
+    }
+    
+    // 子网掩码转CIDR
+    function subnetMaskToCidr(mask) {
+      const octets = mask.split('.').map(Number);
+      if (octets.length !== 4) return null;
+      
+      let cidr = 0;
+      for (const octet of octets) {
+        if (octet < 0 || octet > 255) return null;
+        
+        let bits = 0;
+        let value = octet;
+        while (value > 0) {
+          if (value % 2 === 1) {
+            bits++;
+            value = Math.floor(value / 2);
+          } else if (bits > 0) {
+            // 子网掩码必须是连续的1后面跟连续的0
+            return null;
+          } else {
+            break;
+          }
+        }
+        cidr += bits;
+      }
+      return cidr;
+    }
+    
+    // 验证IP地址格式
+    function isValidIp(ip) {
+      const octets = ip.split('.').map(Number);
+      return octets.length === 4 && 
+             octets.every(o => o >= 0 && o <= 255 && !isNaN(o));
+    }
+    
+    // 确定IP地址类别
+    function getIpClass(ip) {
+      const firstOctet = parseInt(ip.split('.')[0]);
+      
+      if (firstOctet >= 0 && firstOctet <= 127) return 'A类地址 (0-127)';
+      if (firstOctet >= 128 && firstOctet <= 191) return 'B类地址 (128-191)';
+      if (firstOctet >= 192 && firstOctet <= 223) return 'C类地址 (192-223)';
+      if (firstOctet >= 224 && firstOctet <= 239) return 'D类地址 (组播) (224-239)';
+      if (firstOctet >= 240 && firstOctet <= 255) return 'E类地址 (保留) (240-255)';
+      return '未知类别';
+    }
+    
+    // 将IPv4地址转换为二进制表示
+    function ipToBinary(ip) {
+      return ip.split('.')
+        .map(octet => parseInt(octet).toString(2).padStart(8, '0'))
+        .join('.');
+    }
+    
+    // 将IPv4地址转换为IPv6映射地址
+    function ipv4ToIpv6(ipv4) {
+      // 转换为IPv6映射的IPv4地址格式 ::ffff:w.x.y.z
+      return `::ffff:${ipv4}`;
+    }
+    
+    // 计算子网信息
+    function calculateSubnet() {
+      const ipAddress = document.getElementById('ipAddress').value.trim();
+      const subnetMask = document.getElementById('subnetMask').value.trim();
+      
+      // 验证输入
+      if (!isValidIp(ipAddress)) {
+        alert('请输入有效的IP地址');
+        return;
+      }
+      
+      if (!isValidIp(subnetMask)) {
+        alert('请输入有效的子网掩码');
+        return;
+      }
+      
+      // 转换为32位整数
+      const ipInt = ipToInt(ipAddress);
+      const maskInt = ipToInt(subnetMask);
+      
+      // 计算网络地址和广播地址
+      const networkInt = ipInt & maskInt;
+      const broadcastInt = networkInt | (~maskInt >>> 0); // 无符号右移处理
+      
+      // 计算可用IP范围
+      const firstHostInt = networkInt + 1;
+      const lastHostInt = broadcastInt - 1;
+      const totalHosts = (lastHostInt >= firstHostInt) ? (lastHostInt - firstHostInt + 1) : 0;
+      
+      // 获取IP地址类别
+      const ipClass = getIpClass(ipAddress);
+      
+      // 转换为二进制表示
+      const ipBinary = ipToBinary(ipAddress);
+      const maskBinary = ipToBinary(subnetMask);
+      const networkBinary = ipToBinary(intToIp(networkInt));
+      
+      // 转换为IPv6格式
+      const ipv6Address = ipv4ToIpv6(ipAddress);
+      
+      // 显示结果
+      const resultArea = document.getElementById('resultArea');
+      resultArea.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="neumorphic-inset rounded-xl p-4">
+            <p class="text-sm text-gray-500">IP地址</p>
+            <p class="text-xl font-medium">${ipAddress}</p>
+          </div>
+          
+          <div class="neumorphic-inset rounded-xl p-4">
+            <p class="text-sm text-gray-500">IP类别</p>
+            <p class="text-xl font-medium">${ipClass}</p>
+          </div>
+          
+          <div class="neumorphic-inset rounded-xl p-4">
+            <p class="text-sm text-gray-500">子网掩码</p>
+            <p class="text-xl font-medium">${subnetMask} (/${subnetMaskToCidr(subnetMask)})</p>
+          </div>
+          
+          <div class="neumorphic-inset rounded-xl p-4">
+            <p class="text-sm text-gray-500">网络地址</p>
+            <p class="text-xl font-medium">${intToIp(networkInt)}</p>
+          </div>
+          
+          <div class="neumorphic-inset rounded-xl p-4">
+            <p class="text-sm text-gray-500">广播地址</p>
+            <p class="text-xl font-medium">${intToIp(broadcastInt)}</p>
+          </div>
+          
+          <div class="neumorphic-inset rounded-xl p-4">
+            <p class="text-sm text-gray-500">可用主机数</p>
+            <p class="text-xl font-medium">${totalHosts}</p>
+          </div>
+          
+          <div class="neumorphic-inset rounded-xl p-4 md:col-span-2">
+            <p class="text-sm text-gray-500">可用IP范围</p>
+            <p class="text-xl font-medium">${intToIp(firstHostInt)} - ${intToIp(lastHostInt)}</p>
+          </div>
+          
+          <!-- 二进制信息 -->
+          <div class="neumorphic-inset rounded-xl p-4 md:col-span-2">
+            <p class="text-sm text-gray-500 mb-2">IP地址 (二进制)</p>
+            <p class="binary-text text-gray-700">${ipBinary}</p>
+          </div>
+          
+          <div class="neumorphic-inset rounded-xl p-4 md:col-span-2">
+            <p class="text-sm text-gray-500 mb-2">子网掩码 (二进制)</p>
+            <p class="binary-text text-gray-700">${maskBinary}</p>
+          </div>
+          
+          <div class="neumorphic-inset rounded-xl p-4 md:col-span-2">
+            <p class="text-sm text-gray-500 mb-2">网络地址 (二进制)</p>
+            <p class="binary-text text-gray-700">${networkBinary}</p>
+          </div>
+          
+          <!-- IPv6格式 -->
+          <div class="neumorphic-inset rounded-xl p-4 md:col-span-2">
+            <p class="text-sm text-gray-500 mb-2">对应的IPv6格式 (映射地址)</p>
+            <p class="text-xl font-medium font-mono">${ipv6Address}</p>
+          </div>
+        </div>
+      `;
+    }
+    
+    // IP地址转32位整数
+    function ipToInt(ip) {
+      return ip.split('.').reduce((acc, octet) => (acc < 8) + parseInt(octet), 0) >>> 0;
+    }
+    
+    // 32位整数转IP地址
+    function intToIp(int) {
+      return [
+        (int >>> 24) & 0xFF,
+        (int >>> 16) & 0xFF,
+        (int >>> 8) & 0xFF,
+        int & 0xFF
+      ].join('.');
+    }
+  </script>
+</body>
+</html>

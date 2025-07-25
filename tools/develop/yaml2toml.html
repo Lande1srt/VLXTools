@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAML-TOML 转换器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 精简核心解析库 -->
+    <script src="library/yaml_toml_lib.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#10b981',
+                        neutral: '#f3f4f8',
+                    },
+                    boxShadow: {
+                        'neumorphic': '9px 9px 16px rgba(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.5)',
+                        'neumorphic-inset': 'inset 5px 5px 10px rgba(163, 177, 198, 0.6), inset -5px -5px 10px rgba(255, 255, 255, 0.5)',
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .neumorphic {
+                box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.5);
+                background-color: #f0f4f8;
+                border-radius: 16px;
+            }
+            .neumorphic-inset {
+                box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6), inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+                background-color: #f0f4f8;
+                border-radius: 12px;
+            }
+            .neumorphic-btn {
+                box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6), -5px -5px 10px rgba(255, 255, 255, 0.5);
+                background-color: #f0f4f8;
+                border-radius: 8px;
+                transition: all 0.2s ease;
+            }
+            .neumorphic-btn:hover {
+                box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.7), -7px -7px 14px rgba(255, 255, 255, 0.6);
+                transform: translateY(-2px);
+            }
+            .neumorphic-btn:active {
+                box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6), inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+                transform: translateY(0);
+            }
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+                background-image: linear-gradient(135deg, #6366f1, #10b981);
+            }
+        }
+    </style>
+</head>
+<body class="bg-neutral min-h-screen font-sans p-4 md:p-6">
+    <div class="max-w-7xl mx-auto">
+        <header class="text-center mb-6 md:mb-8">
+            <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gradient">YAML-TOML 转换器</h1>
+            <p class="text-gray-600 mt-2">轻松实现 YAML 与 TOML 格式之间的相互转换</p>
+        </header>
+        
+        <main class="flex flex-col md:flex-row gap-6">
+            <!-- YAML 输入区域 -->
+            <section class="w-full md:w-1/2 neumorphic p-5">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-700 flex items-center">
+                        <i class="fa fa-code mr-2 text-primary"></i> YAML
+                    </h2>
+                    <button id="clearYaml" class="neumorphic-btn p-2 text-gray-600">
+                        <i class="fa fa-trash-o"></i>
+                    </button>
+                </div>
+                <div class="neumorphic-inset p-1">
+                    <textarea 
+                        id="yamlInput" 
+                        class="w-full h-[clamp(300px,50vh,500px)] bg-transparent p-3 focus:outline-none resize-none text-gray-700"
+                        placeholder="请输入 YAML 内容..."></textarea>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button id="yamlToToml" class="neumorphic-btn px-4 py-2 text-primary font-medium">
+                        <i class="fa fa-arrow-right mr-1"></i> 转换为 TOML
+                    </button>
+                </div>
+            </section>
+            
+            <!-- TOML 输出区域 -->
+            <section class="w-full md:w-1/2 neumorphic p-5">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-700 flex items-center">
+                        <i class="fa fa-file-code-o mr-2 text-secondary"></i> TOML
+                    </h2>
+                    <button id="copyToml" class="neumorphic-btn p-2 text-gray-600">
+                        <i class="fa fa-copy"></i>
+                    </button>
+                </div>
+                <div class="neumorphic-inset p-1">
+                    <textarea 
+                        id="tomlOutput" 
+                        class="w-full h-[clamp(300px,50vh,500px)] bg-transparent p-3 focus:outline-none resize-none text-gray-700"
+                        placeholder="转换后的 TOML 将显示在这里..."></textarea>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button id="tomlToYaml" class="neumorphic-btn px-4 py-2 text-secondary font-medium">
+                        <i class="fa fa-arrow-left mr-1"></i> 转换为 YAML
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // 初始化应用
+        function initApp() {
+            // 获取DOM元素
+            const yamlInput = document.getElementById('yamlInput');
+            const tomlOutput = document.getElementById('tomlOutput');
+            const yamlToTomlBtn = document.getElementById('yamlToToml');
+            const tomlToYamlBtn = document.getElementById('tomlToYaml');
+            const clearYamlBtn = document.getElementById('clearYaml');
+            const copyTomlBtn = document.getElementById('copyToml');
+            
+            // YAML 转 TOML
+            yamlToTomlBtn.addEventListener('click', () => {
+                try {
+                    const yaml = yamlInput.value.trim();
+                    if (!yaml) {
+                        alert('请输入YAML内容');
+                        return;
+                    }
+                    
+                    const obj = jsyaml.load(yaml);
+                    const toml = TOML.stringify(obj);
+                    tomlOutput.value = toml;
+                    console.log('转换成功');
+                } catch (error) {
+                    console.log('转换失败：' + error.message);
+                }
+            });
+            
+            // TOML 转 YAML
+            tomlToYamlBtn.addEventListener('click', () => {
+                try {
+                    const toml = tomlOutput.value.trim();
+                    if (!toml) {
+                        alert('请输入TOML内容');
+                        return;
+                    }
+                    
+                    const obj = TOML.parse(toml);
+                    const yaml = jsyaml.dump(obj, { indent: 2 });
+                    yamlInput.value = yaml;
+                    console.log('转换成功');
+                } catch (error) {
+                    console.log('转换失败：' + error.message);
+                }
+            });
+            
+            // 清空功能
+            clearYamlBtn.addEventListener('click', () => {
+                yamlInput.value = '';
+                tomlOutput.value = '';
+            });
+            
+            // 复制功能
+            copyTomlBtn.addEventListener('click', () => {
+                const text = tomlOutput.value.trim();
+                if (!text) {
+                    console.log('没有可复制的内容');
+                    return;
+                }
+                
+                navigator.clipboard.writeText(text).then(() => {
+                    console.log('已复制到剪贴板');
+                }).catch(() => {
+                    console.log('复制失败，请手动复制');
+                });
+            });
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('load', initApp);
+    </script>
+</body>
+</html>
