@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>温度单位换算器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义主题 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#e0e5ec',
+            secondary: '#a3b1c6',
+            accent: '#6c63ff',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'neumorphic': '9px 9px 16px rgba(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.5)',
+            'neumorphic-inset': 'inset 5px 5px 10px rgba(163, 177, 198, 0.6), inset -5px -5px 10px rgba(255, 255, 255, 0.5)',
+            'neumorphic-btn': '5px 5px 10px rgba(163, 177, 198, 0.6), -5px -5px 10px rgba(255, 255, 255, 0.5)',
+            'neumorphic-btn-active': 'inset 1px 1px 2px rgba(163, 177, 198, 0.6), inset -1px -1px 2px rgba(255, 255, 255, 0.5)',
+          }
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      /*.neumorphic {
+        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.5);
+        background-color: #e0e5ec;
+        border-radius: 16px;
+      }*/
+      .neumorphic-inset {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6), inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+        background-color: #e0e5ec;
+        border-radius: 12px;
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6), -5px -5px 10px rgba(255, 255, 255, 0.5);
+        background-color: #e0e5ec;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+      }
+      .neumorphic-btn:hover {
+        box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.6), -7px -7px 14px rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+      }
+      .neumorphic-btn:active {
+        box-shadow: inset 1px 1px 2px rgba(163, 177, 198, 0.6), inset -1px -1px 2px rgba(255, 255, 255, 0.5);
+        transform: translateY(0);
+      }
+      .text-gradient {
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        background-image: linear-gradient(45deg, #6c63ff, #4a6cf7);
+      }
+      .transition-value {
+        transition: all 0.3s ease-out;
+      }
+    }
+  </style>
+</head>
+<body class="bg-primary min-h-screen py-8 px-4 font-sans text-gray-700">
+  <div class="max-w-6xl mx-auto">
+    <!-- 标题区域 -->
+    <header class="text-center mb-8">
+      <h1 class="text-[clamp(1.8rem,5vw,2.5rem)] font-bold text-gradient mb-2">温度单位换算器</h1>
+    </header>
+    
+    <!-- 主内容区域 -->
+    <main class="neumorphic p-6 md:p-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- 输入区域 -->
+        <section class="space-y-6">
+          <div class="neumorphic-inset p-6">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+              <i class="fa fa-thermometer-half mr-2 text-accent"></i>输入温度值
+            </h2>
+            
+            <div class="space-y-4">
+              <div>
+                <label for="temperature" class="block text-sm font-medium mb-1">温度数值</label>
+                <div class="relative">
+                  <input 
+                    type="number" 
+                    id="temperature" 
+                    class="w-full p-3 neumorphic-inset border-0 focus:outline-none text-lg"
+                    placeholder="输入温度值"
+                    value="0"
+                  >
+                </div>
+              </div>
+              
+              <div>
+                <label for="unit" class="block text-sm font-medium mb-1">温度单位</label>
+                <select 
+                  id="unit" 
+                  class="w-full p-3 neumorphic-inset border-0 focus:outline-none text-lg appearance-none bg-transparent pr-8"
+                >
+                  <option value="K">开尔文 (K)</option>
+                  <option value="C" selected>摄氏度 (°C)</option>
+                  <option value="F">华氏度 (°F)</option>
+                  <option value="R">兰金 (°R)</option>
+                  <option value="De">德莱尔 (°De)</option>
+                  <option value="N">牛顿 (°N)</option>
+                  <option value="Re">雷奥穆尔 (°Ré)</option>
+                  <option value="Ro">罗默 (°Rø)</option>
+                </select>
+                <div class="pointer-events-none absolute right-10 top-[calc(50%+2rem)] transform -translate-y-1/2 text-gray-500">
+                  <i class="fa fa-chevron-down"></i>
+                </div>
+              </div>
+              
+              <button id="resetBtn" class="neumorphic-btn w-full py-3 font-medium text-accent hover:text-accent/80">
+                <i class="fa fa-refresh mr-1"></i> 重置数值
+              </button>
+            </div>
+          </div>
+          
+          <div class="neumorphic-inset p-5">
+            <h3 class="font-medium mb-3">温度单位说明</h3>
+            <ul class="text-sm text-gray-600 space-y-1 max-h-32 overflow-y-auto pr-2">
+              <li><span class="font-medium">K：</span>开尔文，国际单位制基本温度单位</li>
+              <li><span class="font-medium">°C：</span>摄氏度，日常生活最常用单位</li>
+              <li><span class="font-medium">°F：</span>华氏度，英美国家常用单位</li>
+              <li><span class="font-medium">°R：</span>兰金，基于华氏度的绝对温标</li>
+              <li><span class="font-medium">°De：</span>德莱尔，温度越高数值越小</li>
+              <li><span class="font-medium">°N：</span>牛顿，范围较小的温标</li>
+              <li><span class="font-medium">°Ré：</span>雷奥穆尔，基于酒精膨胀特性</li>
+              <li><span class="font-medium">°Rø：</span>罗默，以盐水混合物为0点</li>
+            </ul>
+          </div>
+        </section>
+        
+        <!-- 结果显示区域 -->
+        <section>
+          <div class="neumorphic-inset p-6 h-full">
+            <h2 class="text-xl font-semibold mb-6 flex items-center">
+              <i class="fa fa-exchange mr-2 text-accent"></i>转换结果
+            </h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- 开尔文 -->
+              <div class="neumorphic p-4 transition-all hover:shadow-lg">
+                <h3 class="text-sm text-gray-500 mb-1">开尔文</h3>
+                <div class="flex items-baseline">
+                  <span id="result-K" class="text-xl font-medium transition-value">273.15</span>
+                  <span class="ml-1 text-gray-600">K</span>
+                </div>
+              </div>
+              
+              <!-- 摄氏度 -->
+              <div class="neumorphic p-4 transition-all hover:shadow-lg">
+                <h3 class="text-sm text-gray-500 mb-1">摄氏度</h3>
+                <div class="flex items-baseline">
+                  <span id="result-C" class="text-xl font-medium transition-value">0</span>
+                  <span class="ml-1 text-gray-600">°C</span>
+                </div>
+              </div>
+              
+              <!-- 华氏度 -->
+              <div class="neumorphic p-4 transition-all hover:shadow-lg">
+                <h3 class="text-sm text-gray-500 mb-1">华氏度</h3>
+                <div class="flex items-baseline">
+                  <span id="result-F" class="text-xl font-medium transition-value">32</span>
+                  <span class="ml-1 text-gray-600">°F</span>
+                </div>
+              </div>
+              
+              <!-- 兰金 -->
+              <div class="neumorphic p-4 transition-all hover:shadow-lg">
+                <h3 class="text-sm text-gray-500 mb-1">兰金</h3>
+                <div class="flex items-baseline">
+                  <span id="result-R" class="text-xl font-medium transition-value">491.67</span>
+                  <span class="ml-1 text-gray-600">°R</span>
+                </div>
+              </div>
+              
+              <!-- 德莱尔 -->
+              <div class="neumorphic p-4 transition-all hover:shadow-lg">
+                <h3 class="text-sm text-gray-500 mb-1">德莱尔</h3>
+                <div class="flex items-baseline">
+                  <span id="result-De" class="text-xl font-medium transition-value">15</span>
+                  <span class="ml-1 text-gray-600">°De</span>
+                </div>
+              </div>
+              
+              <!-- 牛顿 -->
+              <div class="neumorphic p-4 transition-all hover:shadow-lg">
+                <h3 class="text-sm text-gray-500 mb-1">牛顿</h3>
+                <div class="flex items-baseline">
+                  <span id="result-N" class="text-xl font-medium transition-value">0</span>
+                  <span class="ml-1 text-gray-600">°N</span>
+                </div>
+              </div>
+              
+              <!-- 雷奥穆尔 -->
+              <div class="neumorphic p-4 transition-all hover:shadow-lg">
+                <h3 class="text-sm text-gray-500 mb-1">雷奥穆尔</h3>
+                <div class="flex items-baseline">
+                  <span id="result-Re" class="text-xl font-medium transition-value">0</span>
+                  <span class="ml-1 text-gray-600">°Ré</span>
+                </div>
+              </div>
+              
+              <!-- 罗默 -->
+              <div class="neumorphic p-4 transition-all hover:shadow-lg">
+                <h3 class="text-sm text-gray-500 mb-1">罗默</h3>
+                <div class="flex items-baseline">
+                  <span id="result-Ro" class="text-xl font-medium transition-value">7.5</span>
+                  <span class="ml-1 text-gray-600">°Rø</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // 获取DOM元素
+    const temperatureInput = document.getElementById('temperature');
+    const unitSelect = document.getElementById('unit');
+    const resetButton = document.getElementById('resetBtn');
+    
+    // 温度转换核心函数
+    class TemperatureConverter {
+      // 先将所有单位转换为摄氏度，再转换为其他单位
+      toCelsius(value, unit) {
+        switch(unit) {
+          case 'K': return value - 273.15;
+          case 'C': return value;
+          case 'F': return (value - 32) * 5 / 9;
+          case 'R': return (value - 491.67) * 5 / 9;
+          case 'De': return (15 - value) * 20 / 3;
+          case 'N': return value * 100 / 33;
+          case 'Re': return value * 1.25;
+          case 'Ro': return (value - 7.5) * 40 / 21;
+          default: return 0;
+        }
+      }
+      
+      fromCelsius(celsius, unit) {
+        switch(unit) {
+          case 'K': return celsius + 273.15;
+          case 'C': return celsius;
+          case 'F': return celsius * 9 / 5 + 32;
+          case 'R': return (celsius * 9 / 5) + 491.67;
+          case 'De': return 15 - celsius * 3 / 20;
+          case 'N': return celsius * 33 / 100;
+          case 'Re': return celsius * 0.8;
+          case 'Ro': return celsius * 21 / 40 + 7.5;
+          default: return 0;
+        }
+      }
+      
+      // 转换并格式化结果
+      convert(value, fromUnit, toUnit) {
+        const celsius = this.toCelsius(value, fromUnit);
+        const result = this.fromCelsius(celsius, toUnit);
+        return parseFloat(result.toFixed(6)); // 保留6位小数
+      }
+    }
+    
+    // 初始化转换器
+    const converter = new TemperatureConverter();
+    
+    // 更新所有结果
+    function updateResults() {
+      const value = parseFloat(temperatureInput.value) || 0;
+      const fromUnit = unitSelect.value;
+      
+      // 所有单位列表
+      const units = ['K', 'C', 'F', 'R', 'De', 'N', 'Re', 'Ro'];
+      
+      // 计算并更新每个单位的结果
+      units.forEach(unit => {
+        const result = converter.convert(value, fromUnit, unit);
+        const resultElement = document.getElementById(`result-${unit}`);
+        
+        // 添加数值变化动画效果
+        resultElement.style.opacity = '0.5';
+        setTimeout(() => {
+          resultElement.textContent = result.toFixed(2);
+          resultElement.style.opacity = '1';
+        }, 150);
+      });
+    }
+    
+    // 事件监听
+    temperatureInput.addEventListener('input', updateResults);
+    unitSelect.addEventListener('change', updateResults);
+    resetButton.addEventListener('click', () => {
+      temperatureInput.value = '0';
+      unitSelect.value = 'C';
+      updateResults();
+      
+      // 按钮点击动画
+      resetButton.classList.add('neumorphic-btn-active');
+      setTimeout(() => {
+        resetButton.classList.remove('neumorphic-btn-active');
+      }, 200);
+    });
+    
+    // 初始化页面
+    updateResults();
+  </script>
+</body>
+</html>

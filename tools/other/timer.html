@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>计时器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义颜色和字体 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3b82f6',
+            secondary: '#10b981',
+            danger: '#ef4444',
+            neutral: '#6b7280',
+            bgBase: '#f3f4f6',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .morph {
+        box-shadow: 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff;
+      }
+      .morph-inset {
+        box-shadow: inset 5px 5px 10px #d1d9e6, inset -5px -5px 10px #ffffff;
+      }
+      .btn-morph {
+        box-shadow: 5px 5px 10px #d1d9e6, -5px -5px 10px #ffffff;
+        transition: all 0.3s ease;
+      }
+      .btn-morph:hover {
+        box-shadow: 7px 7px 14px #d1d9e6, -7px -7px 14px #ffffff;
+        transform: translateY(-2px);
+      }
+      .btn-morph:active {
+        box-shadow: inset 5px 5px 10px #d1d9e6, inset -5px -5px 10px #ffffff;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body class="bg-bgBase min-h-screen font-sans text-gray-700 p-4 md:p-8">
+  <div class="max-w-6xl mx-auto">
+    <!-- 主容器 - 移动端垂直布局，PC端水平布局 -->
+    <div class="flex flex-col md:flex-row gap-6">
+      
+      <!-- 左侧：计时器主体 -->
+      <div class="flex-1 morph rounded-2xl p-6 md:p-8 flex flex-col items-center justify-center">
+        <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-8 text-gray-700">计时器</h1>
+        
+        <!-- 时间显示 -->
+        <div class="morph-inset rounded-3xl w-full max-w-md aspect-video flex items-center justify-center mb-8">
+          <div id="time-display" class="text-[clamp(2rem,5vw,4rem)] font-mono font-bold text-gray-700">00:00:000</div>
+        </div>
+        
+        <!-- 控制按钮 -->
+        <div class="grid grid-cols-3 gap-4 w-full max-w-md">
+          <button id="start-btn" class="btn-morph rounded-xl p-4 text-secondary">
+            <i class="fa fa-play text-2xl"></i>
+          </button>
+          <button id="lap-btn" class="btn-morph rounded-xl p-4 text-primary" disabled>
+            <i class="fa fa-flag text-2xl"></i>
+          </button>
+          <button id="reset-btn" class="btn-morph rounded-xl p-4 text-danger" disabled>
+            <i class="fa fa-refresh text-2xl"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 右侧：记忆与名次 -->
+      <div class="w-full md:w-80 lg:w-96 morph rounded-2xl p-6 flex flex-col">
+        <h2 class="text-[clamp(1.2rem,2vw,1.8rem)] font-bold mb-4 text-gray-700">计时记录</h2>
+        
+        <!-- 记录列表 -->
+        <div id="lap-list" class="morph-inset rounded-xl flex-1 overflow-y-auto p-4 space-y-3">
+          <div class="text-center text-gray-500 italic">暂无记录</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 计时器核心逻辑
+    let timer = null;
+    let startTime = 0;
+    let elapsedTime = 0;
+    let isRunning = false;
+    let laps = [];
+    
+    // DOM元素
+    const timeDisplay = document.getElementById('time-display');
+    const startBtn = document.getElementById('start-btn');
+    const lapBtn = document.getElementById('lap-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const lapList = document.getElementById('lap-list');
+    
+    // 格式化时间显示（分:秒:毫秒）
+    function formatTime(ms) {
+      const minutes = Math.floor(ms / 60000).toString().padStart(2, '0');
+      const seconds = Math.floor((ms % 60000) / 1000).toString().padStart(2, '0');
+      const milliseconds = Math.floor((ms % 1000) / 10).toString().padStart(2, '0');
+      return `${minutes}:${seconds}:${milliseconds}`;
+    }
+    
+    // 更新时间显示
+    function updateTime() {
+      const currentTime = Date.now();
+      elapsedTime = currentTime - startTime;
+      timeDisplay.textContent = formatTime(elapsedTime);
+    }
+    
+    // 开始/暂停计时
+    startBtn.addEventListener('click', () => {
+      if (isRunning) {
+        // 暂停计时
+        clearInterval(timer);
+        startBtn.innerHTML = '<i class="fa fa-play text-2xl"></i>';
+        startBtn.classList.remove('text-neutral');
+        startBtn.classList.add('text-secondary');
+        resetBtn.disabled = false;
+      } else {
+        // 开始计时
+        startTime = Date.now() - elapsedTime;
+        timer = setInterval(updateTime, 10); // 每10毫秒更新一次，确保毫秒显示流畅
+        startBtn.innerHTML = '<i class="fa fa-pause text-2xl"></i>';
+        startBtn.classList.remove('text-secondary');
+        startBtn.classList.add('text-neutral');
+        lapBtn.disabled = false;
+        resetBtn.disabled = true;
+      }
+      isRunning = !isRunning;
+    });
+    
+    // 记录名次
+    lapBtn.addEventListener('click', () => {
+      const lapTime = formatTime(elapsedTime);
+      const lapNumber = laps.length + 1;
+      laps.push(lapTime);
+      
+      // 创建记录元素
+      const lapItem = document.createElement('div');
+      lapItem.className = 'flex justify-between items-center p-2 border-b border-gray-200 last:border-0';
+      lapItem.innerHTML = `
+        <span class="font-medium">第 ${lapNumber} 圈</span>
+        <span class="font-mono">${lapTime}</span>
+      `;
+      
+      // 添加到列表顶部
+      if (lapList.querySelector('.italic')) {
+        lapList.innerHTML = '';
+      }
+      lapList.prepend(lapItem);
+    });
+    
+    // 重置计时器
+    resetBtn.addEventListener('click', () => {
+      // 重置所有状态
+      clearInterval(timer);
+      isRunning = false;
+      elapsedTime = 0;
+      timeDisplay.textContent = '00:00:000';
+      laps = [];
+      lapList.innerHTML = '<div class="text-center text-gray-500 italic">暂无记录</div>';
+      
+      // 重置按钮状态
+      startBtn.innerHTML = '<i class="fa fa-play text-2xl"></i>';
+      startBtn.classList.remove('text-neutral');
+      startBtn.classList.add('text-secondary');
+      lapBtn.disabled = true;
+      resetBtn.disabled = true;
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>电话号码分析器与格式化工具</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#e0e5ec',
+            secondary: '#a3b1c6',
+            accent: '#4a90e2',
+            cmcc: '#e60000',     // 中国移动
+            unicom: '#0078d7',   // 中国联通
+            telecom: '#009a44',  // 中国电信
+            text: '#4a5568'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'neu-flat': '5px 5px 10px #b8c1cf, -5px -5px 10px #ffffff',
+            'neu-pressed': 'inset 5px 5px 10px #b8c1cf, inset -5px -5px 10px #ffffff',
+            'neu-convex': '5px 5px 10px #b8c1cf, -5px -5px 10px #ffffff, inset 1px 1px 2px #ffffff, inset -1px -1px 2px #b8c1cf',
+            'neu-concave': 'inset 5px 5px 10px #b8c1cf, inset -5px -5px 10px #ffffff',
+          }
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .neu-flat {
+        box-shadow: 5px 5px 10px #b8c1cf, -5px -5px 10px #ffffff;
+      }
+      .neu-pressed {
+        box-shadow: inset 5px 5px 10px #b8c1cf, inset -5px -5px 10px #ffffff;
+      }
+      .neu-convex {
+        box-shadow: 5px 5px 10px #b8c1cf, -5px -5px 10px #ffffff, inset 1px 1px 2px #ffffff, inset -1px -1px 2px #b8c1cf;
+      }
+      .neu-concave {
+        box-shadow: inset 5px 5px 10px #b8c1cf, inset -5px -5px 10px #ffffff;
+      }
+      .text-gradient {
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        background-image: linear-gradient(135deg, #4a90e2, #5cb85c);
+      }
+      .transition-neu {
+        transition: all 0.3s ease;
+      }
+    }
+  </style>
+</head>
+<body class="bg-primary min-h-screen font-inter text-text p-4 md:p-6">
+  <div class="max-w-6xl mx-auto">
+    <!-- 标题区域 -->
+    <header class="text-center mb-8 md:mb-12">
+      <h1 class="text-[clamp(1.8rem,5vw,2.5rem)] font-bold text-gradient mb-2">电话号码分析器</h1>
+      <p class="text-gray-600 text-[clamp(1rem,2vw,1.1rem)]">解析、验证与格式化电话号码的专业工具</p>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+      <!-- 左侧输入区 -->
+      <section class="neu-flat rounded-2xl p-6 md:p-8 transition-neu">
+        <h2 class="text-xl md:text-2xl font-semibold mb-6 flex items-center">
+          <i class="fa fa-mobile-phone mr-3 text-accent text-2xl"></i>输入电话号码
+        </h2>
+        
+        <div class="space-y-6">
+          <!-- 国家/地区选择 -->
+          <div>
+            <label class="block mb-2 font-medium">国家/地区</label>
+            <div class="relative neu-concave rounded-xl p-1 transition-neu">
+              <select id="country-select" class="w-full bg-transparent border-none outline-none p-3 appearance-none cursor-pointer">
+                <option value="cn" data-code="+86">中国 (+86)</option>
+                <option value="us" data-code="+1">美国 (+1)</option>
+                <option value="jp" data-code="+81">日本 (+81)</option>
+                <option value="uk" data-code="+44">英国 (+44)</option>
+                <option value="sg" data-code="+65">新加坡 (+65)</option>
+              </select>
+              <div class="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                <i class="fa fa-chevron-down text-gray-500"></i>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 电话号码输入 -->
+          <div>
+            <label for="phone-input" class="block mb-2 font-medium">电话号码</label>
+            <div class="relative neu-concave rounded-xl transition-neu">
+              <span id="country-code" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">+86</span>
+              <input 
+                type="tel" 
+                id="phone-input" 
+                placeholder="请输入电话号码" 
+                class="w-full bg-transparent border-none outline-none pl-10 pr-4 py-3 rounded-xl"
+              >
+            </div>
+          </div>
+          
+          <!-- 智能识别选项 -->
+          <div class="flex items-center space-x-2">
+            <input type="checkbox" id="auto-detect" class="form-checkbox h-5 w-5 rounded bg-primary neu-flat border-0" checked>
+            <label for="auto-detect" class="font-medium">智能识别国家/地区</label>
+          </div>
+          
+          <!-- 分析按钮 -->
+          <button id="analyze-btn" class="w-full neu-flat hover:neu-pressed active:neu-pressed rounded-xl py-4 font-medium text-lg transition-neu flex items-center justify-center group">
+            <i class="fa fa-search mr-2 group-hover:rotate-90 transition-transform"></i>
+            分析号码
+          </button>
+        </div>
+      </section>
+      
+      <!-- 右侧结果区 -->
+      <section class="neu-flat rounded-2xl p-6 md:p-8 transition-neu">
+        <h2 class="text-xl md:text-2xl font-semibold mb-6 flex items-center">
+          <i class="fa fa-bar-chart mr-3 text-accent"></i>分析结果
+        </h2>
+        
+        <div id="result-container" class="space-y-6 opacity-50">
+          <!-- 初始提示 -->
+          <div id="initial-message" class="text-center py-10">
+            <i class="fa fa-info-circle text-4xl text-gray-400 mb-4"></i>
+            <p>请输入电话号码并点击分析按钮</p>
+          </div>
+          
+          <!-- 结果将在这里动态显示 -->
+          <div id="analysis-result" class="hidden space-y-5">
+            <!-- 基本信息 -->
+            <div class="neu-convex rounded-xl p-4 transition-neu">
+              <h3 class="font-semibold mb-3 text-lg">基本信息</h3>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <p class="text-sm text-gray-500">国家/地区</p>
+                  <p id="result-country" class="font-medium">-</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">国家代码</p>
+                  <p id="result-code" class="font-medium">-</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">号码类型</p>
+                  <p id="result-type" class="font-medium">-</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">有效性</p>
+                  <p id="result-validity" class="font-medium">-</p>
+                </div>
+                
+                <!-- 国内号码专属信息 -->
+                <div id="cn-location-container" class="hidden col-span-2 mt-2 pt-2 border-t border-gray-200">
+                  <p class="text-sm text-gray-500">归属地</p>
+                  <p id="result-location" class="font-medium">-</p>
+                </div>
+                <div id="cn-operator-container" class="hidden col-span-2">
+                  <p class="text-sm text-gray-500">运营商</p>
+                  <p id="result-operator" class="font-medium">-</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 格式化结果 -->
+            <div>
+              <h3 class="font-semibold mb-3 text-lg">格式化结果</h3>
+              <div class="space-y-3">
+                <div class="neu-convex rounded-xl p-4 transition-neu">
+                  <p class="text-sm text-gray-500">国际格式</p>
+                  <p id="format-international" class="font-medium">-</p>
+                </div>
+                <div class="neu-convex rounded-xl p-4 transition-neu">
+                  <p class="text-sm text-gray-500">国内格式</p>
+                  <p id="format-national" class="font-medium">-</p>
+                </div>
+                <div class="neu-convex rounded-xl p-4 transition-neu">
+                  <p class="text-sm text-gray-500">E.164格式</p>
+                  <p id="format-e164" class="font-medium">-</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 复制按钮 -->
+            <button id="copy-btn" class="w-full neu-flat hover:neu-pressed active:neu-pressed rounded-xl py-3 font-medium transition-neu flex items-center justify-center">
+              <i class="fa fa-copy mr-2"></i>
+              复制格式化结果
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+    
+    <!-- 底部信息 -->
+    <footer class="mt-10 text-center text-gray-500 text-sm">
+      <p>支持全球主要国家/地区的电话号码分析与格式化 | 国内号码支持归属地与运营商识别</p>
+    </footer>
+  </div>
+
+  <!-- 通知提示 -->
+  <div id="notification" class="fixed bottom-6 right-6 px-6 py-3 rounded-lg neu-flat transform translate-y-20 opacity-0 transition-all duration-300 flex items-center">
+    <i id="notification-icon" class="mr-2"></i>
+    <span id="notification-text"></span>
+  </div>
+
+<script>
+// 中国手机号段数据将从外部JSON加载
+let chinaPhoneData = {
+  operators: {},
+  locations: {}
+};
+
+// 初始化时加载号段数据
+document.addEventListener('DOMContentLoaded', () => {
+  loadPhoneData();
+});
+
+// 从外部JSON加载号段数据
+function loadPhoneData() {
+  // 实际使用时替换为真实的JSON数据URL
+  const operatorsUrl = './data/cnyy.json';
+  const locationsUrl = './data/cndq.json';
+  
+  // 并行加载两个JSON文件
+  Promise.all([
+    fetch(operatorsUrl).then(res => res.json()),
+    fetch(locationsUrl).then(res => res.json())
+  ])
+  .then(([operatorsData, locationsData]) => {
+    chinaPhoneData.operators = operatorsData;
+    chinaPhoneData.locations = locationsData;
+    showNotification('数据加载完成，可开始分析号码', true);
+  })
+  .catch(error => {
+    console.error('数据加载失败:', error);
+    // 加载失败时使用备用数据
+    useFallbackData();
+    showNotification('数据加载失败，将使用本地备用数据', false);
+  });
+}
+
+// 使用备用数据
+function useFallbackData() {
+  chinaPhoneData = {
+    operators: {
+      cmcc: ['134', '135', '136', '137', '138', '139', '147', '150', '151', '152', '157', '158', '159', '172', '178', '182', '183', '184', '187', '188', '198'],
+      unicom: ['130', '131', '132', '145', '155', '156', '166', '171', '175', '176', '185', '186'],
+      telecom: ['133', '149', '153', '173', '177', '180', '181', '189', '199']
+    },
+    locations: {
+      '1380013': '北京市',
+      '1391000': '北京市',
+      '1380021': '上海市',
+      '1391234': '南京市',
+      '1380051': '苏州市',
+      '1390200': '天津市',
+      '1380075': '广州市',
+      '1390280': '成都市',
+      '1380027': '武汉市',
+      '1390531': '济南市'
+    }
+  };
+}
+
+// DOM元素
+const countrySelect = document.getElementById('country-select');
+const countryCodeEl = document.getElementById('country-code');
+const phoneInput = document.getElementById('phone-input');
+const autoDetect = document.getElementById('auto-detect');
+const analyzeBtn = document.getElementById('analyze-btn');
+const initialMessage = document.getElementById('initial-message');
+const analysisResult = document.getElementById('analysis-result');
+const resultContainer = document.getElementById('result-container');
+const copyBtn = document.getElementById('copy-btn');
+const notification = document.getElementById('notification');
+const notificationIcon = document.getElementById('notification-icon');
+const notificationText = document.getElementById('notification-text');
+
+// 结果元素
+const resultCountry = document.getElementById('result-country');
+const resultCode = document.getElementById('result-code');
+const resultType = document.getElementById('result-type');
+const resultValidity = document.getElementById('result-validity');
+const resultLocation = document.getElementById('result-location');
+const resultOperator = document.getElementById('result-operator');
+const cnLocationContainer = document.getElementById('cn-location-container');
+const cnOperatorContainer = document.getElementById('cn-operator-container');
+
+// 格式化结果元素
+const formatInternational = document.getElementById('format-international');
+const formatNational = document.getElementById('format-national');
+const formatE164 = document.getElementById('format-e164');
+
+// 国家代码映射
+const countryData = {
+  cn: { name: '中国', code: '+86', pattern: /^1[3-9]\d{9}$/ },
+  us: { name: '美国', code: '+1', pattern: /^\d{10}$/ },
+  jp: { name: '日本', code: '+81', pattern: /^\d{10,11}$/ },
+  uk: { name: '英国', code: '+44', pattern: /^\d{10,11}$/ },
+  sg: { name: '新加坡', code: '+65', pattern: /^\d{8}$/ }
+};
+
+// 更新国家代码显示
+countrySelect.addEventListener('change', () => {
+  const selectedOption = countrySelect.options[countrySelect.selectedIndex];
+  countryCodeEl.textContent = selectedOption.getAttribute('data-code');
+});
+
+// 显示通知
+function showNotification(message, isSuccess = true) {
+  notificationText.textContent = message;
+  notificationIcon.className = isSuccess ? 'fa fa-check text-green-500 mr-2' : 'fa fa-times text-red-500 mr-2';
+  notification.classList.remove('translate-y-20', 'opacity-0');
+  
+  setTimeout(() => {
+    notification.classList.add('translate-y-20', 'opacity-0');
+  }, 3000);
+}
+
+// 获取运营商信息
+function getOperator(phoneNumber) {
+  const prefix = phoneNumber.substring(0, 3);
+  
+  if (chinaPhoneData.operators.cmcc?.includes(prefix)) {
+    return { name: '中国移动', className: 'text-cmcc' };
+  } else if (chinaPhoneData.operators.unicom?.includes(prefix)) {
+    return { name: '中国联通', className: 'text-unicom' };
+  } else if (chinaPhoneData.operators.telecom?.includes(prefix)) {
+    return { name: '中国电信', className: 'text-telecom' };
+  }
+  return { name: '未知', className: '' };
+}
+
+// 获取归属地信息
+function getLocation(phoneNumber) {
+  // 取前7位查询归属地
+  const prefix7 = phoneNumber.substring(0, 7);
+  return chinaPhoneData.locations[prefix7] || '未知';
+}
+
+// 分析电话号码
+analyzeBtn.addEventListener('click', () => {
+  const phoneNumber = phoneInput.value.trim();
+  if (!phoneNumber) {
+    showNotification('请输入电话号码', false);
+    return;
+  }
+  
+  // 检查数据是否已加载
+  if (Object.keys(chinaPhoneData.operators).length === 0) {
+    showNotification('数据正在加载中，请稍候', false);
+    return;
+  }
+  
+  // 获取当前选择的国家
+  let countryCode = countrySelect.value;
+  let countryInfo = countryData[countryCode];
+  
+  // 智能检测国家
+  if (autoDetect.checked) {
+    // 简单的国家代码检测逻辑
+    for (const code in countryData) {
+      if (phoneNumber.startsWith(countryData[code].code)) {
+        countryCode = code;
+        countryInfo = countryData[code];
+        // 更新选择框
+        countrySelect.value = code;
+        countryCodeEl.textContent = countryInfo.code;
+        break;
+      }
+    }
+  }
+  
+  // 验证电话号码
+  const cleanedNumber = phoneNumber.replace(/\D/g, '');
+  const isInternational = phoneNumber.startsWith('+');
+  const isValid = countryInfo.pattern.test(cleanedNumber);
+  
+  // 确定号码类型
+  let numberType = '未知';
+  if (countryCode === 'cn') {
+    const prefix = cleanedNumber.substring(0, 3);
+    if (prefix >= 130 && prefix <= 199) {
+      numberType = '移动电话';
+    } else if (cleanedNumber.length === 8 || cleanedNumber.length === 11) {
+      numberType = '固定电话';
+    }
+  } else if (countryCode === 'us') {
+    numberType = '通用电话';
+  } else if (countryCode === 'jp') {
+    numberType = cleanedNumber.length === 10 ? '固定电话' : '移动电话';
+  }
+  
+  // 格式化号码
+  let internationalFormat, nationalFormat, e164Format;
+  
+  if (isValid) {
+    e164Format = `${countryInfo.code}${cleanedNumber}`;
+    
+    if (countryCode === 'cn') {
+      nationalFormat = `1${cleanedNumber.substring(1, 4)} ${cleanedNumber.substring(4, 7)} ${cleanedNumber.substring(7)}`;
+      internationalFormat = `${countryInfo.code} ${nationalFormat}`;
+    } else if (countryCode === 'us') {
+      nationalFormat = `(${cleanedNumber.substring(0, 3)}) ${cleanedNumber.substring(3, 6)}-${cleanedNumber.substring(6)}`;
+      internationalFormat = `${countryInfo.code} ${nationalFormat}`;
+    } else {
+      nationalFormat = cleanedNumber;
+      internationalFormat = `${countryInfo.code} ${cleanedNumber}`;
+    }
+  }
+  
+  // 更新结果显示
+  resultCountry.textContent = countryInfo.name;
+  resultCode.textContent = countryInfo.code;
+  resultType.textContent = numberType;
+  resultValidity.textContent = isValid ? '有效' : '无效';
+  resultValidity.className = `font-medium ${isValid ? 'text-green-500' : 'text-red-500'}`;
+  
+  // 国内号码特殊处理 - 显示归属地和运营商
+  if (countryCode === 'cn' && isValid) {
+    const operatorInfo = getOperator(cleanedNumber);
+    const location = getLocation(cleanedNumber);
+    
+    resultLocation.textContent = location;
+    resultOperator.textContent = operatorInfo.name;
+    resultOperator.className = `font-medium ${operatorInfo.className}`;
+    
+    // 显示国内专属信息区域
+    cnLocationContainer.classList.remove('hidden');
+    cnOperatorContainer.classList.remove('hidden');
+  } else {
+    // 隐藏国内专属信息区域
+    cnLocationContainer.classList.add('hidden');
+    cnOperatorContainer.classList.add('hidden');
+  }
+  
+  // 更新格式化结果
+  formatInternational.textContent = isValid ? internationalFormat : 'N/A';
+  formatNational.textContent = isValid ? nationalFormat : 'N/A';
+  formatE164.textContent = isValid ? e164Format : 'N/A';
+  
+  // 显示结果区域
+  initialMessage.classList.add('hidden');
+  analysisResult.classList.remove('hidden');
+  resultContainer.classList.remove('opacity-50');
+  
+  // 添加动画效果
+  analysisResult.classList.add('animate-pulse');
+  setTimeout(() => {
+    analysisResult.classList.remove('animate-pulse');
+  }, 500);
+});
+
+// 复制功能
+copyBtn.addEventListener('click', () => {
+  const textToCopy = formatE164.textContent;
+  if (textToCopy !== 'N/A') {
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      showNotification('已复制到剪贴板', true);
+    }).catch(() => {
+      showNotification('复制失败', false);
+    });
+  } else {
+    showNotification('没有可复制的有效号码', false);
+  }
+});
+
+// 输入时的交互效果
+phoneInput.addEventListener('focus', () => {
+  phoneInput.parentElement.classList.add('ring-2', 'ring-accent/30');
+});
+
+phoneInput.addEventListener('blur', () => {
+  phoneInput.parentElement.classList.remove('ring-2', 'ring-accent/30');
+});
+
+// 添加键盘支持
+phoneInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    analyzeBtn.click();
+  }
+});
+</script>
+</body>
+</html>
