@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文件大小生成器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义主题 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#e0e5ec',
+            secondary: '#a3b1c6',
+            accent: '#6366f1',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /*.neumorphic {
+        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6),
+                    -9px -9px 16px rgba(255, 255, 255, 0.5);
+      }*/
+      .neumorphic-inset {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transition: all 0.2s ease;
+      }
+      .neumorphic-btn:hover {
+        box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.7),
+                    -7px -7px 14px rgba(255, 255, 255, 0.6);
+        transform: translateY(-2px);
+      }
+      .neumorphic-btn:active {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body class="bg-primary min-h-screen font-sans text-gray-700 p-4 md:p-6">
+  <div class="max-w-6xl mx-auto">
+    <!-- 标题区域 -->
+    <header class="text-center mb-8 md:mb-12">
+      <h1 class="text-[clamp(1.8rem,5vw,2.8rem)] font-bold text-gray-700 tracking-wide">
+        <i class="fa fa-file-text-o mr-3"></i>文件大小生成器
+      </h1>
+      <p class="text-gray-600 mt-2 text-[clamp(1rem,2vw,1.2rem)]">生成指定大小的随机数据文件并下载</p>
+    </header>
+    
+    <!-- 主内容区 - 响应式布局 -->
+    <main class="flex flex-col md:flex-row gap-8">
+      <!-- 左侧：控制面板 -->
+      <section class="w-full md:w-1/2 bg-primary rounded-3xl p-6 neumorphic">
+        <h2 class="text-xl font-semibold mb-6 flex items-center">
+          <i class="fa fa-sliders mr-2 text-accent"></i>设置文件大小
+        </h2>
+        
+        <div class="space-y-6">
+          <!-- 大小输入 -->
+          <div class="space-y-2">
+            <label for="fileSize" class="block text-sm font-medium text-gray-600">文件大小</label>
+            <div class="flex items-center gap-3">
+              <input 
+                type="number" 
+                id="fileSize" 
+                min="1" 
+                max="10000" 
+                step="1" 
+                value="1024" 
+                class="flex-1 bg-primary border-none rounded-2xl p-4 neumorphic-inset focus:outline-none focus:ring-2 focus:ring-accent/50"
+              >
+              <select 
+                id="sizeUnit" 
+                class="bg-primary border-none rounded-2xl p-4 neumorphic-inset focus:outline-none focus:ring-2 focus:ring-accent/50"
+              >
+                <option value="B">B</option>
+                <option value="KB">KB</option>
+                <option value="MB" selected>MB</option>
+                <option value="GB">GB</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- 单位说明 -->
+          <div class="text-xs text-gray-500 bg-primary/50 p-3 rounded-xl">
+            <p><i class="fa fa-info-circle mr-1"></i> 最大支持约10GB（10000MB）的文件生成</p>
+          </div>
+          
+          <!-- 生成按钮 -->
+          <button 
+            id="generateBtn" 
+            class="w-full bg-primary text-gray-700 rounded-2xl p-5 font-medium text-lg neumorphic-btn flex items-center justify-center gap-2"
+          >
+            <i class="fa fa-cogs"></i>
+            <span>生成文件</span>
+          </button>
+          
+          <!-- 进度显示 -->
+          <div id="progressContainer" class="hidden">
+            <div class="text-sm font-medium mb-2">生成进度</div>
+            <div class="h-3 bg-primary rounded-full neumorphic-inset overflow-hidden">
+              <div id="progressBar" class="h-full bg-accent rounded-full w-0 transition-all duration-300"></div>
+            </div>
+            <p id="progressText" class="text-xs text-gray-500 mt-2 text-right">准备中...</p>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 右侧：结果与下载 -->
+      <section class="w-full md:w-1/2 bg-primary rounded-3xl p-6 neumorphic">
+        <h2 class="text-xl font-semibold mb-6 flex items-center">
+          <i class="fa fa-download mr-2 text-accent"></i>下载文件
+        </h2>
+        
+        <div class="space-y-6">
+          <!-- 结果信息 -->
+          <div class="bg-primary rounded-2xl p-5 neumorphic-inset min-h-[120px] flex flex-col justify-center">
+            <p id="resultInfo" class="text-center text-gray-500">
+              请设置文件大小并点击生成按钮
+            </p>
+            <p id="fileDetails" class="text-center mt-2 hidden"></p>
+          </div>
+          
+          <!-- 下载按钮 -->
+          <a 
+            id="downloadBtn" 
+            href="#" 
+            download="random-data.bin" 
+            class="w-full bg-accent text-white rounded-2xl p-5 font-medium text-lg neumorphic-btn flex items-center justify-center gap-2 opacity-50 cursor-not-allowed pointer-events-none transition-opacity duration-300"
+          >
+            <i class="fa fa-download"></i>
+            <span>下载文件</span>
+          </a>
+          
+          <!-- 新增：清理缓存按钮 -->
+          <button 
+            id="clearCacheBtn" 
+            class="w-full bg-red-500 text-white rounded-2xl p-5 font-medium text-lg neumorphic-btn flex items-center justify-center gap-2 transition-all duration-300 hover:bg-red-600"
+          >
+            <i class="fa fa-trash"></i>
+            <span>清理所有缓存</span>
+          </button>
+          
+          <!-- 提示信息 -->
+          <div class="text-sm text-gray-500 bg-primary/50 p-4 rounded-xl">
+            <p class="flex items-start">
+              <i class="fa fa-lightbulb-o mt-1 mr-2 text-accent"></i>
+              <span>生成的文件包含随机二进制数据，可用于测试存储容量、传输速度等场景。较大的文件可能需要更长时间生成。</span>
+              <br />
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+    <p style="color: red;font-size: 12px;text-align: center;">请注意，移动设备可能会出现缓存无法清理的情况</p>
+  </div>
+
+  <script>
+    // 获取DOM元素
+    const fileSizeInput = document.getElementById('fileSize');
+    const sizeUnitSelect = document.getElementById('sizeUnit');
+    const generateBtn = document.getElementById('generateBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const clearCacheBtn = document.getElementById('clearCacheBtn');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const resultInfo = document.getElementById('resultInfo');
+    const fileDetails = document.getElementById('fileDetails');
+    
+    // 存储生成的Blob对象和对应的URL（包括历史缓存）
+    let fileBlob = null;
+    let cacheBlobs = [];
+    const CACHE_KEY = 'file-generator-cache';
+    
+    // 页面加载时恢复缓存记录（用于刷新后仍能清理）
+    window.addEventListener('load', () => {
+      const savedCache = localStorage.getItem(CACHE_KEY);
+      if (savedCache) {
+        try {
+          cacheBlobs = JSON.parse(savedCache);
+        } catch (e) {
+          console.error('恢复缓存记录失败:', e);
+          localStorage.removeItem(CACHE_KEY);
+          cacheBlobs = [];
+        }
+      }
+    });
+    
+    // 生成文件
+    generateBtn.addEventListener('click', async () => {
+      try {
+        // 获取用户输入的大小和单位
+        const sizeValue = parseFloat(fileSizeInput.value);
+        const unit = sizeUnitSelect.value;
+        
+        // 验证输入
+        if (isNaN(sizeValue) || sizeValue <= 0) {
+          alert('请输入有效的文件大小');
+          return;
+        }
+        
+        // 转换为字节
+        let bytes;
+        switch(unit) {
+          case 'B':
+            bytes = sizeValue;
+            break;
+          case 'KB':
+            bytes = sizeValue * 1024;
+            break;
+          case 'MB':
+            bytes = sizeValue * 1024 * 1024;
+            break;
+          case 'GB':
+            bytes = sizeValue * 1024 * 1024 * 1024;
+            break;
+        }
+        
+        // 检查是否超过10GB限制 (10 * 1024^3 字节)
+        const maxBytes = 10 * 1024 * 1024 * 1024;
+        if (bytes > maxBytes) {
+          alert('文件大小不能超过10GB');
+          return;
+        }
+        
+        // 显示进度
+        progressContainer.classList.remove('hidden');
+        progressBar.style.width = '0%';
+        progressText.textContent = '开始生成...';
+        resultInfo.textContent = '正在生成文件，请稍候...';
+        resultInfo.classList.remove('text-gray-500', 'text-green-600', 'text-red-600');
+        resultInfo.classList.add('text-gray-700');
+        
+        // 禁用生成按钮防止重复点击
+        generateBtn.disabled = true;
+        generateBtn.classList.add('opacity-70');
+        
+        // 生成随机数据
+        fileBlob = await generateRandomFile(bytes);
+        
+        // 创建下载URL并加入缓存管理
+        const blobUrl = URL.createObjectURL(fileBlob);
+        cacheBlobs.push({ url: blobUrl });
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cacheBlobs));
+        
+        // 更新UI
+        progressBar.style.width = '100%';
+        progressText.textContent = '生成完成';
+        resultInfo.textContent = '文件生成成功！';
+        resultInfo.classList.remove('text-gray-500', 'text-gray-700', 'text-red-600');
+        resultInfo.classList.add('text-green-600');
+        
+        // 显示文件详情
+        const sizeText = formatFileSize(bytes);
+        fileDetails.textContent = `文件大小: ${sizeText} | 格式: binary`;
+        fileDetails.classList.remove('hidden');
+        
+        // 激活下载按钮
+        downloadBtn.href = blobUrl;
+        downloadBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+        
+        // 重新启用生成按钮
+        generateBtn.disabled = false;
+        generateBtn.classList.remove('opacity-70');
+      } catch (error) {
+        console.error('生成文件时出错:', error);
+        resultInfo.textContent = '生成文件失败，请重试';
+        resultInfo.classList.remove('text-gray-500', 'text-gray-700', 'text-green-600');
+        resultInfo.classList.add('text-red-600');
+        progressText.textContent = '生成失败';
+        
+        // 重新启用生成按钮
+        generateBtn.disabled = false;
+        generateBtn.classList.remove('opacity-70');
+      }
+    });
+    
+    // 生成随机数据文件
+    async function generateRandomFile(bytes) {
+      // 根据文件大小调整分块大小，大文件使用更大的分块
+      const chunkSize = bytes < 1024 * 1024 * 10 ? 1024 * 1024 : 10 * 1024 * 1024; // 1MB或10MB分块
+      const chunks = Math.ceil(bytes / chunkSize);
+      const blobParts = [];
+      
+      for (let i = 0; i < chunks; i++) {
+        // 最后一块可能小于chunkSize
+        const currentChunkSize = i === chunks - 1 ? bytes % chunkSize || chunkSize : chunkSize;
+        
+        // 生成随机数据
+        const arrayBuffer = new ArrayBuffer(currentChunkSize);
+        const uint8Array = new Uint8Array(arrayBuffer);
+        
+        // 填充随机值 - 对于非常大的块使用更高效的方法
+        if (currentChunkSize < 1024 * 1024) {
+          // 小块使用简单循环
+          for (let j = 0; j < currentChunkSize; j++) {
+            uint8Array[j] = Math.floor(Math.random() * 256);
+          }
+        } else {
+          // 大块使用TextEncoder配合随机字符串生成，更高效
+          const chunkStr = Array(Math.ceil(currentChunkSize / 1024) + 1).join(Math.random().toString(36).substring(2, 15));
+          const encoder = new TextEncoder();
+          const textBytes = encoder.encode(chunkStr);
+          for (let j = 0; j < currentChunkSize; j++) {
+            uint8Array[j] = textBytes[j % textBytes.length];
+          }
+        }
+        
+        blobParts.push(uint8Array);
+        
+        // 更新进度
+        const progress = ((i + 1) / chunks) * 100;
+        progressBar.style.width = `${progress}%`;
+        progressText.textContent = `已完成 ${Math.round(progress)}%`;
+        
+        // 让出主线程，避免UI冻结
+        if (i < chunks - 1) {
+          await new Promise(resolve => requestAnimationFrame(resolve));
+        }
+      }
+      
+      return new Blob(blobParts, { type: 'application/octet-stream' });
+    }
+    
+    // 格式化文件大小显示
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+      else if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+      else return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+    }
+    
+    // 清理所有缓存的函数
+    function revokeAllCache() {
+      // 遍历并释放所有缓存URL
+      cacheBlobs.forEach((entry) => {
+        if (entry.url) {
+          URL.revokeObjectURL(entry.url);
+        }
+      });
+      // 重置缓存数组和本地存储
+      cacheBlobs = [];
+      localStorage.removeItem(CACHE_KEY);
+      
+      // 重置UI状态
+      fileBlob = null;
+      fileDetails.classList.add('hidden');
+      downloadBtn.href = '#';
+      downloadBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+    }
+    
+    // 手动清理缓存按钮事件
+    clearCacheBtn.addEventListener('click', () => {
+      try {
+        revokeAllCache();
+        resultInfo.textContent = '所有缓存已清理！';
+        resultInfo.classList.remove('text-gray-500', 'text-gray-700', 'text-red-600');
+        resultInfo.classList.add('text-green-600');
+      } catch (error) {
+        console.error('清理缓存失败:', error);
+        resultInfo.textContent = '清理缓存失败，请重试';
+        resultInfo.classList.remove('text-gray-500', 'text-gray-700', 'text-green-600');
+        resultInfo.classList.add('text-red-600');
+      }
+    });
+    
+    // 退出页面自动清理所有缓存（包括历史记录）
+    window.addEventListener('beforeunload', () => {
+      revokeAllCache();
+    });
+    
+    // 单位变化时调整输入框的step和默认值
+    sizeUnitSelect.addEventListener('change', () => {
+      const unit = sizeUnitSelect.value;
+      switch(unit) {
+        case 'B':
+          fileSizeInput.step = 1;
+          fileSizeInput.min = 1;
+          fileSizeInput.value = 1024;
+          break;
+        case 'KB':
+          fileSizeInput.step = 1;
+          fileSizeInput.min = 1;
+          fileSizeInput.value = 1;
+          break;
+        case 'MB':
+          fileSizeInput.step = 0.01;
+          fileSizeInput.min = 0.01;
+          fileSizeInput.value = 1;
+          break;
+        case 'GB':
+          fileSizeInput.step = 0.01;
+          fileSizeInput.min = 0.01;
+          fileSizeInput.value = 0.01;
+          break;
+      }
+    });
+  </script>
+</body>
+</html>

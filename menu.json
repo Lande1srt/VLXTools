@@ -115,6 +115,11 @@
                 "name": "Chmod生成工具",
                 "icon": "fa-compress",
                 "url": "tools/develop/chmod.html"
+            },
+            {
+                "name": "指定大小文件生成",
+                "icon": "",
+                "url": "tools/develop/rdatasizefile.html"
             }
         ]
     },
