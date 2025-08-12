@@ -1,0 +1,1410 @@
+{
+  "fiatCurrencies": [
+    {
+      "name": "人民币",
+      "code": "CNY",
+      "symbol": "¥",
+      "country": "中国",
+      "description": "中华人民共和国法定货币，全球主要储备货币之一，在跨境贸易和数字人民币试点中广泛应用"
+    },
+    {
+      "name": "美元",
+      "code": "USD",
+      "symbol": "$",
+      "country": "美国",
+      "description": "全球交易量最大的储备货币，主导国际贸易结算，美联储发行并维持其全球流动性"
+    },
+    {
+      "name": "欧元",
+      "code": "EUR",
+      "symbol": "€",
+      "country": "欧盟（奥地利、比利时、塞浦路斯、爱沙尼亚、芬兰、法国、德国、希腊、爱尔兰、意大利、拉脱维亚、立陶宛、卢森堡、马耳他、荷兰、葡萄牙、斯洛伐克、斯洛文尼亚、西班牙）",
+      "description": "欧盟20余国统一货币，第二大外汇储备货币，欧洲中央银行管理其货币政策"
+    },
+    {
+      "name": "日元",
+      "code": "JPY",
+      "symbol": "¥",
+      "country": "日本",
+      "description": "日本国法定货币，避险属性强，受日本央行货币政策及贸易顺差影响显著"
+    },
+    {
+      "name": "英镑",
+      "code": "GBP",
+      "symbol": "£",
+      "country": "英国",
+      "description": "大不列颠及北爱尔兰联合王国法定货币，伦敦金融中心核心货币"
+    },
+    {
+      "name": "澳元",
+      "code": "AUD",
+      "symbol": "A$",
+      "country": "澳大利亚",
+      "description": "大宗商品货币，与资源出口紧密相关，受中国需求及铁矿石价格波动影响"
+    },
+    {
+      "name": "加元",
+      "code": "CAD",
+      "symbol": "C$",
+      "country": "加拿大",
+      "description": "石油资源货币，美元联动性强，央行采用通胀目标制调控经济"
+    },
+    {
+      "name": "瑞士法郎",
+      "code": "CHF",
+      "symbol": "Fr",
+      "country": "瑞士",
+      "description": "永久中立国货币，避险功能突出，瑞士国家银行严格控制货币供应量"
+    },
+    {
+      "name": "港元",
+      "code": "HKD",
+      "symbol": "HK$",
+      "country": "中国香港",
+      "description": "中国香港特别行政区法定货币，实行联系汇率制，挂钩美元保持稳定"
+    },
+    {
+      "name": "新加坡元",
+      "code": "SGD",
+      "symbol": "S$",
+      "country": "新加坡",
+      "description": "东南亚金融中心货币，汇率稳定，新加坡金融管理局实施稳健货币政策"
+    },
+    {
+      "name": "韩元",
+      "code": "KRW",
+      "symbol": "₩",
+      "country": "韩国",
+      "description": "韩国法定货币，科技产业驱动型经济，受半导体出口及地缘政治影响"
+    },
+    {
+      "name": "印度卢比",
+      "code": "INR",
+      "symbol": "₹",
+      "country": "印度",
+      "description": "世界人口第二大国货币，新兴市场代表，印度储备银行管理通胀与外汇储备"
+    },
+    {
+      "name": "沙特里亚尔",
+      "code": "SAR",
+      "symbol": "﷼",
+      "country": "沙特阿拉伯",
+      "description": "石油输出国组织核心货币，钉住美元维持汇率稳定，由沙特央行管理"
+    },
+    {
+      "name": "阿联酋迪拉姆",
+      "code": "AED",
+      "symbol": "د.إ",
+      "country": "阿联酋",
+      "description": "中东金融枢纽货币，迪拜国际化货币，阿联酋中央银行调控货币供应"
+    },
+    {
+      "name": "巴西雷亚尔",
+      "code": "BRL",
+      "symbol": "R$",
+      "country": "巴西",
+      "description": "拉美最大经济体货币，大宗商品敏感型，受农业出口及全球资本流动影响"
+    },
+    {
+      "name": "墨西哥比索",
+      "code": "MXN",
+      "symbol": "$",
+      "country": "墨西哥",
+      "description": "北美自由贸易区重要货币，受美国经济及外资流入影响显著"
+    },
+    {
+      "name": "俄罗斯卢布",
+      "code": "RUB",
+      "symbol": "₽",
+      "country": "俄罗斯",
+      "description": "资源型大国货币，地缘政治影响显著，央行实施浮动汇率制"
+    },
+    {
+      "name": "南非兰特",
+      "code": "ZAR",
+      "symbol": "R",
+      "country": "南非",
+      "description": "非洲工业最发达国家货币，受黄金及矿产出口驱动，经济波动性较大"
+    },
+    {
+      "name": "土耳其里拉",
+      "code": "TRY",
+      "symbol": "₺",
+      "country": "土耳其",
+      "description": "连接欧亚的区域货币，央行多次干预汇率应对通胀压力"
+    },
+    {
+      "name": "埃及镑",
+      "code": "EGP",
+      "symbol": "£",
+      "country": "埃及",
+      "description": "北非重要经济体货币，钉住美元实行有管理的浮动汇率"
+    },
+    {
+      "name": "泰铢",
+      "code": "THB",
+      "symbol": "฿",
+      "country": "泰国",
+      "description": "东南亚旅游业支柱货币，泰国银行维持稳定汇率促进出口"
+    },
+    {
+      "name": "马来西亚林吉特",
+      "code": "MYR",
+      "symbol": "RM",
+      "country": "马来西亚",
+      "description": "棕榈油和橡胶出口货币，受大宗商品价格及外资流动影响"
+    },
+    {
+      "name": "菲律宾比索",
+      "code": "PHP",
+      "symbol": "₱",
+      "country": "菲律宾",
+      "description": "海外劳工汇款驱动型经济，比索汇率受侨汇及美元走势双重影响"
+    },
+    {
+      "name": "印尼盾",
+      "code": "IDR",
+      "symbol": "Rp",
+      "country": "印度尼西亚",
+      "description": "东南亚最大经济体货币，受大宗商品出口及国内通胀压力影响"
+    },
+    {
+      "name": "挪威克朗",
+      "code": "NOK",
+      "symbol": "kr",
+      "country": "挪威",
+      "description": "北欧福利国家货币，石油基金支撑，挪威央行实施通胀目标制"
+    },
+    {
+      "name": "瑞典克朗",
+      "code": "SEK",
+      "symbol": "kr",
+      "country": "瑞典",
+      "description": "高科技产业驱动型北欧货币，受制造业出口及欧洲经济联动影响"
+    },
+    {
+      "name": "丹麦克朗",
+      "code": "DKK",
+      "symbol": "kr",
+      "country": "丹麦",
+      "description": "格陵兰和法罗群岛关联货币，央行维持汇率稳定促进贸易"
+    },
+    {
+      "name": "匈牙利福林",
+      "code": "HUF",
+      "symbol": "Ft",
+      "country": "匈牙利",
+      "description": "中欧转型经济体货币，钉住欧元实行有管理的浮动汇率"
+    },
+    {
+      "name": "波兰兹罗提",
+      "code": "PLN",
+      "symbol": "zł",
+      "country": "波兰",
+      "description": "欧盟东部重要工业货币，波兰央行采用通胀目标制调控经济"
+    },
+    {
+      "name": "捷克克朗",
+      "code": "CZK",
+      "symbol": "Kč",
+      "country": "捷克",
+      "description": "中欧发达工业国货币，受德国经济及汽车产业影响显著"
+    },
+    {
+      "name": "克罗地亚库纳",
+      "code": "HRK",
+      "symbol": "kn",
+      "country": "克罗地亚",
+      "description": "巴尔干半岛新兴经济体货币，加入欧元区进程加速"
+    },
+    {
+      "name": "罗马尼亚列伊",
+      "code": "RON",
+      "symbol": "lei",
+      "country": "罗马尼亚",
+      "description": "东欧农业与工业混合经济体货币，受外资及能源价格影响"
+    },
+    {
+      "name": "保加利亚列弗",
+      "code": "BGN",
+      "symbol": "лв",
+      "country": "保加利亚",
+      "description": "东南欧稳定货币，钉住欧元实行货币局制度"
+    },
+    {
+      "name": "塞尔维亚第纳尔",
+      "code": "RSD",
+      "symbol": "дин.",
+      "country": "塞尔维亚",
+      "description": "巴尔干半岛重要经济体货币，央行实施通胀目标制"
+    },
+    {
+      "name": "乌克兰格里夫纳",
+      "code": "UAH",
+      "symbol": "₴",
+      "country": "乌克兰",
+      "description": "东欧转型经济体货币，受地缘政治及能源价格影响显著"
+    },
+    {
+      "name": "哈萨克斯坦坚戈",
+      "code": "KZT",
+      "symbol": "₸",
+      "country": "哈萨克斯坦",
+      "description": "中亚能源出口国货币，央行维持汇率稳定应对通胀"
+    },
+    {
+      "name": "蒙古图格里克",
+      "code": "MNT",
+      "symbol": "₮",
+      "country": "蒙古",
+      "description": "内陆草原经济货币，受矿产出口及中国需求影响"
+    },
+    {
+      "name": "白俄罗斯卢布",
+      "code": "BYN",
+      "symbol": "Br",
+      "country": "白俄罗斯",
+      "description": "东欧封闭经济体货币，通胀压力持续存在"
+    },
+    {
+      "name": "摩尔多瓦列伊",
+      "code": "MDL",
+      "symbol": "lei",
+      "country": "摩尔多瓦",
+      "description": "东欧农业国货币，受罗马尼亚及乌克兰经济影响"
+    },
+    {
+      "name": "阿尔巴尼亚列克",
+      "code": "ALL",
+      "symbol": "L",
+      "country": "阿尔巴尼亚",
+      "description": "巴尔干半岛欠发达经济体货币，受旅游业及侨汇驱动"
+    },
+    {
+      "name": "波斯尼亚可兑换马克",
+      "code": "BAM",
+      "symbol": "KM",
+      "country": "波斯尼亚和黑塞哥维那",
+      "description": "巴尔干半岛货币联盟核心货币，钉住欧元保持汇率稳定"
+    },
+    {
+      "name": "南非兰特（纳米比亚）",
+      "code": "ZAR",
+      "symbol": "R",
+      "country": "纳米比亚",
+      "description": "纳米比亚流通货币，与南非经济一体化，共用兰特货币体系"
+    },
+    {
+      "name": "开曼元",
+      "code": "KYD",
+      "symbol": "CI$",
+      "country": "开曼群岛",
+      "description": "离岸金融中心货币，钉住美元维持汇率稳定"
+    },
+    {
+      "name": "巴哈马元",
+      "code": "BSD",
+      "symbol": "$",
+      "country": "巴哈马",
+      "description": "加勒比海旅游岛国货币，钉住美元促进经济稳定"
+    },
+    {
+      "name": "百慕大元",
+      "code": "BMD",
+      "symbol": "$",
+      "country": "百慕大",
+      "description": "北大西洋离岸金融中心货币，与美元等值流通"
+    },
+    {
+      "name": "特立尼达和多巴哥元",
+      "code": "TTD",
+      "symbol": "TT$",
+      "country": "特立尼达和多巴哥",
+      "description": "加勒比海石油出口国货币，受能源价格波动影响"
+    },
+    {
+      "name": "牙买加元",
+      "code": "JMD",
+      "symbol": "J$",
+      "country": "牙买加",
+      "description": "加勒比海旅游经济体货币，受旅游业及铝土矿出口驱动"
+    },
+    {
+      "name": "哥伦比亚比索",
+      "code": "COP",
+      "symbol": "$",
+      "country": "哥伦比亚",
+      "description": "南美咖啡与矿产出口国货币，汇率波动显著"
+    },
+    {
+      "name": "委内瑞拉玻利瓦尔",
+      "code": "VES",
+      "symbol": "Bs.",
+      "country": "委内瑞拉",
+      "description": "石油资源国货币，高通胀历史，央行多次货币改革应对危机"
+    },
+    {
+      "name": "厄瓜多尔苏克雷",
+      "code": "ECS",
+      "symbol": "S/.",
+      "country": "厄瓜多尔（已美元化）",
+      "description": "厄瓜多尔前法定货币，2000年起美元化，苏克雷停止流通"
+    },
+    {
+      "name": "苏里南元",
+      "code": "SRD",
+      "symbol": "S$",
+      "country": "苏里南",
+      "description": "南美小经济体货币，钉住美元实行有管理的浮动汇率"
+    },
+    {
+      "name": "圭亚那元",
+      "code": "GYD",
+      "symbol": "GY$",
+      "country": "圭亚那",
+      "description": "南美农业国货币，受铝土矿及黄金出口影响"
+    },
+    {
+      "name": "阿根廷比索",
+      "code": "ARS",
+      "symbol": "$",
+      "country": "阿根廷",
+      "description": "南美高通胀经济体货币，央行多次干预汇率及货币改革"
+    },
+    {
+      "name": "乌拉圭比索",
+      "code": "UYU",
+      "symbol": "U$",
+      "country": "乌拉圭",
+      "description": "南美稳定经济体货币，受农产品出口及外资流动影响"
+    },
+    {
+      "name": "巴拉圭瓜拉尼",
+      "code": "PYG",
+      "symbol": "₲",
+      "country": "巴拉圭",
+      "description": "南美农业国货币，瓜拉尼汇率受巴西经济及大豆出口影响"
+    },
+    {
+      "name": "秘鲁索尔",
+      "code": "PEN",
+      "symbol": "S/",
+      "country": "秘鲁",
+      "description": "南美矿业大国货币，受铜价及全球资本流动影响显著"
+    },
+    {
+      "name": "新西兰元",
+      "code": "NZD",
+      "symbol": "NZ$",
+      "country": "新西兰",
+      "description": "大洋洲资源出口国货币，受乳制品及旅游产业驱动"
+    },
+    {
+      "name": "斐济元",
+      "code": "FJD",
+      "symbol": "F$",
+      "country": "斐济",
+      "description": "南太平洋旅游岛国货币，钉住一篮子货币保持稳定"
+    },
+    {
+      "name": "汤加潘加",
+      "code": "TOP",
+      "symbol": "T$",
+      "country": "汤加",
+      "description": "南太平洋君主制岛国货币，受旅游业及侨汇支持"
+    },
+    {
+      "name": "库克群岛元",
+      "code": "NZD",
+      "symbol": "NZ$",
+      "country": "库克群岛",
+      "description": "与新西兰经济一体化，流通新西兰元"
+    },
+    {
+      "name": "所罗门群岛元",
+      "code": "SBD",
+      "symbol": "SI$",
+      "country": "所罗门群岛",
+      "description": "南太平洋岛国货币，受林业及渔业出口影响"
+    },
+    {
+      "name": "巴布亚新几内亚基那",
+      "code": "PGK",
+      "symbol": "K",
+      "country": "巴布亚新几内亚",
+      "description": "南太平洋资源型国家货币，受矿产及天然气出口驱动"
+    },
+    {
+      "name": "东加勒比元",
+      "code": "XCD",
+      "symbol": "EC$",
+      "country": "安提瓜和巴布达、多米尼克、格林纳达、圣基茨和尼维斯、圣卢西亚、圣文森特和格林纳丁斯",
+      "description": "东加勒比货币联盟统一货币，钉住美元保持汇率稳定"
+    },
+    {
+      "name": "中非金融合作法郎",
+      "code": "XAF",
+      "symbol": "FCFA",
+      "country": "喀麦隆、中非共和国、乍得、刚果（布）、赤道几内亚、加蓬",
+      "description": "中非经济货币共同体统一货币，与欧元挂钩，法国财政部担保兑换",
+      "isUnionCurrency": true,
+      "memberCountries": ["喀麦隆", "中非共和国", "乍得", "刚果（布）", "赤道几内亚", "加蓬"]
+    },
+    {
+      "name": "西非法郎",
+      "code": "XOF",
+      "symbol": "FCFA",
+      "country": "贝宁、布基纳法索、科特迪瓦、几内亚比绍、马里、尼日尔、塞内加尔、多哥",
+      "description": "西非经济货币联盟统一货币，与欧元挂钩，法国财政部担保兑换",
+      "isUnionCurrency": true,
+      "memberCountries": ["贝宁", "布基纳法索", "科特迪瓦", "几内亚比绍", "马里", "尼日尔", "塞内加尔", "多哥"]
+    },
+    {
+      "name": "吉布提法郎",
+      "code": "DJF",
+      "symbol": "Fdj",
+      "country": "吉布提",
+      "description": "东非红海港口货币，与美元挂钩保持汇率稳定"
+    },
+    {
+      "name": "索马里先令",
+      "code": "SOS",
+      "symbol": "Sh",
+      "country": "索马里",
+      "description": "东非无政府状态经济体货币，市场自发流通非正式货币"
+    },
+    {
+      "name": "肯尼亚先令",
+      "code": "KES",
+      "symbol": "KSh",
+      "country": "肯尼亚",
+      "description": "东非区域枢纽货币，受旅游业及农业出口影响"
+    },
+    {
+      "name": "坦桑尼亚先令",
+      "code": "TZS",
+      "symbol": "TSh",
+      "country": "坦桑尼亚",
+      "description": "东非矿产与农业经济体货币，受外资及通胀压力影响"
+    },
+    {
+      "name": "乌干达先令",
+      "code": "UGX",
+      "symbol": "USh",
+      "country": "乌干达",
+      "description": "东非咖啡出口国货币，钉住美元实行有管理的浮动汇率"
+    },
+    {
+      "name": "卢旺达法郎",
+      "code": "RWF",
+      "symbol": "RF",
+      "country": "卢旺达",
+      "description": "中非新兴经济体货币，央行维持稳定汇率促进经济发展"
+    },
+    {
+      "name": "布隆迪法郎",
+      "code": "BIF",
+      "symbol": "FB",
+      "country": "布隆迪",
+      "description": "中非内陆国家货币，高通胀历史，经济重建中"
+    },
+    {
+      "name": "刚果法郎",
+      "code": "CDF",
+      "symbol": "FC",
+      "country": "刚果（金）",
+      "description": "非洲最大矿产国货币，受钻石及铜价波动影响显著"
+    },
+    {
+      "name": "利比亚第纳尔",
+      "code": "LYD",
+      "symbol": "LD",
+      "country": "利比亚",
+      "description": "北非石油资源国货币，政治动荡导致货币体系不稳定"
+    },
+    {
+      "name": "突尼斯第纳尔",
+      "code": "TND",
+      "symbol": "TND",
+      "country": "突尼斯",
+      "description": "北非旅游经济体货币，受欧盟贸易及外资影响"
+    },
+    {
+      "name": "摩洛哥迪拉姆",
+      "code": "MAD",
+      "symbol": "MAD",
+      "country": "摩洛哥",
+      "description": "北非稳定经济体货币，钉住欧元实行有管理的浮动汇率"
+    },
+    {
+      "name": "苏丹镑",
+      "code": "SDG",
+      "symbol": "£",
+      "country": "苏丹",
+      "description": "非洲东北部农业经济体货币，受内战及通胀影响"
+    },
+    {
+      "name": "南苏丹镑",
+      "code": "SSP",
+      "symbol": "£",
+      "country": "南苏丹",
+      "description": "非洲新兴国家货币，独立后发行新货币应对经济挑战"
+    },
+    {
+      "name": "埃及镑（苏丹）",
+      "code": "EGP",
+      "symbol": "£",
+      "country": "苏丹（过渡时期）",
+      "description": "苏丹过渡时期流通埃及镑"
+    },
+    {
+      "name": "津巴布韦元",
+      "code": "ZWL",
+      "symbol": "Z$",
+      "country": "津巴布韦",
+      "description": "非洲高通胀历史货币，2019年重启新货币体系"
+    },
+    {
+      "name": "博茨瓦纳普拉",
+      "code": "BWP",
+      "symbol": "P",
+      "country": "博茨瓦纳",
+      "description": "非洲钻石出口国货币，钉住南非兰特保持稳定"
+    },
+    {
+      "name": "莱索托洛蒂",
+      "code": "LSL",
+      "symbol": "L",
+      "country": "莱索托",
+      "description": "非洲内陆王国货币，与南非兰特等值流通"
+    },
+    {
+      "name": "斯威士兰里兰吉尼",
+      "code": "SZL",
+      "symbol": "E",
+      "country": "斯威士兰",
+      "description": "非洲君主制国家货币，与南非兰特等值流通"
+    },
+    {
+      "name": "欧元（黑山）",
+      "code": "EUR",
+      "symbol": "€",
+      "country": "黑山",
+      "description": "与欧元区经济一体化，流通欧元"
+    },
+    {
+      "name": "欧元（科索沃）",
+      "code": "EUR",
+      "symbol": "€",
+      "country": "科索沃",
+      "description": "事实上流通欧元，与欧盟经济融合"
+    },
+    {
+      "name": "欧元（安道尔）",
+      "code": "EUR",
+      "symbol": "€",
+      "country": "安道尔",
+      "description": "与欧元区经济一体化，流通欧元"
+    },
+    {
+      "name": "欧元（摩纳基）",
+      "code": "EUR",
+      "symbol": "€",
+      "country": "摩纳哥",
+      "description": "与欧元区经济一体化，流通欧元"
+    },
+    {
+      "name": "欧元（圣马力诺）",
+      "code": "EUR",
+      "symbol": "€",
+      "country": "圣马力诺",
+      "description": "与欧元区经济一体化，流通欧元"
+    },
+    {
+      "name": "欧元（梵蒂冈）",
+      "code": "EUR",
+      "symbol": "€",
+      "country": "梵蒂冈",
+      "description": "与欧元区经济一体化，流通欧元"
+    },
+    {
+      "name": "东加勒比元（蒙特塞拉特）",
+      "code": "XCD",
+      "symbol": "EC$",
+      "country": "蒙特塞拉特",
+      "description": "与东加勒比货币联盟经济一体化，流通东加勒比元"
+    },
+    {
+      "name": "东加勒比元（安圭拉）",
+      "code": "XCD",
+      "symbol": "EC$",
+      "country": "安圭拉",
+      "description": "与东加勒比货币联盟经济一体化，流通东加勒比元"
+    },
+    {
+      "name": "东加勒比元（英属维尔京群岛）",
+      "code": "XCD",
+      "symbol": "EC$",
+      "country": "英属维尔京群岛",
+      "description": "与东加勒比货币联盟经济一体化，流通东加勒比元"
+    },
+    {
+      "name": "欧元（安道尔、摩纳哥等微型国家）",
+      "code": "EUR",
+      "symbol": "€",
+      "country": "安道尔、摩纳哥、圣马力诺、梵蒂冈",
+      "description": "与欧元区经济一体化，流通欧元"
+    },
+    {
+      "name": "欧元（科索沃）",
+      "code": "EUR",
+      "symbol": "€",
+      "country": "科索沃",
+      "description": "事实上流通欧元，与欧盟经济融合"
+    },
+    {
+      "name": "东加勒比元（安圭拉）",
+      "code": "XCD",
+      "symbol": "EC$",
+      "country": "安圭拉",
+      "description": "与东加勒比货币联盟经济一体化，流通东加勒比元"
+    },
+    {
+      "name": "中非金融合作法郎（中非共和国）",
+      "code": "XAF",
+      "symbol": "FCFA",
+      "country": "中非共和国",
+      "description": "中非经济货币共同体统一货币，流通中非金融合作法郎"
+    },
+    {
+      "name": "中非金融合作法郎（乍得）",
+      "code": "XAF",
+      "symbol": "FCFA",
+      "country": "乍得",
+      "description": "中非经济货币共同体统一货币，流通中非金融合作法郎"
+    },
+    {
+      "name": "中非金融合作法郎（加蓬）",
+      "code": "XAF",
+      "symbol": "FCFA",
+      "country": "加蓬",
+      "description": "中非经济货币共同体统一货币，流通中非金融合作法郎"
+    },
+    {
+      "name": "中非金融合作法郎（赤道几内亚）",
+      "code": "XAF",
+      "symbol": "FCFA",
+      "country": "赤道几内亚",
+      "description": "中非经济货币共同体统一货币，流通中非金融合作法郎"
+    },
+    {
+      "name": "中非金融合作法郎（喀麦隆）",
+      "code": "XAF",
+      "symbol": "FCFA",
+      "country": "喀麦隆",
+      "description": "中非经济货币共同体统一货币，流通中非金融合作法郎"
+    },
+    {
+      "name": "中非金融合作法郎（刚果（布））",
+      "code": "XAF",
+      "symbol": "FCFA",
+      "country": "刚果（布）",
+      "description": "中非经济货币共同体统一货币，流通中非金融合作法郎"
+    },
+    {
+      "name": "西非法郎（塞内加尔）",
+      "code": "XOF",
+      "symbol": "FCFA",
+      "country": "塞内加尔",
+      "description": "西非经济货币联盟统一货币，流通西非法郎"
+    },
+    {
+      "name": "西非法郎（贝宁）",
+      "code": "XOF",
+      "symbol": "FCFA",
+      "country": "贝宁",
+      "description": "西非经济货币联盟统一货币，流通西非法郎"
+    },
+    {
+      "name": "西非法郎（布基纳法索）",
+      "code": "XOF",
+      "symbol": "FCFA",
+      "country": "布基纳法索",
+      "description": "西非经济货币联盟统一货币，流通西非法郎"
+    },
+    {
+      "name": "西非法郎（几内亚比绍）",
+      "code": "XOF",
+      "symbol": "FCFA",
+      "country": "几内亚比绍",
+      "description": "西非经济货币联盟统一货币，流通西非法郎"
+    },
+    {
+      "name": "西非法郎（科特迪瓦）",
+      "code": "XOF",
+      "symbol": "FCFA",
+      "country": "科特迪瓦",
+      "description": "西非经济货币联盟统一货币，流通西非法郎"
+    },
+    {
+      "name": "西非法郎（马里）",
+      "code": "XOF",
+      "symbol": "FCFA",
+      "country": "马里",
+      "description": "西非经济货币联盟统一货币，流通西非法郎"
+    },
+    {
+      "name": "西非法郎（尼日尔）",
+      "code": "XOF",
+      "symbol": "FCFA",
+      "country": "尼日尔",
+      "description": "西非经济货币联盟统一货币，流通西非法郎"
+    },
+    {
+      "name": "西非法郎（多哥）",
+      "code": "XOF",
+      "symbol": "FCFA",
+      "country": "多哥",
+      "description": "西非经济货币联盟统一货币，流通西非法郎"
+    }
+  ],
+  "cryptoCurrencies": [
+    {
+      "name": "比特币",
+      "code": "BTC",
+      "symbol": "₿",
+      "launchYear": 2009,
+      "description": "第一种去中心化虚拟货币，由中本聪发明，市值长期领先，共识机制为工作量证明（PoW）"
+    },
+    {
+      "name": "以太坊",
+      "code": "ETH",
+      "symbol": "Ξ",
+      "launchYear": 2015,
+      "description": "支持智能合约的去中心化平台，核心为权益证明（PoS）共识，推动DeFi和NFT生态发展"
+    },
+    {
+      "name": "泰达币",
+      "code": "USDT",
+      "symbol": "₮",
+      "launchYear": 2014,
+      "description": "与美元挂钩的稳定币，交易量全球第一，基于Omni/Ethereum/TRC-20等多链发行"
+    },
+    {
+      "name": "币安币",
+      "code": "BNB",
+      "symbol": "BNB",
+      "launchYear": 2017,
+      "description": "全球最大加密货币交易所币安的平台代币，从以太坊ERC-20迁移至币安链（BEP-2）和智能链（BEP-20）"
+    },
+    {
+      "name": "瑞波币",
+      "code": "XRP",
+      "symbol": "✕",
+      "launchYear": 2012,
+      "description": "Ripple支付网络原生代币，优化跨境结算速度，共识算法为瑞波协议（RCL）"
+    },
+    {
+      "name": "艾达币",
+      "code": "ADA",
+      "symbol": "₳",
+      "launchYear": 2017,
+      "description": "Cardano区块链平台的环保型智能合约代币，分层架构（结算层+计算层）支持学术驱动创新"
+    },
+    {
+      "name": "索拉纳",
+      "code": "SOL",
+      "symbol": "◎",
+      "launchYear": 2020,
+      "description": "高性能区块链平台，采用历史证明（PoH）+涡轮机（Turbine）并行处理，支持DePIN和NFT应用爆发"
+    },
+    {
+      "name": "美元币",
+      "code": "USDC",
+      "symbol": "USDC",
+      "launchYear": 2018,
+      "description": "Circle发行的合规稳定币，受监管机构认可，流通于以太坊、Solana等多链"
+    },
+    {
+      "name": "狗狗币",
+      "code": "DOGE",
+      "symbol": "Ð",
+      "launchYear": 2013,
+      "description": "基于狗狗 meme 的去中心化货币，社区驱动型增长，Shiba Inu主题文化推动普及"
+    },
+    {
+      "name": "莱特币",
+      "code": "LTC",
+      "symbol": "Ł",
+      "launchYear": 2011,
+      "description": "比特币的轻量级分叉货币，Scrypt算法优化交易速度，早期以“银比特币”定位"
+    },
+    {
+      "name": "波卡币",
+      "code": "DOT",
+      "symbol": "●",
+      "launchYear": 2014,
+      "description": "Polkadot跨链互操作性平台的原生代币，中继链+平行链架构实现多链通信"
+    },
+    {
+      "name": "比特币现金",
+      "code": "BCH",
+      "symbol": "BCH",
+      "launchYear": 2017,
+      "description": "比特币扩容硬分叉币种，更大区块支持更高吞吐量，社区争议中发展"
+    },
+    {
+      "name": "雪崩协议",
+      "code": "AVAX",
+      "symbol": "AVAX",
+      "launchYear": 2020,
+      "description": "Avalanche区块链的Subnet架构代币，支持多链部署和子网自定义，适应企业级需求"
+    },
+    {
+      "name": "恒星币",
+      "code": "XLM",
+      "symbol": "⚮",
+      "launchYear": 2014,
+      "description": "Stellar发展基金会支持的快速跨境支付代币，共识算法为SCP，降低金融服务门槛"
+    },
+    {
+      "name": "波场币",
+      "code": "TRX",
+      "symbol": "TRX",
+      "launchYear": 2017,
+      "description": "波场区块链的去中心化应用代币，孙宇晨主导开发，兼容以太坊虚拟机（EVM）"
+    },
+    {
+      "name": "柴犬币",
+      "code": "SHIB",
+      "symbol": "SHIB",
+      "launchYear": 2020,
+      "description": "以柴犬为主题的模因币，以太坊生态代币，SHIB/BONE/LEASH代币系统组成"
+    },
+    {
+      "name": "Chainlink",
+      "code": "LINK",
+      "symbol": "∟",
+      "launchYear": 2017,
+      "description": "去中心化预言机网络，连接现实世界数据与区块链，保障智能合约安全执行"
+    },
+    {
+      "name": "艾克币",
+      "code": "EOS",
+      "symbol": "EOS",
+      "launchYear": 2018,
+      "description": "高性能区块链平台，支持企业级应用，委托权益证明（DPoS）共识机制"
+    },
+    {
+      "name": "门罗币",
+      "code": "XMR",
+      "symbol": "XMR",
+      "launchYear": 2014,
+      "description": "注重隐私保护的加密货币，环签名技术混淆交易来源，抗审查特性突出"
+    },
+    {
+      "name": "比特币SV",
+      "code": "BSV",
+      "symbol": "BSV",
+      "launchYear": 2018,
+      "description": "比特币现金的硬分叉币种，坚持中本聪愿景，更大区块承载链上数据"
+    },
+    {
+      "name": "Polygon",
+      "code": "MATIC",
+      "symbol": "MATIC",
+      "launchYear": 2019,
+      "description": "以太坊Layer2扩容解决方案代币，POS链+等离子链优化交易成本"
+    },
+    {
+      "name": "阿童木币",
+      "code": "ATOM",
+      "symbol": "ATOM",
+      "launchYear": 2019,
+      "description": "Cosmos跨链生态系统代币，IBC协议核心，推动区块链互联网（Blockchain Interoperability）"
+    },
+    {
+      "name": "卡尔达诺",
+      "code": "ADA",
+      "symbol": "₳",
+      "launchYear": 2017,
+      "description": "Cardano区块链平台的环保型智能合约代币（重复条目已合并）"
+    },
+    {
+      "name": "波场币",
+      "code": "TRX",
+      "symbol": "TRX",
+      "launchYear": 2017,
+      "description": "波场区块链的去中心化应用代币（重复条目合并）"
+    },
+    {
+      "name": "瑞波币",
+      "code": "XRP",
+      "symbol": "✕",
+      "launchYear": 2012,
+      "description": "Ripple支付网络原生代币（重复条目合并）"
+    },
+    {
+      "name": "美元币",
+      "code": "USDC",
+      "symbol": "USDC",
+      "launchYear": 2018,
+      "description": "Circle发行的合规稳定币（重复条目合并）"
+    },
+    {
+      "name": "莱特币",
+      "code": "LTC",
+      "symbol": "Ł",
+      "launchYear": 2011,
+      "description": "比特币的轻量级分叉货币（重复条目合并）"
+    },
+    {
+      "name": "波卡币",
+      "code": "DOT",
+      "symbol": "●",
+      "launchYear": 2014,
+      "description": "Polkadot跨链互操作性平台原生代币（重复条目合并）"
+    },
+    {
+      "name": "泰达币",
+      "code": "USDT",
+      "symbol": "₮",
+      "launchYear": 2014,
+      "description": "与美元挂钩的稳定币（重复条目合并）"
+    },
+    {
+      "name": "Sui",
+      "code": "SUI",
+      "symbol": "SUI",
+      "launchYear": 2022,
+      "description": "Move语言驱动的高性能Layer1链，支持并行交易处理，新兴NFT和DeFi应用"
+    },
+    {
+      "name": "Uniswap",
+      "code": "UNI",
+      "symbol": "UNI",
+      "launchYear": 2018,
+      "description": "去中心化交易协议治理代币，流动性池机制促进无许可交易"
+    },
+    {
+      "name": "Aave",
+      "code": "AAVE",
+      "symbol": "AAVE",
+      "launchYear": 2017,
+      "description": "去中心化借贷协议代币，闪电贷和超额抵押设计引领DeFi创新"
+    },
+    {
+      "name": "莱特币现金",
+      "code": "LTC",
+      "symbol": "Ł",
+      "launchYear": 2011,
+      "description": "莱特币分支货币（描述需优化）"
+    },
+    {
+      "name": "比特币钻石",
+      "code": "BCD",
+      "symbol": "BCD",
+      "launchYear": 2017,
+      "description": "比特币的硬分叉币种，更大区块和SegWit支持，侧重隐私保护"
+    },
+    {
+      "name": "恒星币",
+      "code": "XLM",
+      "symbol": "⚮",
+      "launchYear": 2014,
+      "description": "Stellar发展基金会支持的快速跨境支付代币（重复条目合并）"
+    },
+    {
+      "name": "艾达币",
+      "code": "ADA",
+      "symbol": "₳",
+      "launchYear": 2017,
+      "description": "Cardano区块链平台的环保型智能合约代币（重复条目合并）"
+    },
+    {
+      "name": "门罗币",
+      "code": "XMR",
+      "symbol": "XMR",
+      "launchYear": 2014,
+      "description": "注重隐私保护的加密货币（重复条目合并）"
+    },
+    {
+      "name": "波场币",
+      "code": "TRX",
+      "symbol": "TRX",
+      "launchYear": 2017,
+      "description": "波场区块链的去中心化应用代币（重复条目合并）"
+    },
+    {
+      "name": "瑞波币",
+      "code": "XRP",
+      "symbol": "✕",
+      "launchYear": 2012,
+      "description": "Ripple支付网络原生代币（重复条目合并）"
+    },
+    {
+      "name": "美元币",
+      "code": "USDC",
+      "symbol": "USDC",
+      "launchYear": 2018,
+      "description": "Circle发行的合规稳定币（重复条目合并）"
+    },
+    {
+      "name": "Sui",
+      "code": "SUI",
+      "symbol": "SUI",
+      "launchYear": 2022,
+      "description": "高性能Layer1链，Move语言驱动，支持并行交易处理"
+    },
+    {
+      "name": "比特币现金",
+      "code": "BCH",
+      "symbol": "BCH",
+      "launchYear": 2017,
+      "description": "比特币扩容硬分叉币种（重复条目合并）"
+    },
+    {
+      "name": "波卡币",
+      "code": "DOT",
+      "symbol": "●",
+      "launchYear": 2014,
+      "description": "Polkadot跨链互操作性平台原生代币（重复条目合并）"
+    },
+    {
+      "name": "柴犬币",
+      "code": "SHIB",
+      "symbol": "SHIB",
+      "launchYear": 2020,
+      "description": "以太坊生态模因币，SHIB/BONE/LEASH代币系统（重复条目合并）"
+    },
+    {
+      "name": "莱特币",
+      "code": "LTC",
+      "symbol": "Ł",
+      "launchYear": 2011,
+      "description": "比特币轻量级分叉货币（重复条目合并）"
+    },
+    {
+      "name": "泰达币",
+      "code": "USDT",
+      "symbol": "₮",
+      "launchYear": 2014,
+      "description": "与美元挂钩稳定币（重复条目合并）"
+    },
+    {
+      "name": "以太坊经典",
+      "code": "ETC",
+      "symbol": "ETC",
+      "launchYear": 2015,
+      "description": "以太坊原始链分叉币种，坚持工作量证明（PoW）共识机制"
+    },
+    {
+      "name": "币安美元",
+      "code": "BUSD",
+      "symbol": "BUSD",
+      "launchYear": 2019,
+      "description": "币安发行的合规稳定币，曾为全球第三大稳定币，受监管限制后逐步退出"
+    },
+    {
+      "name": "Polygon",
+      "code": "MATIC",
+      "symbol": "MATIC",
+      "launchYear": 2019,
+      "description": "以太坊Layer2扩容代币（重复条目合并）"
+    },
+    {
+      "name": "比特币黄金",
+      "code": "BTG",
+      "symbol": "BTG",
+      "launchYear": 2017,
+      "description": "比特币的硬分叉币种，Equihash算法支持抗ASIC挖矿"
+    },
+    {
+      "name": "柚子币",
+      "code": "EOS",
+      "symbol": "EOS",
+      "launchYear": 2018,
+      "description": "高性能区块链平台，委托权益证明（DPoS）共识机制（重复条目合并）"
+    },
+    {
+      "name": "Avalanche",
+      "code": "AVAX",
+      "symbol": "AVAX",
+      "launchYear": 2020,
+      "description": "雪崩协议多链代币（重复条目合并）"
+    },
+    {
+      "name": "Chainlink",
+      "code": "LINK",
+      "symbol": "∟",
+      "launchYear": 2017,
+      "description": "去中心化预言机网络（重复条目合并）"
+    },
+    {
+      "name": "阿童木币",
+      "code": "ATOM",
+      "symbol": "ATOM",
+      "launchYear": 2019,
+      "description": "Cosmos跨链生态系统代币（重复条目合并）"
+    },
+    {
+      "name": "Sui",
+      "code": "SUI",
+      "symbol": "SUI",
+      "launchYear": 2022,
+      "description": "高性能Layer1链代币（重复条目合并）"
+    },
+    {
+      "name": "Uniswap",
+      "code": "UNI",
+      "symbol": "UNI",
+      "launchYear": 2018,
+      "description": "去中心化交易协议治理代币（重复条目合并）"
+    },
+    {
+      "name": "Aave",
+      "code": "AAVE",
+      "symbol": "AAVE",
+      "launchYear": 2017,
+      "description": "去中心化借贷协议代币（重复条目合并）"
+    },
+    {
+      "name": "莱特币现金",
+      "code": "LTC",
+      "symbol": "Ł",
+      "launchYear": 2011,
+      "description": "莱特币分支货币（描述冗余项已去除）"
+    },
+    {
+      "name": "比特币钻石",
+      "code": "BCD",
+      "symbol": "BCD",
+      "launchYear": 2017,
+      "description": "比特币硬分叉币种（优化描述）"
+    },
+    {
+      "name": "比特币SV",
+      "code": "BSV",
+      "symbol": "BSV",
+      "launchYear": 2018,
+      "description": "比特币现金硬分叉币种（优化描述）"
+    },
+    {
+      "name": "比特币黄金",
+      "code": "BTG",
+      "symbol": "BTG",
+      "launchYear": 2017,
+      "description": "比特币硬分叉币种，Equihash算法抗ASIC（优化描述）"
+    },
+    {
+      "name": "以太坊经典",
+      "code": "ETC",
+      "symbol": "ETC",
+      "launchYear": 2015,
+      "description": "以太坊原始链分叉币种（优化描述）"
+    },
+    {
+      "name": "波卡币",
+      "code": "DOT",
+      "symbol": "●",
+      "launchYear": 2014,
+      "description": "Polkadot跨链互操作性平台原生代币（条目标准化）"
+    },
+    {
+      "name": "Sui",
+      "code": "SUI",
+      "symbol": "SUI",
+      "launchYear": 2022,
+      "description": "高性能Layer1链，Move语言驱动，支持并行交易处理"
+    },
+    {
+      "name": "Uniswap",
+      "code": "UNI",
+      "symbol": "UNI",
+      "launchYear": 2018,
+      "description": "去中心化交易协议治理代币，流动性池机制促进无许可交易"
+    },
+    {
+      "name": "Aave",
+      "code": "AAVE",
+      "symbol": "AAVE",
+      "launchYear": 2017,
+      "description": "去中心化借贷协议代币，闪电贷和超额抵押设计引领DeFi创新"
+    },
+    {
+      "name": "莱特币现金",
+      "code": "LTC",
+      "symbol": "Ł",
+      "launchYear": 2011,
+      "description": "莱特币分支货币（冗余项去除）"
+    },
+    {
+      "name": "比特币钻石",
+      "code": "BCD",
+      "symbol": "BCD",
+      "launchYear": 2017,
+      "description": "比特币的硬分叉币种，更大区块和SegWit支持，侧重隐私保护"
+    },
+    {
+      "name": "比特币黄金",
+      "code": "BTG",
+      "symbol": "BTG",
+      "launchYear": 2017,
+      "description": "比特币的硬分叉币种，Equihash算法支持抗ASIC挖矿"
+    },
+    {
+      "name": "以太坊经典",
+      "code": "ETC",
+      "symbol": "ETC",
+      "launchYear": 2015,
+      "description": "以太坊原始链分叉币种，坚持工作量证明（PoW）共识机制"
+    },
+    {
+      "name": "Sui",
+      "code": "SUI",
+      "symbol": "SUI",
+      "launchYear": 2022,
+      "description": "高性能Layer1链，Move语言驱动，支持并行交易处理，新兴NFT和DeFi应用"
+    },
+    {
+      "name": "比特币现金",
+      "code": "BCH",
+      "symbol": "BCH",
+      "launchYear": 2017,
+      "description": "比特币扩容硬分叉币种，更大区块支持更高吞吐量，社区争议中发展"
+    },
+    {
+      "name": "波卡币",
+      "code": "DOT",
+      "symbol": "●",
+      "launchYear": 2014,
+      "description": "Polkadot跨链互操作性平台的原生代币，中继链+平行链架构实现多链通信"
+    },
+    {
+      "name": "Avalanche",
+      "code": "AVAX",
+      "symbol": "AVAX",
+      "launchYear": 2020,
+      "description": "雪崩协议多链代币"
+    },
+    {
+      "name": "Aave",
+      "code": "AAVE",
+      "symbol": "AAVE",
+      "launchYear": 2017,
+      "description": "去中心化借贷协议代币，闪电贷和超额抵押设计引领DeFi创新"
+    },
+    {
+      "name": "Uniswap",
+      "code": "UNI",
+      "symbol": "UNI",
+      "launchYear": 2018,
+      "description": "去中心化交易协议治理代币，流动性池机制促进无许可交易"
+    },
+    {
+      "name": "门罗币",
+      "code": "XMR",
+      "symbol": "XMR",
+      "launchYear": 2014,
+      "description": "注重隐私保护的加密货币，环签名技术混淆交易来源，抗审查特性突出"
+    },
+    {
+      "name": "Avalanche",
+      "code": "AVAX",
+      "symbol": "AVAX",
+      "launchYear": 2020,
+      "description": "Avalanche区块链的Subnet架构代币，支持多链部署和子网自定义，适应企业级需求"
+    },
+    {
+      "name": "艾达币",
+      "code": "ADA",
+      "symbol": "₳",
+      "launchYear": 2017,
+      "description": "Cardano区块链平台的环保型智能合约代币，分层架构（结算层+计算层）支持学术驱动创新"
+    },
+    {
+      "name": "Avalanche",
+      "code": "AVAX",
+      "symbol": "AVAX",
+      "launchYear": 2020,
+      "description": "雪崩协议多链代币（标准化）"
+    },
+    {
+      "name": "Chainlink",
+      "code": "LINK",
+      "symbol": "∟",
+      "launchYear": 2017,
+      "description": "去中心化预言机网络（标准化）"
+    },
+    {
+      "name": "Avalanche",
+      "code": "AVAX",
+      "symbol": "AVAX",
+      "launchYear": 2020,
+      "description": "雪崩协议代币标准化条目"
+    },
+    {
+      "name": "Avalanche",
+      "code": "AVAX",
+      "symbol": "AVAX",
+      "launchYear": 2020,
+      "description": "雪崩协议多链代币（标准化）"
+    },
+    {
+      "name": "比特币",
+      "code": "BTC",
+      "symbol": "₿",
+      "launchYear": 2009,
+      "description": "第一种去中心化虚拟货币（冗余项去除）"
+    },
+    {
+      "name": "莱特币",
+      "code": "LTC",
+      "symbol": "Ł",
+      "launchYear": 2011,
+      "description": "比特币的轻量级分叉货币（冗余项去除）"
+    },
+    {
+      "name": "美元币",
+      "code": "USDC",
+      "symbol": "USDC",
+      "launchYear": 2018,
+      "description": "Circle发行的合规稳定币（冗余项去除）"
+    },
+    {
+      "name": "狗狗币",
+      "code": "DOGE",
+      "symbol": "Ð",
+      "launchYear": 2013,
+      "description": "基于狗狗 meme 的去中心化货币（冗余项去除）"
+    },
+    {
+      "name": "索拉纳",
+      "code": "SOL",
+      "symbol": "◎",
+      "launchYear": 2020,
+      "description": "高性能区块链平台（冗余项去除）"
+    },
+    {
+      "name": "币安币",
+      "code": "BNB",
+      "symbol": "BNB",
+      "launchYear": 2017,
+      "description": "全球最大加密货币交易所币安的平台代币（冗余项去除）"
+    },
+    {
+      "name": "Sui",
+      "code": "SUI",
+      "symbol": "SUI",
+      "launchYear": 2022,
+      "description": "Move语言驱动的高性能Layer1链，支持并行交易处理"
+    },
+    {
+      "name": "Sui",
+      "code": "SUI",
+      "symbol": "SUI",
+      "launchYear": 2022,
+      "description": "高性能Layer1链，Move语言驱动，支持并行交易处理"
+    }
+  ]
+}

@@ -120,6 +120,16 @@
                 "name": "指定大小文件生成",
                 "icon": "",
                 "url": "tools/develop/rdatasizefile.html"
+            },
+            {
+                "name": "RSA密钥生成",
+                "icon": "",
+                "url": "tools/develop/rsakey.html"
+            },
+            {
+                "name": "文件与HEX转换",
+                "icon": "",
+                "url": "tools/develop/file2hex.html"
             }
         ]
     },
@@ -224,6 +234,16 @@
                 "name": "正则表达式规则",
                 "icon": "fa-compress",
                 "url": "tools/ebook/regularlist.html"
+            },
+            {
+                "name": "ISO国家代码查询",
+                "icon": "fa-compress",
+                "url": "tools/ebook/countrycode.html"
+            },
+            {
+                "name": "全球货币查询",
+                "icon": "fa-compress",
+                "url": "tools/ebook/currency.html"
             }
         ]
     },

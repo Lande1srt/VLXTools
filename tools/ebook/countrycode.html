@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>国家代码查询</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- 配置Tailwind自定义颜色和字体 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#e0e5ec',
+            secondary: '#a3b1c6',
+            accent: '#4a6fa5',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /* 拟态设计样式 */
+      .neumorphic {
+        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6),
+                    -9px -9px 16px rgba(255, 255, 255, 0.5);
+      }
+      .neumorphic-inset {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transition: all 0.3s ease;
+      }
+      .neumorphic-btn:hover {
+        box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.6),
+                    -7px -7px 14px rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+      }
+      .neumorphic-btn:active {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-primary min-h-screen text-gray-700 font-sans p-4 md:p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- 标题区域 -->
+    <header class="mb-6 md:mb-8 text-center">
+      <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-accent">国家代码查询</h1>
+      <p class="text-gray-600 mt-2">数据基于ISO 3166国际标准</p>
+    </header>
+
+    <!-- 主内容区域 -->
+    <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- 左侧：查询区域 -->
+      <section class="lg:col-span-1 neumorphic rounded-2xl p-5 md:p-6">
+        <h2 class="text-xl font-semibold mb-4 flex items-center">
+          <i class="fa fa-search mr-2 text-accent"></i>查询
+        </h2>
+        
+        <div class="space-y-5">
+          <!-- 搜索框 -->
+          <div>
+            <label for="search" class="block mb-2 text-sm font-medium">搜索国家或代码</label>
+            <div class="relative">
+              <input 
+                type="text" 
+                id="search" 
+                placeholder="例如：中国 或 +86" 
+                class="w-full px-4 py-3 rounded-xl bg-primary neumorphic-inset focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all"
+              >
+              <i class="fa fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
+          </div>
+          
+          <!-- 筛选选项 -->
+          <div>
+            <label class="block mb-2 text-sm font-medium">筛选</label>
+            <div class="grid grid-cols-2 gap-3">
+              <button id="all-btn" class="neumorphic-btn rounded-xl px-4 py-2 text-sm font-medium">
+                所有国家
+              </button>
+              <button id="favorite-btn" class="neumorphic-btn rounded-xl px-4 py-2 text-sm font-medium">
+                <i class="fa fa-star-o mr-1"></i>常用
+              </button>
+            </div>
+          </div>
+          
+          <!-- 使用说明 -->
+          <div class="neumorphic-inset rounded-xl p-4 text-sm">
+            <h3 class="font-medium mb-2 flex items-center">
+              <i class="fa fa-info-circle mr-1 text-accent"></i>使用说明
+            </h3>
+            <ul class="list-disc pl-5 space-y-1 text-gray-600">
+              <li>输入国家名称或代码进行搜索</li>
+              <li>点击代码可复制到剪贴板</li>
+              <li>点击星标可标记常用国家</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 右侧：结果展示区域 -->
+      <section class="lg:col-span-2 neumorphic rounded-2xl p-5 md:p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold flex items-center">
+            <i class="fa fa-globe mr-2 text-accent"></i>国家代码列表
+          </h2>
+          <span id="result-count" class="text-sm bg-gray-200 px-3 py-1 rounded-full">0 个结果</span>
+        </div>
+        
+        <!-- 搜索结果区域 -->
+        <div class="relative">
+          <div id="loading" class="hidden absolute inset-0 flex items-center justify-center bg-primary/80 rounded-xl z-10">
+            <div class="neumorphic p-4 rounded-full">
+              <i class="fa fa-circle-o-notch fa-spin text-accent text-xl"></i>
+            </div>
+          </div>
+          
+          <div id="error-message" class="hidden neumorphic-inset rounded-xl p-4 text-center text-red-500">
+            <i class="fa fa-exclamation-triangle mr-2"></i>加载数据失败，请稍后重试
+          </div>
+          
+          <div class="neumorphic-inset rounded-xl p-3 max-h-[600px] overflow-y-auto">
+            <ul id="country-list" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <!-- 国家列表将通过JavaScript动态生成 -->
+              <li class="flex justify-center items-center h-32 text-gray-500">
+                请等待数据加载...
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 复制成功提示 -->
+  <div id="copy-toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-accent text-white px-6 py-3 rounded-full neumorphic opacity-0 transition-opacity duration-300 pointer-events-none">
+    已复制到剪贴板
+  </div>
+
+  <script>
+// 全局变量存储国家数据
+let countriesData = [];
+
+// DOM元素
+const countryListEl = document.getElementById('country-list');
+const searchInput = document.getElementById('search');
+const resultCountEl = document.getElementById('result-count');
+const allBtn = document.getElementById('all-btn');
+const favoriteBtn = document.getElementById('favorite-btn');
+const copyToast = document.getElementById('copy-toast');
+const loadingEl = document.getElementById('loading');
+const errorMessage = document.getElementById('error-message');
+
+// 初始化页面
+document.addEventListener('DOMContentLoaded', () => {
+  // 加载国家数据
+  loadCountriesData();
+  
+  // 事件监听
+  searchInput.addEventListener('input', handleSearch);
+  allBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    renderCountries(countriesData);
+  });
+  favoriteBtn.addEventListener('click', () => {
+    const favorites = countriesData.filter(country => country.favorite);
+    renderCountries(favorites);
+  });
+});
+
+// 从JSON文件加载国家数据并合并本地存储的收藏状态
+async function loadCountriesData() {
+  showLoading();
+  try {
+    const response = await fetch('./data/countries.json');
+    if (!response.ok) {
+      throw new Error('网络响应不正常');
+    }
+    // 从JSON获取基础数据
+    const jsonData = await response.json();
+    // 从本地存储获取收藏状态
+    const savedFavorites = getSavedFavorites();
+    // 合并数据 - 本地存储的状态优先
+    countriesData = jsonData.map(country => {
+      const saved = savedFavorites.find(item => item.iso === country.iso);
+      return saved ? { ...country, favorite: saved.favorite } : country;
+    });
+    renderCountries(countriesData);
+    hideLoading();
+  } catch (error) {
+    console.error('加载数据失败:', error);
+    hideLoading();
+    showError();
+  }
+}
+
+// 从localStorage获取保存的收藏状态
+function getSavedFavorites() {
+  try {
+    const saved = localStorage.getItem('countryFavorites');
+    return saved ? JSON.parse(saved) : [];
+  } catch (error) {
+    console.error('读取本地存储失败:', error);
+    return [];
+  }
+}
+
+// 保存收藏状态到localStorage
+function saveFavorites() {
+  try {
+    // 只保存必要的信息以减少存储体积
+    const toSave = countriesData.map(country => ({
+      iso: country.iso,
+      favorite: country.favorite
+    }));
+    localStorage.setItem('countryFavorites', JSON.stringify(toSave));
+  } catch (error) {
+    console.error('保存到本地存储失败:', error);
+  }
+}
+
+// 处理搜索 - 支持名称、代码和缩写搜索
+function handleSearch() {
+  const query = searchInput.value.trim().toLowerCase();
+  if (!query) {
+    renderCountries(countriesData);
+    return;
+  }
+  
+  const filtered = countriesData.filter(country => 
+    country.name.toLowerCase().includes(query) || 
+    country.code.toLowerCase().includes(query) ||
+    country.iso.toLowerCase().includes(query)  // 添加对国家缩写的搜索支持
+  );
+  
+  renderCountries(filtered);
+}
+
+// 渲染国家列表
+function renderCountries(countries) {
+  // 隐藏错误信息
+  errorMessage.classList.add('hidden');
+  
+  // 更新结果计数
+  resultCountEl.textContent = `${countries.length} 个结果`;
+  
+  // 清空列表
+  countryListEl.innerHTML = '';
+  
+  // 无结果处理
+  if (countries.length === 0) {
+    countryListEl.innerHTML = `
+      <li class="flex justify-center items-center h-32 text-gray-500">
+        没有找到匹配的国家
+      </li>
+    `;
+    return;
+  }
+  
+  // 生成国家列表项
+  countries.forEach(country => {
+    const li = document.createElement('li');
+    li.className = 'neumorphic rounded-xl p-4 flex justify-between items-center hover:translate-x-1 transition-transform';
+    
+    li.innerHTML = `
+      <div>
+        <div class="font-medium">${country.name}</div>
+        <div class="text-sm text-gray-500">${country.iso} · ${country.code}</div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="copy-btn neumorphic-btn rounded-lg px-3 py-1 text-accent font-medium" data-code="${country.code}">
+          ${country.code}
+        </button>
+        <button class="favorite-btn neumorphic-btn rounded-full w-8 h-8 flex items-center justify-center" data-iso="${country.iso}">
+          <i class="fa ${country.favorite ? 'fa-star text-yellow-500' : 'fa-star-o'}"></i>
+        </button>
+      </div>
+    `;
+    
+    countryListEl.appendChild(li);
+  });
+  
+  // 添加复制按钮事件
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const code = e.currentTarget.getAttribute('data-code');
+      navigator.clipboard.writeText(code).then(() => {
+        showToast();
+      });
+    });
+  });
+  
+  // 添加收藏按钮事件
+  document.querySelectorAll('.favorite-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const iso = e.currentTarget.getAttribute('data-iso');
+      const country = countriesData.find(c => c.iso === iso);
+      
+      if (country) {
+        // 更新内存中的状态
+        country.favorite = !country.favorite;
+        // 更新UI
+        e.currentTarget.innerHTML = `<i class="fa ${country.favorite ? 'fa-star text-yellow-500' : 'fa-star-o'}"></i>`;
+        // 保存到本地存储
+        saveFavorites();
+      }
+    });
+  });
+}
+
+// 显示复制提示
+function showToast() {
+  copyToast.classList.remove('opacity-0');
+  copyToast.classList.add('opacity-100');
+  
+  setTimeout(() => {
+    copyToast.classList.remove('opacity-100');
+    copyToast.classList.add('opacity-0');
+  }, 2000);
+}
+
+// 显示加载状态
+function showLoading() {
+  loadingEl.classList.remove('hidden');
+}
+
+// 隐藏加载状态
+function hideLoading() {
+  loadingEl.classList.add('hidden');
+}
+
+// 显示错误信息
+function showError() {
+  errorMessage.classList.remove('hidden');
+  countryListEl.innerHTML = '';
+}
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>法币与虚拟货币列表</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- 配置Tailwind自定义颜色 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#e0e5ec',
+            secondary: '#a3b1c6',
+            accent: '#4a6fa5',
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /* 拟态UI效果类 */
+      .neumorphic {
+        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6), 
+                   -9px -9px 16px rgba(255, 255, 255, 0.5);
+      }
+      .neumorphic-inset {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6), 
+                   inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+      .neumorphic-btn {
+        box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6), 
+                   -5px -5px 10px rgba(255, 255, 255, 0.5);
+        transition: all 0.3s ease;
+      }
+      .neumorphic-btn:hover {
+        box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.6), 
+                   -7px -7px 14px rgba(255, 255, 255, 0.5);
+      }
+      .neumorphic-btn:active {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6), 
+                   inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+      }
+      .search-input {
+        background: transparent;
+        border: none;
+        outline: none;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-primary min-h-screen text-gray-700 p-4 md:p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- 页面标题 -->
+    <header class="mb-8 text-center">
+      <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gray-700">
+        全球货币检索
+      </h1>
+      <p class="text-gray-500 mt-2">全球法币与常用虚拟货币</p>
+    </header>
+
+    <!-- 主要内容区域 -->
+    <main class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- 法币列表 -->
+      <section class="neumorphic rounded-2xl p-5 md:p-6">
+        <div class="mb-6">
+          <h2 class="text-xl md:text-2xl font-semibold mb-4">法币</h2>
+          
+          <!-- 搜索框 -->
+          <div class="neumorphic-inset rounded-xl p-3 mb-6 flex items-center">
+            <i class="fa fa-search text-gray-400 mr-3"></i>
+            <input 
+              type="text" 
+              id="fiat-search" 
+              class="search-input text-gray-700" 
+              placeholder="搜索法币名称或代码..."
+            >
+          </div>
+        </div>
+        
+        <!-- 列表容器 -->
+        <div class="neumorphic-inset rounded-xl p-4 max-h-[500px] overflow-y-auto">
+          <div id="fiat-currencies" class="space-y-4">
+            <!-- 法币数据将通过JS加载 -->
+            <div class="flex justify-center items-center h-32">
+              <i class="fa fa-circle-o-notch fa-spin text-gray-400 text-2xl"></i>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 虚拟货币列表 -->
+      <section class="neumorphic rounded-2xl p-5 md:p-6">
+        <div class="mb-6">
+          <h2 class="text-xl md:text-2xl font-semibold mb-4">虚拟货币</h2>
+          
+          <!-- 搜索框 -->
+          <div class="neumorphic-inset rounded-xl p-3 mb-6 flex items-center">
+            <i class="fa fa-search text-gray-400 mr-3"></i>
+            <input 
+              type="text" 
+              id="crypto-search" 
+              class="search-input text-gray-700" 
+              placeholder="搜索虚拟货币名称或代码..."
+            >
+          </div>
+        </div>
+        
+        <!-- 列表容器 -->
+        <div class="neumorphic-inset rounded-xl p-4 max-h-[500px] overflow-y-auto">
+          <div id="crypto-currencies" class="space-y-4">
+            <!-- 虚拟货币数据将通过JS加载 -->
+            <div class="flex justify-center items-center h-32">
+              <i class="fa fa-circle-o-notch fa-spin text-gray-400 text-2xl"></i>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="mt-10 text-center text-gray-500 text-sm">
+      <p>© 2025 全球货币名录 | 数据仅供参考</p>
+    </footer>
+  </div>
+
+  <script>
+let currencyData = { fiatCurrencies: [], cryptoCurrencies: [] };
+let isLoading = false;
+
+// 显示加载状态
+function showLoading(container) {
+  container.innerHTML = `
+    <div class="flex justify-center items-center h-32">
+      <i class="fa fa-circle-o-notch fa-spin text-gray-400 text-2xl"></i>
+    </div>
+  `;
+}
+
+// 显示错误信息
+function showError(container, message) {
+  container.innerHTML = `
+    <div class="text-center py-8 text-red-500">
+      <i class="fa fa-exclamation-circle mb-2"></i>
+      <p>${message}</p>
+      <button class="neumorphic-btn mt-3 px-3 py-1 rounded-lg text-sm" onclick="loadCurrencyData()">
+        重试
+      </button>
+    </div>
+  `;
+}
+
+// 创建智能滚动的国家名称元素（仅长文本滚动，短文本静态）
+function createSmartScrollingCountryElement(countryName) {
+  // 外层容器（限制宽度）
+  const container = document.createElement('div');
+  container.className = 'neumorphic-btn px-2 py-1 rounded-full max-w-[120px] overflow-hidden relative';
+  
+  // 滚动内容容器
+  const scrollWrapper = document.createElement('div');
+  scrollWrapper.className = 'whitespace-nowrap text-xs transition-transform duration-0';
+  
+  // 初始只添加一份内容
+  const content = document.createElement('span');
+  content.textContent = countryName;
+  scrollWrapper.appendChild(content);
+  container.appendChild(scrollWrapper);
+  
+  // 滚动动画变量
+  let animationFrameId = null;
+  let startTime = null;
+  let isScrolling = false;
+  let needScroll = false; // 是否需要滚动
+  let contentWidth = 0;
+  let containerWidth = 0;
+  let totalScrollDistance = 0;
+  
+  // 初始化尺寸检测
+  function initDimensions() {
+    // 确保DOM渲染完成
+    setTimeout(() => {
+      containerWidth = container.offsetWidth;
+      contentWidth = content.offsetWidth;
+      needScroll = contentWidth > containerWidth;
+      
+      // 如果需要滚动，添加第二份内容和间隔
+      if (needScroll) {
+        // 移除原有内容
+        scrollWrapper.innerHTML = '';
+        
+        // 创建两份内容和间隔
+        const content1 = document.createElement('span');
+        content1.textContent = countryName;
+        const spacer = document.createElement('span');
+        spacer.className = 'mx-2';
+        spacer.textContent = '•';
+        const content2 = document.createElement('span');
+        content2.textContent = countryName;
+        
+        scrollWrapper.append(content1, spacer, content2);
+        totalScrollDistance = contentWidth + spacer.offsetWidth; // 计算总滚动距离
+        startScrollAnimation();
+      } else {
+        // 不需要滚动，保持单份内容居中
+        scrollWrapper.style.transform = 'translateX(0)';
+        scrollWrapper.style.textAlign = 'center';
+      }
+    }, 0);
+  }
+  
+  // 滚动动画逻辑（无缝循环）
+  function startScrollAnimation() {
+    if (!needScroll) return;
+    
+    isScrolling = true;
+    startTime = null;
+    
+    function animate(timestamp) {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      
+      // 滚动速度：80px/秒（稍慢更自然）
+      const speed = 80; // 像素/秒
+      const scrollPosition = (elapsed / 1000) * speed;
+      
+      // 计算滚动进度（取模实现循环）
+      const progress = scrollPosition % totalScrollDistance;
+      
+      // 应用滚动位置
+      scrollWrapper.style.transform = `translateX(-${progress}px)`;
+      
+      // 继续动画
+      animationFrameId = requestAnimationFrame(animate);
+    }
+    
+    animationFrameId = requestAnimationFrame(animate);
+  }
+  
+  // 停止动画
+  function stopAnimation() {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    }
+    isScrolling = false;
+    startTime = null;
+  }
+  
+  // 窗口大小变化时重新计算
+  function handleResize() {
+    const wasScrolling = isScrolling;
+    stopAnimation();
+    initDimensions();
+    
+    // 如果之前在滚动，重新开始
+    if (wasScrolling && needScroll) {
+      startScrollAnimation();
+    }
+  }
+  
+  // 初始化
+  initDimensions();
+  window.addEventListener('resize', handleResize);
+  
+  // 清理函数
+  container.cleanup = () => {
+    stopAnimation();
+    window.removeEventListener('resize', handleResize);
+  };
+  
+  return container;
+}
+
+// 渲染法币列表
+function renderFiatCurrencies(filter = '') {
+  const container = document.getElementById('fiat-currencies');
+  if (currencyData.fiatCurrencies.length === 0) {
+    showLoading(container);
+    return;
+  }
+  
+  const filtered = currencyData.fiatCurrencies.filter(currency => 
+    currency.name.toLowerCase().includes(filter.toLowerCase()) || 
+    currency.code.toLowerCase().includes(filter.toLowerCase()) ||
+    currency.country.toLowerCase().includes(filter.toLowerCase())
+  );
+  
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-8 text-gray-500">
+        <i class="fa fa-search-minus mb-2"></i>
+        <p>未找到匹配的法币</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // 清理旧动画
+  const oldCards = container.querySelectorAll('.neumorphic');
+  oldCards.forEach(card => {
+    const countryEl = card.querySelector('.neumorphic-btn');
+    if (countryEl?.cleanup) countryEl.cleanup();
+  });
+  
+  container.innerHTML = '';
+  filtered.forEach(currency => {
+    const card = document.createElement('div');
+    card.className = 'neumorphic bg-primary rounded-xl p-4 transition-all hover:translate-x-1';
+    
+    const header = document.createElement('div');
+    header.className = 'flex justify-between items-start mb-2';
+    
+    const infoDiv = document.createElement('div');
+    infoDiv.innerHTML = `
+      <h3 class="font-semibold text-lg">${currency.name}</h3>
+      <p class="text-gray-500">${currency.code} ${currency.symbol}</p>
+    `;
+    
+    // 添加智能滚动元素
+    const countryEl = createSmartScrollingCountryElement(currency.country);
+    
+    header.appendChild(infoDiv);
+    header.appendChild(countryEl);
+    card.appendChild(header);
+    
+    const desc = document.createElement('p');
+    desc.className = 'text-gray-600 text-sm';
+    desc.textContent = currency.description;
+    card.appendChild(desc);
+    
+    container.appendChild(card);
+  });
+}
+
+// 渲染虚拟货币列表
+function renderCryptoCurrencies(filter = '') {
+  const container = document.getElementById('crypto-currencies');
+  if (currencyData.cryptoCurrencies.length === 0) {
+    showLoading(container);
+    return;
+  }
+  
+  const filtered = currencyData.cryptoCurrencies.filter(currency => 
+    currency.name.toLowerCase().includes(filter.toLowerCase()) || 
+    currency.code.toLowerCase().includes(filter.toLowerCase())
+  );
+  
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-8 text-gray-500">
+        <i class="fa fa-search-minus mb-2"></i>
+        <p>未找到匹配的虚拟货币</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = '';
+  filtered.forEach(currency => {
+    const card = document.createElement('div');
+    card.className = 'neumorphic bg-primary rounded-xl p-4 transition-all hover:translate-x-1';
+    card.innerHTML = `
+      <div class="flex justify-between items-start mb-2">
+        <div>
+          <h3 class="font-semibold text-lg">${currency.name}</h3>
+          <p class="text-gray-500">${currency.code} ${currency.symbol}</p>
+        </div>
+        <span class="neumorphic-btn text-xs px-2 py-1 rounded-full">
+          ${currency.launchYear}年发行
+        </span>
+      </div>
+      <p class="text-gray-600 text-sm">${currency.description}</p>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// 加载货币数据
+function loadCurrencyData() {
+  if (isLoading) return;
+  isLoading = true;
+  
+  const fiatContainer = document.getElementById('fiat-currencies');
+  const cryptoContainer = document.getElementById('crypto-currencies');
+  
+  showLoading(fiatContainer);
+  showLoading(cryptoContainer);
+
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('请求超时，请检查网络')), 10000);
+  });
+
+  Promise.race([
+    fetch('./data/currencies.json', { method: 'GET', cache: 'no-cache' }),
+    timeoutPromise
+  ])
+  .then(response => {
+    if (!response.ok) {
+      if (response.status === 404) throw new Error('未找到currencies.json文件');
+      throw new Error(`网络错误: 状态码 ${response.status}`);
+    }
+    return response.text();
+  })
+  .then(text => {
+    try {
+      const data = JSON.parse(text);
+      if (!data.fiatCurrencies || !data.cryptoCurrencies) {
+        throw new Error('JSON缺少必要字段');
+      }
+      currencyData = data;
+      renderFiatCurrencies();
+      renderCryptoCurrencies();
+      
+      // 绑定搜索事件
+      const fiatSearch = document.getElementById('fiat-search');
+      fiatSearch.removeEventListener('input', handleFiatSearch);
+      fiatSearch.addEventListener('input', handleFiatSearch);
+      
+      const cryptoSearch = document.getElementById('crypto-search');
+      cryptoSearch.removeEventListener('input', handleCryptoSearch);
+      cryptoSearch.addEventListener('input', handleCryptoSearch);
+    } catch (parseError) {
+      throw new Error(`JSON解析失败: ${parseError.message}`);
+    }
+  })
+  .catch(error => {
+    console.error('加载失败:', error);
+    showError(fiatContainer, error.message);
+    showError(cryptoContainer, error.message);
+  })
+  .finally(() => {
+    isLoading = false;
+  });
+}
+
+// 搜索事件处理
+function handleFiatSearch(e) {
+  renderFiatCurrencies(e.target.value);
+}
+
+function handleCryptoSearch(e) {
+  renderCryptoCurrencies(e.target.value);
+}
+
+// 页面初始化
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.location.protocol === 'file:') {
+    const warning = document.createElement('div');
+    warning.className = 'neumorphic bg-yellow-50 text-yellow-700 rounded-lg p-4 mb-6 text-sm';
+    warning.innerHTML = `
+      <i class="fa fa-info-circle mr-2"></i>
+      注意：本地文件方式可能导致加载失败，建议使用本地服务器运行
+    `;
+    document.querySelector('main').before(warning);
+  }
+  
+  loadCurrencyData();
+});
+  </script>
+</body>
+</html>

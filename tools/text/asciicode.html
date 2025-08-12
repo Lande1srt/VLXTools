@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>文本转ASCII/二进制工具</title>
+  <title>文本/ASCII/二进制转换工具</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   
   <script>
     tailwind.config = {
@@ -24,10 +24,6 @@
   
   <style type="text/tailwindcss">
     @layer utilities {
-      /*.neumorphic {
-        box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6),
-                    -9px -9px 16px rgba(255, 255, 255, 0.5);
-      }*/
       .neumorphic-inset {
         box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
                     inset -5px -5px 10px rgba(255, 255, 255, 0.5);
@@ -41,28 +37,38 @@
         box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
                     inset -5px -5px 10px rgba(255, 255, 255, 0.5);
       }
+      .error-message {
+        color: #e53e3e;
+        font-size: 0.875rem;
+      }
     }
   </style>
 </head>
 <body class="bg-primary min-h-screen p-4 md:p-8 flex flex-col items-center justify-center font-sans text-gray-700">
   <div class="w-full max-w-2xl neumorphic rounded-3xl p-6 md:p-8">
-    <h1 class="text-center text-2xl font-bold mb-6">文本转ASCII/二进制</h1>
+    <h1 class="text-center text-2xl font-bold mb-6">文本/ASCII/二进制转换</h1>
     
     <!-- 输入区域 -->
     <div class="mb-6">
-      <label for="text-input" class="block mb-2 text-sm font-medium">输入文本</label>
+      <label for="text-input" class="block mb-2 text-sm font-medium">输入内容</label>
       <textarea id="text-input" rows="3" 
                 class="w-full px-4 py-3 rounded-xl neumorphic-inset border-none bg-transparent focus:outline-none resize-none"
-                placeholder="在这里输入需要转换的文本...">Hello!</textarea>
+                placeholder="在这里输入需要转换的内容...">Hello!</textarea>
     </div>
     
     <!-- 转换选项 -->
-    <div class="flex gap-4 mb-6">
-      <button id="ascii-btn" class="flex-1 px-4 py-3 rounded-xl neumorphic-btn text-center active">
-        <i class="fa fa-hashtag mr-2"></i>转ASCII
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <button id="text-to-ascii" class="px-4 py-3 rounded-xl neumorphic-btn text-center">
+        <i class="fa fa-font mr-2"></i>文本→ASCII
       </button>
-      <button id="binary-btn" class="flex-1 px-4 py-3 rounded-xl neumorphic-btn text-center">
-        <i class="fa fa-code mr-2"></i>转二进制
+      <button id="text-to-binary" class="px-4 py-3 rounded-xl neumorphic-btn text-center">
+        <i class="fa fa-font mr-2"></i>文本→二进制
+      </button>
+      <button id="ascii-to-text" class="px-4 py-3 rounded-xl neumorphic-btn text-center">
+        <i class="fa fa-hashtag mr-2"></i>ASCII→文本
+      </button>
+      <button id="binary-to-text" class="px-4 py-3 rounded-xl neumorphic-btn text-center">
+        <i class="fa fa-code mr-2"></i>二进制→文本
       </button>
     </div>
     
@@ -79,7 +85,8 @@
       </div>
     </div>
     
-    <!-- 复制提示 -->
+    <!-- 提示信息 -->
+    <div id="error-message" class="hidden error-message text-center mb-2"></div>
     <div id="copy-notification" class="hidden text-center text-sm text-green-600">已复制到剪贴板！</div>
   </div>
 
@@ -87,15 +94,18 @@
     // 获取DOM元素
     const textInput = document.getElementById('text-input');
     const textOutput = document.getElementById('text-output');
-    const asciiBtn = document.getElementById('ascii-btn');
-    const binaryBtn = document.getElementById('binary-btn');
+    const textToAsciiBtn = document.getElementById('text-to-ascii');
+    const textToBinaryBtn = document.getElementById('text-to-binary');
+    const asciiToTextBtn = document.getElementById('ascii-to-text');
+    const binaryToTextBtn = document.getElementById('binary-to-text');
     const copyBtn = document.getElementById('copy-btn');
     const copyNotification = document.getElementById('copy-notification');
+    const errorMessage = document.getElementById('error-message');
     
-    // 当前转换模式 (ascii/binary)
-    let currentMode = 'ascii';
+    // 当前转换模式
+    let currentConversion = 'text-to-ascii';
     
-    // 转换函数
+    // 正向转换函数
     function textToAscii(text) {
       return text.split('').map(char => char.charCodeAt(0)).join(' ');
     }
@@ -107,48 +117,124 @@
       }).join(' ');
     }
     
-    function updateOutput() {
-      const text = textInput.value;
-      if (currentMode === 'ascii') {
-        textOutput.value = textToAscii(text);
-      } else {
-        textOutput.value = textToBinary(text);
+    // 反向转换函数
+    function asciiToText(asciiStr) {
+      const asciiCodes = asciiStr.split(/\s+/).filter(code => code !== '');
+      
+      // 验证ASCII代码是否有效
+      for (const code of asciiCodes) {
+        if (isNaN(code) || code < 0 || code > 127) {
+          showError('包含无效的ASCII代码，请检查输入');
+          return '';
+        }
+      }
+      
+      hideError();
+      return asciiCodes.map(code => String.fromCharCode(code)).join('');
+    }
+    
+    function binaryToText(binaryStr) {
+      const binaryCodes = binaryStr.split(/\s+/).filter(code => code !== '');
+      
+      // 验证二进制代码是否有效
+      const binaryRegex = /^[01]{8}$/;
+      for (const code of binaryCodes) {
+        if (!binaryRegex.test(code)) {
+          showError('包含无效的二进制代码，必须是8位0和1的组合');
+          return '';
+        }
+      }
+      
+      hideError();
+      return binaryCodes.map(code => String.fromCharCode(parseInt(code, 2))).join('');
+    }
+    
+    // 显示和隐藏错误信息
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.classList.remove('hidden');
+    }
+    
+    function hideError() {
+      errorMessage.classList.add('hidden');
+    }
+    
+    // 执行转换
+    function convert(conversionType) {
+      currentConversion = conversionType;
+      updateButtonStates();
+      
+      const input = textInput.value;
+      let output = '';
+      
+      switch(conversionType) {
+        case 'text-to-ascii':
+          output = textToAscii(input);
+          break;
+        case 'text-to-binary':
+          output = textToBinary(input);
+          break;
+        case 'ascii-to-text':
+          output = asciiToText(input);
+          break;
+        case 'binary-to-text':
+          output = binaryToText(input);
+          break;
+      }
+      
+      textOutput.value = output;
+    }
+    
+    // 更新按钮状态
+    function updateButtonStates() {
+      // 重置所有按钮状态
+      [textToAsciiBtn, textToBinaryBtn, asciiToTextBtn, binaryToTextBtn].forEach(btn => {
+        btn.classList.remove('bg-primary/50');
+      });
+      
+      // 激活当前转换模式的按钮
+      switch(currentConversion) {
+        case 'text-to-ascii':
+          textToAsciiBtn.classList.add('bg-primary/50');
+          break;
+        case 'text-to-binary':
+          textToBinaryBtn.classList.add('bg-primary/50');
+          break;
+        case 'ascii-to-text':
+          asciiToTextBtn.classList.add('bg-primary/50');
+          break;
+        case 'binary-to-text':
+          binaryToTextBtn.classList.add('bg-primary/50');
+          break;
       }
     }
     
     // 复制功能
     function copyToClipboard() {
-      textOutput.select();
-      document.execCommand('copy');
-      
-      // 显示复制提示
-      copyNotification.classList.remove('hidden');
-      setTimeout(() => {
-        copyNotification.classList.add('hidden');
-      }, 2000);
+      if (textOutput.value) {
+        textOutput.select();
+        document.execCommand('copy');
+        
+        // 显示复制提示
+        copyNotification.classList.remove('hidden');
+        setTimeout(() => {
+          copyNotification.classList.add('hidden');
+        }, 2000);
+      }
     }
     
-    // 切换模式
-    asciiBtn.addEventListener('click', () => {
-      currentMode = 'ascii';
-      asciiBtn.classList.add('bg-primary/50');
-      binaryBtn.classList.remove('bg-primary/50');
-      updateOutput();
-    });
-    
-    binaryBtn.addEventListener('click', () => {
-      currentMode = 'binary';
-      binaryBtn.classList.add('bg-primary/50');
-      asciiBtn.classList.remove('bg-primary/50');
-      updateOutput();
-    });
-    
     // 事件监听
-    textInput.addEventListener('input', updateOutput);
+    textInput.addEventListener('input', () => convert(currentConversion));
     copyBtn.addEventListener('click', copyToClipboard);
     
+    // 转换按钮事件
+    textToAsciiBtn.addEventListener('click', () => convert('text-to-ascii'));
+    textToBinaryBtn.addEventListener('click', () => convert('text-to-binary'));
+    asciiToTextBtn.addEventListener('click', () => convert('ascii-to-text'));
+    binaryToTextBtn.addEventListener('click', () => convert('binary-to-text'));
+    
     // 初始化
-    asciiBtn.classList.add('bg-primary/50');
+    updateButtonStates();
   </script>
 </body>
 </html>

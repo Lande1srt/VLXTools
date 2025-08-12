@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件与HEX转换工具</title>
+    <!-- 优先使用Cloudflare CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义样式 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#10b981',
+                        neutral: '#f0f4f8',
+                        dark: '#1e293b'
+                    },
+                    boxShadow: {
+                        'neumorphic': '9px 9px 16px rgba(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.5)',
+                        'neumorphic-inset': 'inset 5px 5px 10px rgba(163, 177, 198, 0.6), inset -5px -5px 10px rgba(255, 255, 255, 0.5)',
+                        'neumorphic-pressed': 'inset 2px 2px 5px rgba(163, 177, 198, 0.6), inset -2px -2px 5px rgba(255, 255, 255, 0.5)',
+                        'neumorphic-active': 'inset 1px 1px 3px rgba(163, 177, 198, 0.6), inset -1px -1px 3px rgba(255, 255, 255, 0.5)'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .neumorphic {
+                @apply bg-neutral rounded-2xl shadow-neumorphic transition-all duration-300;
+            }
+            .neumorphic-inset {
+                @apply bg-neutral rounded-xl shadow-neumorphic-inset transition-all duration-300;
+            }
+            .neumorphic-btn {
+                @apply bg-neutral rounded-xl shadow-neumorphic hover:shadow-neumorphic-pressed active:shadow-neumorphic-pressed transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0;
+            }
+            .tab-active {
+                @apply shadow-neumorphic-active bg-opacity-80;
+            }
+            .content-auto {
+                content-visibility: auto;
+            }
+        }
+    </style>
+</head>
+<body class="bg-neutral min-h-screen font-sans text-dark p-4 md:p-6">
+    <div class="max-w-4xl mx-auto">
+        <!-- 标题区域 -->
+        <div class="neumorphic p-6 mb-6 text-center">
+            <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-primary mb-2">文件与HEX转换工具</h1>
+            <p class="text-gray-600">支持文件与十六进制数据的双向转换及下载</p>
+        </div>
+        
+        <!-- 转换模式选择器 -->
+        <div class="neumorphic p-1 mb-6 flex">
+            <button id="fileToHexTab" class="neumorphic-btn tab-active flex-1 py-3 px-4 font-medium transition-all duration-300">
+                <i class="fa fa-file-o mr-2"></i>文件转HEX
+            </button>
+            <button id="hexToFileTab" class="neumorphic-btn flex-1 py-3 px-4 font-medium transition-all duration-300">
+                <i class="fa fa-code mr-2"></i>HEX转文件
+            </button>
+        </div>
+        
+        <!-- 转换内容区域 -->
+        <div class="neumorphic p-5">
+            <!-- 文件转HEX区域 -->
+            <div id="fileToHexContent" class="flex flex-col h-full">
+                <!-- 文件上传区域 -->
+                <div class="neumorphic-inset p-6 mb-4 text-center cursor-pointer hover:bg-opacity-80 transition-colors" id="fileToHexDropArea">
+                    <input type="file" id="fileToHexInput" class="hidden" />
+                    <i class="fa fa-upload text-4xl text-gray-400 mb-2"></i>
+                    <p class="text-gray-600">点击或拖拽文件到此处</p>
+                    <p class="text-xs text-gray-500 mt-1">支持任意类型文件</p>
+                </div>
+                
+                <!-- 文件名显示 -->
+                <div id="sourceFileName" class="mb-4 text-sm text-gray-600 hidden"></div>
+                
+                <!-- HEX结果显示 -->
+                <div class="neumorphic-inset flex-grow min-h-[200px] md:min-h-[300px] mb-4 overflow-hidden">
+                    <textarea id="hexOutput" class="w-full h-full p-4 bg-transparent border-none resize-none focus:outline-none text-xs md:text-sm font-mono overflow-auto" placeholder="文件的HEX数据将显示在这里..." readonly></textarea>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="flex gap-3">
+                    <button id="copyHexBtn" class="neumorphic-btn px-4 py-2 flex-1 font-medium flex items-center justify-center gap-1" disabled>
+                        <i class="fa fa-copy"></i>
+                        <span>复制HEX</span>
+                    </button>
+                    <button id="downloadHexBtn" class="neumorphic-btn px-4 py-2 flex-1 font-medium flex items-center justify-center gap-1" disabled>
+                        <i class="fa fa-download"></i>
+                        <span>下载HEX (.bin)</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- HEX转文件区域 (默认隐藏) -->
+            <div id="hexToFileContent" class="flex flex-col h-full hidden">
+                <!-- HEX文件上传区域 -->
+                <div class="neumorphic-inset p-4 mb-4 text-center cursor-pointer hover:bg-opacity-80 transition-colors" id="hexToFileDropArea">
+                    <input type="file" id="hexToFileInput" class="hidden" accept=".txt,.bin" />
+                    <i class="fa fa-file-text-o text-2xl text-gray-400 mr-2"></i>
+                    <span class="text-gray-600 text-sm">上传HEX文件 (.txt/.bin) 或手动输入</span>
+                </div>
+                
+                <!-- HEX输入区域 -->
+                <div class="neumorphic-inset flex-grow min-h-[200px] md:min-h-[300px] mb-4 overflow-hidden">
+                    <textarea id="hexInput" class="w-full h-full p-4 bg-transparent border-none resize-none focus:outline-none text-xs md:text-sm font-mono overflow-auto" placeholder="请输入HEX数据..."></textarea>
+                </div>
+                
+                <!-- 文件扩展名输入 -->
+                <div class="mb-4">
+                    <label for="fileExtension" class="block text-sm font-medium text-gray-700 mb-1">文件扩展名</label>
+                    <div class="flex">
+                        <input type="text" id="fileExtension" class="neumorphic-inset flex-1 px-3 py-2 focus:outline-none" placeholder="例如：txt, png, pdf" />
+                    </div>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="flex gap-3">
+                    <button id="clearHexBtn" class="neumorphic-btn px-4 py-2 flex-1 font-medium flex items-center justify-center gap-1">
+                        <i class="fa fa-eraser"></i>
+                        <span>清空</span>
+                    </button>
+                    <button id="downloadFileBtn" class="neumorphic-btn px-4 py-2 flex-1 font-medium flex items-center justify-center gap-1" disabled>
+                        <i class="fa fa-download"></i>
+                        <span>下载文件</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 状态提示区域 -->
+        <div id="notification" class="fixed bottom-6 right-6 p-4 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-3 max-w-xs"></div>
+    </div>
+
+    <script>
+        // DOM元素 - 选项卡控制
+        const fileToHexTab = document.getElementById('fileToHexTab');
+        const hexToFileTab = document.getElementById('hexToFileTab');
+        const fileToHexContent = document.getElementById('fileToHexContent');
+        const hexToFileContent = document.getElementById('hexToFileContent');
+        
+        // DOM元素 - 文件转HEX功能
+        const fileToHexDropArea = document.getElementById('fileToHexDropArea');
+        const fileToHexInput = document.getElementById('fileToHexInput');
+        const sourceFileName = document.getElementById('sourceFileName');
+        const hexOutput = document.getElementById('hexOutput');
+        const copyHexBtn = document.getElementById('copyHexBtn');
+        const downloadHexBtn = document.getElementById('downloadHexBtn');
+        
+        // DOM元素 - HEX转文件功能
+        const hexToFileDropArea = document.getElementById('hexToFileDropArea');
+        const hexToFileInput = document.getElementById('hexToFileInput');
+        const hexInput = document.getElementById('hexInput');
+        const fileExtension = document.getElementById('fileExtension');
+        const clearHexBtn = document.getElementById('clearHexBtn');
+        const downloadFileBtn = document.getElementById('downloadFileBtn');
+        
+        const notificationEl = document.getElementById('notification');
+        
+        // 切换转换模式
+        function switchMode(mode) {
+            if (mode === 'fileToHex') {
+                // 激活文件转HEX模式
+                fileToHexTab.classList.add('tab-active');
+                hexToFileTab.classList.remove('tab-active');
+                fileToHexContent.classList.remove('hidden');
+                hexToFileContent.classList.add('hidden');
+            } else {
+                // 激活HEX转文件模式
+                hexToFileTab.classList.add('tab-active');
+                fileToHexTab.classList.remove('tab-active');
+                hexToFileContent.classList.remove('hidden');
+                fileToHexContent.classList.add('hidden');
+            }
+        }
+        
+        // 文件转HEX功能
+        function fileToHex(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const arrayBuffer = e.target.result;
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    let hexString = '';
+                    
+                    // 转换为HEX字符串
+                    for (let i = 0; i < uint8Array.length; i++) {
+                        const hex = uint8Array[i].toString(16).padStart(2, '0');
+                        hexString += hex;
+                        
+                        // 每16字节添加一个换行，增强可读性
+                        if ((i + 1) % 16 === 0) {
+                            hexString += '\n';
+                        }
+                    }
+                    
+                    resolve(hexString);
+                };
+                
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        
+        // HEX转文件功能
+        function hexToFile(hexString) {
+            // 清除所有非十六进制字符
+            hexString = hexString.replace(/[^0-9a-fA-F]/g, '');
+            
+            // 确保HEX长度为偶数
+            if (hexString.length % 2 !== 0) {
+                throw new Error('HEX数据长度必须为偶数');
+            }
+            
+            const byteArray = new Uint8Array(hexString.length / 2);
+            
+            for (let i = 0; i < hexString.length; i += 2) {
+                byteArray[i / 2] = parseInt(hexString.substr(i, 2), 16);
+            }
+            
+            return new Blob([byteArray]);
+        }
+        
+        // 处理文件上传（文件转HEX）
+        async function handleFileUpload(file) {
+            try {
+                // 显示文件名
+                sourceFileName.textContent = `已选择: ${file.name} (${formatFileSize(file.size)})`;
+                sourceFileName.classList.remove('hidden');
+                
+                // 转换为HEX
+                const hexString = await fileToHex(file);
+                hexOutput.value = hexString;
+                
+                // 启用按钮
+                copyHexBtn.disabled = false;
+                downloadHexBtn.disabled = false;
+                
+                showNotification(`文件转换成功，HEX长度: ${hexString.length}`, 'success');
+            } catch (error) {
+                console.error('文件转换失败:', error);
+                showNotification('文件转换失败，请重试', 'error');
+            }
+        }
+        
+        // 处理HEX文件上传（HEX转文件）
+        async function handleHexFileUpload(file) {
+            try {
+                // 读取文件内容（文本形式）
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const hexContent = e.target.result;
+                    hexInput.value = hexContent;
+                    downloadFileBtn.disabled = false;
+                    showNotification(`HEX文件加载成功，长度: ${hexContent.length}`, 'success');
+                };
+                reader.onerror = () => {
+                    showNotification('文件读取失败，请重试', 'error');
+                };
+                reader.readAsText(file);
+            } catch (error) {
+                console.error('HEX文件处理失败:', error);
+                showNotification('HEX文件处理失败，请重试', 'error');
+            }
+        }
+        
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
+            else return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+        
+        // 显示通知
+        function showNotification(message, type) {
+            notificationEl.innerHTML = `${
+                type === 'success' ? '<i class="fa fa-check-circle text-green-500"></i>' : 
+                '<i class="fa fa-exclamation-circle text-red-500"></i>'
+            }<span>${message}</span>`;
+            
+            notificationEl.className = `fixed bottom-6 right-6 p-4 rounded-lg shadow-lg transform translate-y-0 opacity-100 transition-all duration-300 flex items-center gap-3 max-w-xs ${
+                type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 
+                'bg-red-100 text-red-800 border border-red-200'
+            }`;
+            
+            // 3秒后隐藏
+            setTimeout(() => {
+                notificationEl.classList.remove('translate-y-0', 'opacity-100');
+                notificationEl.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+        
+        // 事件监听 - 选项卡切换
+        fileToHexTab.addEventListener('click', () => switchMode('fileToHex'));
+        hexToFileTab.addEventListener('click', () => switchMode('hexToFile'));
+        
+        // 事件监听 - 文件上传（文件转HEX）
+        fileToHexDropArea.addEventListener('click', () => {
+            fileToHexInput.click();
+        });
+        
+        fileToHexInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+        
+        // 拖放功能（文件转HEX）
+        fileToHexDropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileToHexDropArea.classList.add('ring-2', 'ring-primary', 'ring-opacity-50');
+        });
+        
+        fileToHexDropArea.addEventListener('dragleave', () => {
+            fileToHexDropArea.classList.remove('ring-2', 'ring-primary', 'ring-opacity-50');
+        });
+        
+        fileToHexDropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileToHexDropArea.classList.remove('ring-2', 'ring-primary', 'ring-opacity-50');
+            
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handleFileUpload(e.dataTransfer.files[0]);
+            }
+        });
+        
+        // 事件监听 - HEX文件上传（HEX转文件）
+        hexToFileDropArea.addEventListener('click', () => {
+            hexToFileInput.click();
+        });
+        
+        hexToFileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                handleHexFileUpload(e.target.files[0]);
+            }
+        });
+        
+        // 拖放功能（HEX转文件）
+        hexToFileDropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            hexToFileDropArea.classList.add('ring-2', 'ring-primary', 'ring-opacity-50');
+        });
+        
+        hexToFileDropArea.addEventListener('dragleave', () => {
+            hexToFileDropArea.classList.remove('ring-2', 'ring-primary', 'ring-opacity-50');
+        });
+        
+        hexToFileDropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            hexToFileDropArea.classList.remove('ring-2', 'ring-primary', 'ring-opacity-50');
+            
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                // 检查文件类型
+                const file = e.dataTransfer.files[0];
+                if (file.name.endsWith('.txt') || file.name.endsWith('.bin')) {
+                    handleHexFileUpload(file);
+                } else {
+                    showNotification('请上传.txt或.bin格式的HEX文件', 'error');
+                }
+            }
+        });
+        
+        // 事件监听 - 复制HEX
+        copyHexBtn.addEventListener('click', () => {
+            const hex = hexOutput.value;
+            if (hex) {
+                navigator.clipboard.writeText(hex).then(() => {
+                    showNotification('HEX数据已复制到剪贴板', 'success');
+                }).catch(() => {
+                    showNotification('复制失败，请手动复制', 'error');
+                });
+            }
+        });
+        
+        // 事件监听 - 下载HEX
+        downloadHexBtn.addEventListener('click', () => {
+            const hex = hexOutput.value;
+            if (hex) {
+                const blob = new Blob([hex], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'hex_data.bin';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showNotification('HEX数据已下载', 'success');
+            }
+        });
+        
+        // 事件监听 - 清空HEX输入
+        clearHexBtn.addEventListener('click', () => {
+            hexInput.value = '';
+            fileExtension.value = '';
+            downloadFileBtn.disabled = true;
+        });
+        
+        // 事件监听 - HEX输入变化
+        hexInput.addEventListener('input', () => {
+            downloadFileBtn.disabled = !hexInput.value.trim();
+        });
+        
+        // 事件监听 - 下载文件
+        downloadFileBtn.addEventListener('click', () => {
+            try {
+                const hex = hexInput.value;
+                const ext = fileExtension.value.trim() || 'bin';
+                const blob = hexToFile(hex);
+                
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `file_from_hex.${ext}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showNotification('文件已成功生成并下载', 'success');
+            } catch (error) {
+                console.error('HEX转换失败:', error);
+                showNotification(error.message || 'HEX转换失败，请检查输入', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

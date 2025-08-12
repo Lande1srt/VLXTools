@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rstring</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <script>
         tailwind.config = {
@@ -84,7 +84,7 @@
             <div class="neumorphic-inset rounded-xl p-4 h-16 flex items-center overflow-hidden">
                 <input type="text" id="password" 
                        class="w-full bg-transparent border-none outline-none text-lg font-mono text-center truncate"
-                       readonly placeholder="生成的密码将显示在这里">
+                       readonly placeholder="生成的字符将显示在这里">
             </div>
             
             <!-- 按钮区域 -->
@@ -102,7 +102,7 @@
             <!-- 长度控制 -->
             <div class="mb-6">
                 <div class="flex justify-between mb-2">
-                    <label for="length" class="font-medium">密码长度: <span id="length-value">12</span></label>
+                    <label for="length" class="font-medium">字符长度: <span id="length-value">12</span></label>
                 </div>
                 <input type="range" id="length" min="6" max="128" value="12" 
                        class="w-full h-3 neumorphic-inset rounded-full appearance-none cursor-pointer">
@@ -162,7 +162,7 @@
             const numbersChars = '0123456789';
             const symbolsChars = '!@#$%^&*()_+~`|}{[]:;?><,./-=';
             
-            // 生成密码
+            // 生成字符
             function generatePassword() {
                 let length = parseInt(lengthEl.value);
                 let chars = '';
@@ -180,7 +180,7 @@
                     return;
                 }
                 
-                // 生成密码
+                // 生成字符
                 for (let i = 0; i < length; i++) {
                     const randomIndex = Math.floor(Math.random() * chars.length);
                     password += chars[randomIndex];
@@ -192,7 +192,7 @@
             // 复制到剪贴板
             function copyToClipboard() {
                 if (!passwordEl.value) {
-                    alert('请先生成密码');
+                    alert('请先生成字符');
                     return;
                 }
                 
@@ -217,12 +217,12 @@
             refreshEl.addEventListener('click', generatePassword);
             copyEl.addEventListener('click', copyToClipboard);
             
-            // 选项变化时重新生成密码
+            // 选项变化时重新生成字符
             [uppercaseEl, lowercaseEl, numbersEl, symbolsEl].forEach(checkbox => {
                 checkbox.addEventListener('change', generatePassword);
             });
             
-            // 初始生成密码
+            // 初始生成字符
             generatePassword();
         </script>
     </body>
