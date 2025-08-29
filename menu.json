@@ -104,7 +104,7 @@
             {
                 "name": "MIME工具",
                 "icon": "fa-clock-o",
-                "url": "tools/develop.html"
+                "url": "tools/develop/mime.html"
             },
             {
                 "name": "KeyCode捕获工具",

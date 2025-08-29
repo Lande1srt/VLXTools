@@ -24,7 +24,8 @@
         }
     </script>
 </head>
-<body class="min-h-screen bg-gray-50 font-sans flex flex-col overflow-hidden">
+<!-- 1. 给body添加m-0，移除默认边距；保留原有其他类 -->
+<body class="min-h-screen bg-gray-50 font-sans flex flex-col overflow-hidden m-0">
     <!-- Header -->
     <header class="gradient-bg text-white shadow-lg z-10">
         <div class="container mx-auto px-4 py-4">
@@ -48,7 +49,7 @@
     <!-- Main Content -->
     <main class="flex flex-1 overflow-hidden">
         <!-- Sidebar Menu -->
-        <aside id="sidebar" class="w-64 bg-white neumorphic mr-4 hidden md:block overflow-y-auto transition-all duration-300 h-[calc(100vh-64px)]">
+        <aside id="sidebar" class="w-64 bg-white neumorphic hidden md:block overflow-y-auto transition-all duration-300 h-[calc(100vh-64px)]">
             <div class="p-4">
                 <div class="neumorphic-inset rounded-lg p-3 mb-4">
                     <div class="flex items-center">
@@ -57,7 +58,6 @@
                     </div>
                 </div>
                 <nav id="tool-menu" class="space-y-1">
-                    <!-- 菜单将通过JavaScript动态生成 -->
                     <div class="text-center py-10 text-gray-400">
                         <i class="fa fa-spinner fa-spin text-2xl mb-2"></i>
                         <p>加载菜单中...</p>
@@ -67,7 +67,7 @@
         </aside> 
 
         <!-- Main Iframe Content -->
-        <section class="flex-1 overflow-hidden neumorphic m-4" style="border-radius: 20px !important;" >
+        <section class="flex-1 overflow-hidden neumorphic" >
             <iframe id="tool-iframe" src="other/welcome.html" class="w-full h-full border-0" frameborder="0"></iframe>
         </section>
     </main>
