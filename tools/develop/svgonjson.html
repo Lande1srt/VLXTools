@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG 字符转义工具</title>
+    <style>
+        /* 拟态基础样式保留 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background-color: #f0f4f8;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            color: #2d3748;
+        }
+        .container {
+            max-width: 850px;
+            width: 100%;
+            margin: 0 auto;
+            background: #f0f4f8;
+            border-radius: 18px;
+            padding: 2rem;
+            box-shadow: 
+                8px 8px 16px rgba(174, 197, 218, 0.5),
+                -8px -8px 16px rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+        .container:hover {
+            box-shadow: 
+                10px 10px 20px rgba(174, 197, 218, 0.6),
+                -10px -10px 20px rgba(255, 255, 255, 0.9);
+        }
+        .tool-title {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 2rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* 输入/输出区域（拟态凹陷） */
+        .input-group {
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        .group-label {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #4a5568;
+            margin-left: 0.2rem;
+        }
+        .text-input, .text-output {
+            width: 100%;
+            padding: 1.2rem;
+            border: none;
+            border-radius: 14px;
+            background: #f0f4f8;
+            box-shadow: 
+                inset 4px 4px 8px rgba(174, 197, 218, 0.4),
+                inset -4px -4px 8px rgba(255, 255, 255, 0.7);
+            resize: vertical;
+            min-height: 180px;
+            font-size: 14px;
+            color: #2d3748;
+            outline: none;
+            transition: all 0.2s ease;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        .text-input:focus {
+            box-shadow: 
+                inset 5px 5px 10px rgba(174, 197, 218, 0.5),
+                inset -5px -5px 10px rgba(255, 255, 255, 0.8);
+        }
+        /* 输出区深色区分 */
+        .text-output {
+            background: #1e293b;
+            color: #f8fafc;
+            box-shadow: 
+                inset 4px 4px 8px rgba(0, 0, 0, 0.3),
+                inset -4px -4px 8px rgba(45, 55, 72, 0.5);
+        }
+
+        /* 按钮组（拟态交互） */
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .tool-btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 14px;
+            background: #f0f4f8;
+            box-shadow: 
+                6px 6px 12px rgba(174, 197, 218, 0.5),
+                -6px -6px 12px rgba(255, 255, 255, 0.8);
+            color: #2d3748;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .tool-btn:hover {
+            box-shadow: 
+                8px 8px 16px rgba(174, 197, 218, 0.6),
+                -8px -8px 16px rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+        }
+        .tool-btn:active {
+            box-shadow: 
+                inset 4px 4px 8px rgba(174, 197, 218, 0.5),
+                inset -4px -4px 8px rgba(255, 255, 255, 0.7);
+            transform: translateY(0);
+        }
+        .main-btn {
+            background-color: #3b82f6;
+            color: white;
+            box-shadow: 
+                6px 6px 12px rgba(59, 130, 246, 0.3),
+                -6px -6px 12px rgba(255, 255, 255, 0.8);
+        }
+        .main-btn:hover {
+            background-color: #2563eb;
+            box-shadow: 
+                8px 8px 16px rgba(37, 99, 235, 0.4),
+                -8px -8px 16px rgba(255, 255, 255, 0.9);
+        }
+
+        /* 提示文本 */
+        .tip-text {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #718096;
+            line-height: 1.5;
+            margin-top: -1rem;
+        }
+
+        /* 图标 */
+        .icon {
+            font-size: 1.2rem;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="tool-title">
+            <i class="fa-solid fa-code icon" style="color: #3b82f6;"></i>
+            SVG 字符转义工具
+        </h1>
+
+        <!-- SVG 输入区域 -->
+        <div class="input-group">
+            <label class="group-label">
+                <i class="fa-solid fa-pen-to-square icon" style="color: #4a5568;"></i>
+                输入 SVG 代码
+            </label>
+            <textarea 
+                class="text-input" 
+                id="svg-input" 
+                placeholder='示例：<svg width="100" height="100"><circle cx="50" cy="50" r="40" fill="red"/></svg>'
+            ></textarea>
+        </div>
+
+        <!-- 功能按钮组 -->
+        <div class="btn-group">
+            <button class="tool-btn main-btn" id="escape-btn">
+                <i class="fa-solid fa-magic icon"></i>
+                生成转义文本
+            </button>
+            <button class="tool-btn" id="copy-btn" disabled>
+                <i class="fa-solid fa-copy icon"></i>
+                复制转义结果
+            </button>
+            <button class="tool-btn" id="clear-btn">
+                <i class="fa-solid fa-trash-can icon"></i>
+                清空内容
+            </button>
+        </div>
+
+        <!-- 转义输出区域（无 JSON 格式） -->
+        <div class="input-group">
+            <label class="group-label">
+                <i class="fa-solid fa-file-lines icon" style="color: #4a5568;"></i> 转义后的文本
+            </label>
+            <textarea 
+                class="text-output" 
+                id="escaped-output" 
+                readonly 
+                placeholder="转义后的内容将显示在这里"
+            ></textarea>
+            <p class="tip-text">
+                "→\"、\→\\、\n→\\n、\r→\\r、\t→\\t
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 元素获取
+        const svgInput = document.getElementById('svg-input');
+        const escapedOutput = document.getElementById('escaped-output');
+        const escapeBtn = document.getElementById('escape-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const clearBtn = document.getElementById('clear-btn');
+
+        // 核心：仅添加反斜杠转义（无 JSON 格式）
+        function escapeSvgText(svgCode) {
+            if (!svgCode) return "";
+            // 仅对关键字符添加反斜杠转义，不附加任何 JSON 结构
+            return svgCode
+                .replace(/\\/g, '\\\\')    // 反斜杠 → \\
+                .replace(/"/g, '\\"')      // 双引号 → \"
+                .replace(/\n/g, '\\n')     // 换行符 → \\n
+                .replace(/\r/g, '\\r')     // 回车符 → \\r
+                .replace(/\t/g, '\\t');    // 制表符 → \\t
+        }
+
+        // 1. 生成转义文本
+        escapeBtn.addEventListener('click', () => {
+            const inputValue = svgInput.value.trim();
+            if (!inputValue) {
+                alert('请先输入需要转义的 SVG 代码！');
+                return;
+            }
+
+            // 生成纯转义文本（无 JSON 外层双引号）
+            const escapedText = escapeSvgText(inputValue);
+            escapedOutput.value = escapedText;
+            
+            // 启用复制按钮
+            copyBtn.disabled = false;
+            copyBtn.style.opacity = '1';
+        });
+
+        // 2. 复制转义结果
+        copyBtn.addEventListener('click', () => {
+            const resultValue = escapedOutput.value.trim();
+            if (!resultValue) return;
+
+            navigator.clipboard.writeText(resultValue)
+                .then(() => {
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fa-solid fa-check icon"></i> 复制成功！';
+                    copyBtn.style.backgroundColor = '#10b981';
+                    copyBtn.style.color = 'white';
+
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                        copyBtn.style.backgroundColor = '';
+                        copyBtn.style.color = '';
+                    }, 1500);
+                })
+                .catch(err => {
+                    alert(`复制失败：${err.message}`);
+                });
+        });
+
+        // 3. 清空内容
+        clearBtn.addEventListener('click', () => {
+            svgInput.value = '';
+            escapedOutput.value = '';
+            copyBtn.disabled = true;
+            copyBtn.style.opacity = '0.6';
+            copyBtn.innerHTML = '<i class="fa-solid fa-copy icon"></i> 复制转义结果';
+            copyBtn.style.backgroundColor = '';
+            copyBtn.style.color = '';
+        });
+
+        // 初始化
+        copyBtn.style.opacity = '0.6';
+    </script>
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML页面转写JS工具</title>
+    <!-- 引入 highlight.js：Cloudflare CDN（githubdark 风格 + JS 核心库） -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/javascript.min.js"></script>
+    <style>
+        /* 拟态风格核心样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background-color: #f0f4f8;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .card {
+            background: #f0f4f8;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 
+                8px 8px 16px rgba(174, 197, 218, 0.5),
+                -8px -8px 16px rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 
+                10px 10px 20px rgba(174, 197, 218, 0.6),
+                -10px -10px 20px rgba(255, 255, 255, 0.9);
+        }
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+        label {
+            display: block;
+            color: #4a5568;
+            margin-bottom: 0.6rem;
+            font-weight: 500;
+        }
+        .warning {
+            color: #dc2626;
+            font-size: 13px;
+            margin-top: 0.3rem;
+            display: inline-block;
+        }
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            background: #f0f4f8;
+            box-shadow: 
+                inset 4px 4px 8px rgba(174, 197, 218, 0.4),
+                inset -4px -4px 8px rgba(255, 255, 255, 0.7);
+            resize: vertical;
+            min-height: 120px;
+            font-size: 14px;
+            color: #2d3748;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        textarea:focus {
+            box-shadow: 
+                inset 5px 5px 10px rgba(174, 197, 218, 0.5),
+                inset -5px -5px 10px rgba(255, 255, 255, 0.8);
+        }
+        /* 转码方式选择器 */
+        .select-wrapper {
+            width: 100%;
+            max-width: 500px;
+        }
+        select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: none;
+            border-radius: 12px;
+            background: #f0f4f8;
+            box-shadow: 
+                4px 4px 8px rgba(174, 197, 218, 0.4),
+                -4px -4px 8px rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            color: #2d3748;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%234a5568' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.5l-6-6 1.5-1.5L8 8.5l4.5-4.5L14 5.5l-6 6z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 16px;
+        }
+        /* 按钮样式 */
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            background: #f0f4f8;
+            box-shadow: 
+                5px 5px 10px rgba(174, 197, 218, 0.5),
+                -5px -5px 10px rgba(255, 255, 255, 0.8);
+            color: #2d3748;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        button:hover {
+            box-shadow: 
+                6px 6px 12px rgba(174, 197, 218, 0.6),
+                -6px -6px 12px rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+        }
+        button:active {
+            box-shadow: 
+                inset 4px 4px 8px rgba(174, 197, 218, 0.5),
+                inset -4px -4px 8px rgba(255, 255, 255, 0.7);
+            transform: translateY(0);
+        }
+        .download-btn {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .download-btn:hover {
+            background-color: #2563eb;
+        }
+        /* 代码块样式（适配 highlight.js） */
+        .code-block {
+            padding: 1rem;
+            border-radius: 12px;
+            background: #0d1117; /* githubdark 背景色，与 highlight 风格统一 */
+            margin-bottom: 0.5rem;
+            min-height: 180px;
+        }
+        .code-block pre,
+        .code-block code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .code-block pre {
+            margin: 0;
+            padding: 0;
+        }
+        /* 引用代码复制样式 */
+        .ref-code {
+            color: #3b82f6;
+            cursor: pointer;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            background-color: rgba(59, 130, 246, 0.1);
+            margin: 0 0.2rem;
+        }
+        .ref-code:hover {
+            background-color: rgba(59, 130, 246, 0.2);
+        }
+        .tip {
+            font-size: 12px;
+            color: #718096;
+            text-align: center;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>HTML页面转写JS</h1>
+            
+            <!-- 1. HTML 输入区 -->
+            <div class="input-group">
+                <label for="html-input">输入 HTML 内容：</label>
+                <textarea id="html-input" placeholder="&lt;h1&gt;Demo&lt;/h1&gt;"></textarea>
+            </div>
+
+            <!-- 2. 转码方式选择 -->
+            <div class="input-group">
+                <label>选择内容编码逻辑
+                    <span class="warning">注意：unescape已废弃，不建议使用</span>
+                </label>
+                <div class="select-wrapper">
+                    <select id="encode-mode">
+                        <option value="url-decode">decodeURIComponent（推荐）</option>
+                        <option value="unescape">unescape（仅兼容极旧场景）</option>
+                        <option value="base64">Base64（支持中文，极高兼容性）</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 3. 功能按钮区 -->
+            <div class="btn-group">
+                <button id="generate-btn">生成 JS 代码</button>
+                <button id="copy-btn" disabled>复制 JS 代码</button>
+                <button id="download-btn" class="download-btn" disabled>下载 hup.js</button>
+                <button id="clear-btn">清空所有内容</button>
+            </div>
+
+            <!-- 4. 代码输出区（highlight.js 高亮容器） -->
+            <div class="input-group">
+                <label>生成的可直接引用 JS 代码：</label>
+                <div class="code-block">
+                    <pre><code id="output-code" class="language-javascript"></code></pre>
+                </div>
+                <p class="tip">
+                    使用说明：
+                    <br />复制代码到空 HTML 的 &lt;script&gt; 标签中，或
+                    <br />下载 hup.js 后，点击复制下列内容到HTML内
+                    <br />
+                    <span class="ref-code" id="ref-code">
+                        &lt;script src="hup.js"&gt;&lt;/script&gt;
+                    </span>
+                    <br />此工具搭配js混淆工具使用将实现高阶混淆功能
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="library/hup.js"></script>
+</body>
+</html>
