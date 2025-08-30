@@ -1,4 +1,4 @@
-// 添加搜索功能
+// 搜索功能
 function setupSearch() {
     const searchInput = document.getElementById('tool-search');
     const menuContainer = document.getElementById('tool-menu');
@@ -71,7 +71,7 @@ function openSidebar() {
     // 重置状态
     sidebar.classList.remove('hidden');
     sidebar.classList.add('fixed', 'z-20', 'h-full');
-    sidebar.style.width = '0'; // 从0开始
+    sidebar.style.width = '0'; 
     if (toggleIcon) {
         toggleIcon.style.transition = 'transform 0.3s ease-in-out';
         toggleIcon.style.transform = 'rotate(0)';
@@ -112,7 +112,7 @@ function isMobileDevice() {
 
 // 添加遮罩层
 function addOverlay() {
-    removeOverlay(); // 先移除已存在的
+    removeOverlay(); // 移除已存在的
     
     const overlay = document.createElement('div');
     overlay.id = 'menu-overlay';
