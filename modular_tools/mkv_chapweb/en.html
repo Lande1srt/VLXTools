@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MKV ChapWeb</title>
+	<meta name="robots" content="index, follow">
+	<meta name="author" content="Lande">
+	<meta name="keywords" content="mkv,mkv video, chapweb, mkv chapweb, mkv tool, mkv chapter, chapter generate,chapter create, chapter edit, xml chapter, txt chapter, OMG chapter">
+	<meta name="description" content="MKV ChapWeb is a chapter generation tool for MKV video format. It helps users quickly create, edit and manage chapter information in video files. With its intuitive web-based interface and user-friendliness, users can define parameters like the number of chapters, chapter names, and start/end times. It can generate and export chapter tag XML files compliant with MKV format specifications, enabling precise chapter navigation in media players that support MKV video.">
+	<meta property="og:title" content="MKV ChapWeb">
+	<meta property="og:description" content="MKV ChapWeb is a chapter generation tool for MKV video format. It helps users quickly create, edit and manage chapter information in video files. With its intuitive web-based interface and user-friendliness, users can define parameters like the number of chapters, chapter names, and start/end times. It can generate and export chapter tag XML files compliant with MKV format specifications, enabling precise chapter navigation in media players that support MKV video.">
+	<meta property="og:image" content="img/chapweb-og.jpg">
+	<link rel="shortcut icon" href="chapweb.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+	<div class="progress-bar"></div>
+	<script src="js/load.js"></script>
+    <div class="sidebar" id="sidebar"></div>
+	<div id="dragTarget" class="hide">
+		<h1>Please drag and drop the chapter file here for parsing</h1>
+	</div>
+    <div class="container" style="margin-top: 20px;">
+        <button id="sidebarToggle" class="sidebar-toggle" onclick="toggleSidebar()" style="background: none;box-shadow: none;">
+			<img src="img/io.svg" id="Rotaimga" width="25px"/>
+        </button>
+		<button id="theme-toggle" class="theme-toggle">
+		    <img src="img/darklight.svg" id="Rotaimgb" style="transform: translateY(-2px);"/>
+		</button>
+        <h1 style="font-size: 1.8em;">MKV ChapWeb Main Control Parameters</h1>
+        <p style="color: red;text-align: left;">Attention: Modifying this parameter will reset the sidebar to its default value. Please confirm and adjust it before starting to avoid losing work progress.</p>
+        <div class="input-group">
+            <div>
+                <label for="chapterCount">Number of video chapters</label>
+                <input type="number" id="chapterCount" value="2" min="1" onchange="updateParamBlocks()">
+            </div>
+            <div>
+                <label for="language">Language tag</label>
+                <input type="text" id="language" value="eng">
+            </div>
+            <div>
+                <label for="ietfLanguage">IETF Language tag</label>
+                <input type="text" id="ietfLanguage" value="en">
+            </div>
+            <div>
+                <label for="paramIdType">Parameter ID type</label>
+                <select id="paramIdType" onchange="updateParamBlocks()">
+                    <option value="sequential">Generate in order</option>
+                    <option value="random">Random generation</option>
+                </select>
+            </div>
+        </div>
+        <div class="input-group">
+            <div>
+                <label for="includeEndTime" style="font-size: 18px;">Enable chapter end time tags</label>
+                <input type="checkbox" id="includeEndTime" onchange="updateParamBlocks()">
+            </div>
+			<div>
+				<button onclick="window.location.href='zh.html'" id="Clanguage">Switch Language</button>
+			</div>
+        </div>
+        <button onclick="generateChapters()">Generate and preview chapter labels</button>
+        <input type="file" id="uploadXML" style="display: none;" accept=".xml,.txt">
+        <button onclick="triggerFileSelection()">Upload and parse XML files</button>
+        <button onclick="downloadXML()">Generate and download XML files</button>
+        <iframe id="outputFrame" src="iframeContent.html" style="display: none;"></iframe>
+    </div>
+	<!--footer>
+	        <div class="footer-content">
+	        	<img src="img/chapweb.svg" class="clogoimg"/>
+	        	<span>MKV ChapWeb v2.3</span>
+	        	<br id="ISMhiddenA"/>
+	            &copy;<span id="cyear"></span><a href="https://github.com/landeyucc/" target="_blank">@landeyucc</a>All right reserved。 
+	        	<br id="ISMhiddenB"/>
+	        	<a href="https://github.com/landeyucc/MKV-ChapWeb" target="_blank"><img src="img/github.svg" class="clogoimg"/>&nbsp;GitHub Project</a>
+	            <a href="https://vl-a.com" target="_blank"><img src="img/vlicon.png" class="clogoimg"/>&nbsp;Lande Space</a>
+	        </div>
+	    </footer-->
+	
+	    <script>
+	        document.getElementById('cyear').textContent = new Date().getFullYear();
+	    </script>
+</body>
+	<script src="js/script-en.js"></script>
+	<script src="js/uidortime.js"></script>
+	<script src="js/chapopt.js"></script>
+	<script src="js/uploadxml-en.js"></script>
+	<script src="js/rotaimg.js"></script>
+	<script src="js/lightdark.js"></script>
+	<script src="js/dragupload.js"></script>
+</html>

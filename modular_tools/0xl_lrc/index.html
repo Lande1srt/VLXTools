@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LRC歌词制作工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LRC歌词制作工具</h1>
+            <p>轻松制作同步歌词，支持逐行和逐字模式</p>
+        </header>
+
+        <!-- 原编辑界面 -->
+        <main id="edit-interface">
+            <!-- 左侧输入区域 -->
+            <section class="input-panel">
+                <div class="card">
+                    <h2>音频文件</h2>
+                    <div class="audio-upload">
+                        <label for="audio-upload" class="upload-label">
+                            <i class="fas fa-music"></i>
+                            <span>上传音频文件</span>
+                        </label>
+                        <input type="file" id="audio-upload" accept="audio/*">
+                        <audio id="audio-player" controls hidden></audio>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>歌词输入</h2>
+                    <div class="lyric-input-options">
+                        <button id="text-input-btn" class="option-btn active">文本输入</button>
+                        <button id="lrc-upload-btn" class="option-btn">导入LRC</button>
+                    </div>
+                    
+                    <div id="text-input-container">
+                        <textarea id="lyric-textarea" placeholder="在此输入歌词，将按空格、逗号和句号自动分割..."></textarea>
+                        <button id="split-lyric-btn" class="action-btn">分割歌词</button>
+                    </div>
+                    
+                    <div id="lrc-upload-container" class="hidden">
+                        <label for="lrc-upload" class="upload-label">
+                            <i class="fas fa-file-import"></i>
+                            <span>上传LRC文件</span>
+                        </label>
+                        <input type="file" id="lrc-upload" accept=".lrc">
+                    </div>
+                </div>
+            </section>
+
+            <!-- 右侧预览和处理区域 -->
+            <section class="preview-panel">
+                <!-- 打节奏控制区域 -->
+                <div class="card" id="timing-controls">
+                    <h2>打节奏控制</h2>
+                    <div class="process-mode-container">
+                        <h3>处理模式</h3>
+                        <div class="mode-options">
+                            <label class="mode-label">
+                                <input type="radio" name="process-mode" value="line" checked>
+                                <span>逐行处理</span>
+                            </label>
+                            <label class="mode-label">
+                                <input type="radio" name="process-mode" value="char">
+                                <span>逐字处理</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="timing-navigation">
+                        <button id="stop-btn" class="control-btn"><i class="fas fa-stop"></i> 停止</button>
+                        <button id="prev-lyric" class="control-btn"><i class="fas fa-step-backward"></i> 上一条</button>
+                        <button id="next-lyric" class="control-btn"><i class="fas fa-step-forward"></i> 下一条</button>
+                    </div>
+                    
+                    <div class="timing-info">
+                        <span>当前时间: </span>
+                        <span id="current-time">00:00.00</span>
+                    </div>
+                    
+                    <div class="lyric-context">
+                        <div class="previous-lyric">
+                            <span>上一条: </span>
+                            <span id="previous-lyric-text">无</span>
+                        </div>
+                        <div class="current-lyric highlight">
+                            <span>当前处理: </span>
+                            <span id="current-lyric-text">无</span>
+                        </div>
+                        <div class="next-lyric">
+                            <span>下一条: </span>
+                            <span id="next-lyric-text">无</span>
+                        </div>
+                    </div>
+                    
+                    <div class="timing-buttons">
+                        <button id="prev-5s" class="control-btn"><i class="fas fa-backward-step"></i> 后退2秒</button>
+                        <button id="next-5s" class="control-btn"><i class="fas fa-forward-step"></i> 前进2秒</button>
+                        <button id="play-pause" class="control-btn primary"><i class="fas fa-play"></i> 播放/暂停</button>
+                        <button id="set-time" class="control-btn accent"><i class="fas fa-marker"></i> 标记时间</button>
+                    </div>
+                    
+                    <button id="start-timing-btn" class="action-btn primary">开始打节奏</button>
+                </div>
+
+                <div class="card">
+                    <div class="lyric-preview-header">
+                        <h2>歌词预览</h2>
+                    </div>
+                    <div id="lyric-preview" class="lyric-preview">
+                        <div class="placeholder-text">请输入歌词并分割，或导入LRC文件</div>
+                    </div>
+                    <div class="add-blank-lyric">
+                        <button id="add-blank-btn" class="action-btn"><i class="fas fa-plus-circle"></i> 添加空白歌词</button>
+                    </div>
+                </div>
+
+                <div class="card" id="adjustment-panel">
+                    <h2>时间调整</h2>
+                    <p>调整所有时间码（秒.毫秒，如: 0.500 或 -0.200）</p>
+                    <div class="adjustment-controls">
+                        <input type="text" id="time-adjust" placeholder="输入调整值">
+                        <button id="apply-adjustment" class="action-btn primary">应用调整</button>
+                    </div>
+                    <!-- 替换导出按钮为下一步按钮 -->
+                    <button id="next-step-btn" class="action-btn accent"><i class="fas fa-arrow-right"></i> 下一步：预览同步效果</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- 新增预览界面 -->
+        <main id="preview-interface" class="hidden">
+            <section class="preview-main">
+                <div class="card">
+                    <h2>歌词同步预览</h2>
+                    <p>播放音频查看歌词同步效果，可实时调整</p>
+                    
+                    <!-- 音频播放器 -->
+                    <div class="preview-audio">
+                        <audio id="preview-audio-player" controls></audio>
+                    </div>
+                    
+                    <!-- 歌词同步显示区域 -->
+                    <div class="sync-lyric-container">
+                        <div id="sync-lyric-display" class="sync-lyric-display">
+                            <div class="placeholder-text">播放音频开始预览歌词同步效果</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 控制按钮 -->
+                    <div class="preview-controls">
+                        <button id="back-to-edit" class="action-btn"><i class="fas fa-arrow-left"></i> 上一步：返回编辑</button>
+                        <button id="view-edit-lrc" class="action-btn primary"><i class="fas fa-edit"></i> 查看与编辑LRC</button>
+                        <button id="export-lrc" class="action-btn accent"><i class="fas fa-download"></i> 导出LRC文件</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>© 2025 LRC歌词制作工具 - 轻松制作同步歌词</p>
+        </footer>
+    </div>
+
+    <!-- 歌词编辑弹窗 -->
+    <div class="modal-overlay">
+        <div class="modal">
+            <h3>编辑歌词</h3>
+            <textarea id="edit-lyric-textarea"></textarea>
+            <div class="modal-buttons">
+                <button id="cancel-edit" class="action-btn">取消</button>
+                <button id="save-edit" class="action-btn primary">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script src="js/audioHandler.js"></script>
+    <script src="js/lyricHandler.js"></script>
+    <script src="js/timeHandler.js"></script>
+    <script src="js/uiController.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

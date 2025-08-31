@@ -34,7 +34,7 @@ function setupSearch() {
                     item.querySelector('button').style.display = 'none';
                     const subMenu = item.querySelector('.sub-menu');
                     subMenu.classList.remove('hidden');
-                    subMenu.style.maxHeight = '300px';
+                    subMenu.style.maxHeight = 'none';
                     subMenu.style.opacity = '1';
                 }
             } else {
@@ -122,7 +122,7 @@ function addOverlay() {
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0,0,0,0.3);
+        background: rgba(0,0,0,0.2);
         z-index: 10;
         transition: opacity 0.3s ease;
         opacity: 0;
@@ -165,15 +165,6 @@ function closeSidebar() {
         if (isMobileDevice()) {
             removeOverlay();
         }
-        // 收起时重置所有子菜单状态
-        document.querySelectorAll('.sub-menu').forEach(subMenu => {
-            subMenu.classList.add('hidden');
-            subMenu.style.maxHeight = '0';
-            subMenu.style.opacity = '0';
-        });
-        document.querySelectorAll('.fa-chevron-down').forEach(icon => {
-            icon.classList.remove('rotate-180');
-        });
     }, 300);
 }
 
@@ -249,13 +240,12 @@ function renderMenuItems(items, container) {
                     if (subMenu.classList.contains('hidden')) {
                         subMenu.classList.remove('hidden');
                         subMenu.style.opacity = '0';
-                        subMenu.style.maxHeight = '0'; 
-                        void subMenu.offsetWidth; 
-                        subMenu.style.maxHeight = '2000px';
+                        const height = subMenu.scrollHeight + 10;
+                        subMenu.style.maxHeight = height + 'px';
+                        void subMenu.offsetWidth;
                         subMenu.style.opacity = '1';
                         if (icon) icon.classList.add('rotate-180');
                     } else {
-                        // 收起子菜单
                         subMenu.style.opacity = '0';
                         subMenu.style.maxHeight = '0';
                         if (icon) icon.classList.remove('rotate-180');
@@ -264,26 +254,18 @@ function renderMenuItems(items, container) {
                 }
             });
 
-            // 创建子菜单：添加垂直滚动样式（核心修复）
             const subMenu = document.createElement('div');
             subMenu.className = 'sub-menu hidden pl-6 mt-1 space-y-1 transition-all duration-300 ease-in-out';
             subMenu.style.maxHeight = '0';
             subMenu.style.overflow = 'hidden';
-            subMenu.style.overflowY = 'auto'; 
             menuItem.appendChild(subMenu);
-            
-            // 递归渲染子菜单内容（确保子项正确显示）
             renderMenuItems(item.children, subMenu);
         } else {
-            // 最后一级菜单点击逻辑
             menuButton.addEventListener('click', function(e) {
                 e.stopPropagation();
-                // 移除其他菜单的激活状态
                 document.querySelectorAll('#tool-menu .menu-active').forEach(el => el.classList.remove('menu-active'));
                 this.classList.add('menu-active');
-                // 加载iframe内容
                 if (item.url) document.getElementById('tool-iframe').src = item.url;
-                // 移动设备点击后收起侧边栏
                 if (isMobileDevice()) closeSidebar();
             });
         }
