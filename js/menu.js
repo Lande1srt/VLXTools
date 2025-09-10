@@ -56,6 +56,7 @@ function openSidebar() {
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('menu-toggle');
     const toggleIcon = toggleBtn?.querySelector('i');
+    const contentOverlay = document.getElementById('content-overlay');
     
     // 已打开则返回
     if (!sidebar.classList.contains('hidden')) return;
@@ -80,10 +81,25 @@ function openSidebar() {
     // 强制重绘
     void sidebar.offsetWidth;
 
-    // 执行展开动画
+    // 执行展开动画 - PC端宽度为视口的1/4（最小320px），移动端保持280px
     setTimeout(() => {
-        sidebar.style.width = '280px';
+        if (isMobileDevice()) {
+            sidebar.style.width = '280px';
+        } else {
+            // 计算1/4视口宽度，但不小于320px
+            const sidebarWidth = Math.max(window.innerWidth / 4, 320);
+            sidebar.style.width = `${sidebarWidth}px`;
+            // PC端显示内容区域遮罩
+            if (contentOverlay) {
+                contentOverlay.style.display = 'block';
+            }
+        }
         if (toggleIcon) toggleIcon.style.transform = 'rotate(180deg)';
+        
+        // 仅在PC端移动菜单按钮到侧边栏宽度位置
+        if (!isMobileDevice() && toggleBtn) {
+            toggleBtn.style.left = sidebar.style.width;
+        }
     }, 10);
 
     // 移动设备添加遮罩
@@ -91,6 +107,61 @@ function openSidebar() {
         addOverlay();
     }
 }
+
+// 窗口大小变化时调整侧边栏宽度和菜单按钮位置
+window.addEventListener('resize', function() {
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('menu-toggle');
+    
+    // 检查是否为移动设备
+    const isMobile = isMobileDevice();
+    
+    // 如果侧边栏已展开且在PC端
+    if (!sidebar.classList.contains('hidden') && !isMobile) {
+        // 计算1/4视口宽度，但不小于320px
+        const sidebarWidth = Math.max(window.innerWidth / 4, 320);
+        const newWidth = `${sidebarWidth}px`;
+        sidebar.style.width = newWidth;
+        
+        // 同步更新菜单按钮位置（仅PC端）
+        if (toggleBtn) {
+            toggleBtn.style.left = newWidth;
+        }
+    } else if (isMobile && toggleBtn) {
+        // 移动端时重置按钮位置
+        toggleBtn.style.left = '';
+    }
+});
+
+// 页面加载时，初始化侧边栏和内容区域点击事件
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化内容区域点击事件
+    const contentOverlay = document.getElementById('content-overlay');
+    if (contentOverlay) {
+        contentOverlay.addEventListener('click', () => {
+            closeSidebar();
+        });
+    }
+    
+    // 根据设备类型初始化菜单按钮位置
+    const toggleBtn = document.getElementById('menu-toggle');
+    if (toggleBtn) {
+        if (isMobileDevice()) {
+            // 移动端按钮位置由CSS控制
+            toggleBtn.style.left = '';
+        } else {
+            // PC端按钮初始位置
+            toggleBtn.style.left = '0';
+        }
+    }
+    
+    // PC端默认展开侧边栏
+    if (!isMobileDevice()) {
+        setTimeout(() => {
+            openSidebar();
+        }, 100);
+    }
+});
 
 // 菜单切换按钮功能
 document.getElementById('menu-toggle').addEventListener('click', function() {
@@ -102,6 +173,24 @@ document.getElementById('menu-toggle').addEventListener('click', function() {
     } else {
         // 收起侧边栏
         closeSidebar();
+    }
+});
+
+// 键盘快捷键 ALT+A 控制侧边栏
+document.addEventListener('keydown', function(event) {
+    // 检查是否按下 ALT+A
+    if (event.altKey && event.key.toLowerCase() === 'a') {
+        event.preventDefault(); // 阻止默认行为
+        
+        const sidebar = document.getElementById('sidebar');
+        
+        if (sidebar.classList.contains('hidden')) {
+            // 打开侧边栏
+            openSidebar();
+        } else {
+            // 收起侧边栏
+            closeSidebar();
+        }
     }
 });
 
@@ -150,21 +239,35 @@ function removeOverlay() {
 // 收起菜单方法
 function closeSidebar() {
     const sidebar = document.getElementById('sidebar');
-    const toggleIcon = document.querySelector('#menu-toggle i');
+    const toggleBtn = document.getElementById('menu-toggle');
+    const toggleIcon = toggleBtn?.querySelector('i');
+    const contentOverlay = document.getElementById('content-overlay');
     
     if (sidebar.classList.contains('hidden')) return;
 
     // 执行收起动画
     sidebar.style.width = '0';
     if (toggleIcon) toggleIcon.style.transform = 'rotate(0)';
+    
+    // 仅在PC端重置菜单按钮位置
+    if (!isMobileDevice() && toggleBtn) {
+        toggleBtn.style.left = '0';
+    }
+    
+    // 隐藏内容区域遮罩
+    if (contentOverlay) {
+        contentOverlay.style.display = 'none';
+    }
 
     // 动画结束后处理
     setTimeout(() => {
         sidebar.classList.add('hidden');
         sidebar.classList.remove('fixed', 'z-20', 'h-full');
+        
         if (isMobileDevice()) {
             removeOverlay();
         }
+        
         // 收起时重置所有子菜单状态
         document.querySelectorAll('.sub-menu').forEach(subMenu => {
             subMenu.classList.add('hidden');

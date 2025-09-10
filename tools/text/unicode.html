@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>文本转Unicode工具</title>
+  <title>Unicode转换工具</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   
@@ -46,23 +46,33 @@
 </head>
 <body class="bg-primary min-h-screen p-4 md:p-8 flex flex-col items-center justify-center font-sans text-gray-700">
   <div class="w-full max-w-2xl neumorphic rounded-3xl p-6 md:p-8">
-    <h1 class="text-center text-2xl font-bold mb-6">文本转Unicode</h1>
+    <h1 class="text-center text-2xl font-bold mb-6">Unicode转换工具</h1>
     
     <!-- 输入区域 -->
     <div class="mb-6">
-      <label for="text-input" class="block mb-2 text-sm font-medium">输入文本</label>
+      <label for="text-input" class="block mb-2 text-sm font-medium">输入内容</label>
       <textarea id="text-input" rows="3" 
                 class="w-full px-4 py-3 rounded-xl neumorphic-inset border-none bg-transparent focus:outline-none resize-none"
-                placeholder="在这里输入需要转换的文本...">Hello 世界！</textarea>
+                placeholder="在这里输入需要转换的内容...">Hello 世界！</textarea>
     </div>
     
     <!-- 转换选项 -->
     <div class="flex gap-4 mb-6">
       <button id="dec-btn" class="flex-1 px-4 py-3 rounded-xl neumorphic-btn text-center bg-primary/50">
-        <i class="fa fa-hashtag mr-2"></i>十进制
+        <i class="fa fa-hashtag mr-2"></i>文本转十进制
       </button>
       <button id="hex-btn" class="flex-1 px-4 py-3 rounded-xl neumorphic-btn text-center">
-        <i class="fa fa-hashtag mr-2"></i>十六进制
+        <i class="fa fa-hashtag mr-2"></i>文本转十六进制
+      </button>
+    </div>
+    
+    <!-- 反向解析选项 -->
+    <div class="flex gap-4 mb-6">
+      <button id="dec-to-text-btn" class="flex-1 px-4 py-3 rounded-xl neumorphic-btn text-center">
+        <i class="fa fa-exchange mr-2"></i>十进制转文本
+      </button>
+      <button id="hex-to-text-btn" class="flex-1 px-4 py-3 rounded-xl neumorphic-btn text-center">
+        <i class="fa fa-exchange mr-2"></i>十六进制转文本
       </button>
     </div>
     
@@ -72,7 +82,7 @@
       <div class="relative">
         <textarea id="text-output" rows="4" readonly
                   class="w-full px-4 py-3 rounded-xl neumorphic-inset border-none bg-transparent focus:outline-none resize-none font-mono text-sm"
-                  placeholder="转换后的Unicode将显示在这里...">&#72;&#101;&#108;&#108;&#111;&#32;&#19990;&#30028;&#65281;</textarea>
+                  placeholder="转换结果将显示在这里...">&#72;&#101;&#108;&#108;&#111;&#32;&#19990;&#30028;&#65281;</textarea>
         <button id="copy-btn" class="absolute right-3 bottom-3 p-2 rounded-lg neumorphic-btn">
           <i class="fa fa-copy"></i>
         </button>
@@ -89,13 +99,15 @@
     const textOutput = document.getElementById('text-output');
     const decBtn = document.getElementById('dec-btn');
     const hexBtn = document.getElementById('hex-btn');
+    const decToTextBtn = document.getElementById('dec-to-text-btn');
+    const hexToTextBtn = document.getElementById('hex-to-text-btn');
     const copyBtn = document.getElementById('copy-btn');
     const copyNotification = document.getElementById('copy-notification');
     
-    // 当前转换模式 (decimal/hexadecimal)
+    // 当前转换模式 (decimal/hexadecimal/decToText/hexToText)
     let currentMode = 'decimal';
     
-    // 转换函数
+    // 转换函数 - 文本转Unicode
     function textToUnicodeDecimal(text) {
       return text.split('').map(char => `&#${char.charCodeAt(0)};`).join('');
     }
@@ -107,12 +119,38 @@
       }).join('');
     }
     
+    // 转换函数 - Unicode转文本
+    function decimalUnicodeToText(unicodeText) {
+      // 匹配十进制Unicode格式 &#数字;
+      const regex = /&#(\d+);/g;
+      return unicodeText.replace(regex, (match, decCode) => {
+        return String.fromCharCode(parseInt(decCode, 10));
+      });
+    }
+    
+    function hexUnicodeToText(unicodeText) {
+      // 匹配十六进制Unicode格式 &#x十六进制;
+      const regex = /&#x([0-9A-Fa-f]+);/g;
+      return unicodeText.replace(regex, (match, hexCode) => {
+        return String.fromCharCode(parseInt(hexCode, 16));
+      });
+    }
+    
     function updateOutput() {
       const text = textInput.value;
-      if (currentMode === 'decimal') {
-        textOutput.value = textToUnicodeDecimal(text);
-      } else {
-        textOutput.value = textToUnicodeHex(text);
+      switch(currentMode) {
+        case 'decimal':
+          textOutput.value = textToUnicodeDecimal(text);
+          break;
+        case 'hexadecimal':
+          textOutput.value = textToUnicodeHex(text);
+          break;
+        case 'decToText':
+          textOutput.value = decimalUnicodeToText(text);
+          break;
+        case 'hexToText':
+          textOutput.value = hexUnicodeToText(text);
+          break;
       }
     }
     
@@ -128,18 +166,41 @@
       }, 2000);
     }
     
-    // 切换模式
+    // 重置所有按钮样式
+    function resetButtonStyles() {
+      decBtn.classList.remove('bg-primary/50');
+      hexBtn.classList.remove('bg-primary/50');
+      decToTextBtn.classList.remove('bg-primary/50');
+      hexToTextBtn.classList.remove('bg-primary/50');
+    }
+    
+    // 切换模式 - 文本转Unicode
     decBtn.addEventListener('click', () => {
       currentMode = 'decimal';
+      resetButtonStyles();
       decBtn.classList.add('bg-primary/50');
-      hexBtn.classList.remove('bg-primary/50');
       updateOutput();
     });
     
     hexBtn.addEventListener('click', () => {
       currentMode = 'hexadecimal';
+      resetButtonStyles();
       hexBtn.classList.add('bg-primary/50');
-      decBtn.classList.remove('bg-primary/50');
+      updateOutput();
+    });
+    
+    // 切换模式 - Unicode转文本
+    decToTextBtn.addEventListener('click', () => {
+      currentMode = 'decToText';
+      resetButtonStyles();
+      decToTextBtn.classList.add('bg-primary/50');
+      updateOutput();
+    });
+    
+    hexToTextBtn.addEventListener('click', () => {
+      currentMode = 'hexToText';
+      resetButtonStyles();
+      hexToTextBtn.classList.add('bg-primary/50');
       updateOutput();
     });
     

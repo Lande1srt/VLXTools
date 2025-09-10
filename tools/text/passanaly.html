@@ -55,105 +55,113 @@
   </style>
 </head>
 <body class="bg-surface min-h-screen font-sans text-text p-4 md:p-6 flex items-center justify-center">
-  <div class="max-w-md w-full w-full">
-    <!-- 标题区域 -->
-    <div class="text-center mb-8">
-      <h1 class="text-[clamp(1.8rem,5vw,2.2rem)] font-bold mb-2 flex items-center justify-center">
-        <i class="fa fa-shield text-primary mr-2"></i>密码强度分析仪
-      </h1>
-      <p class="text-gray-600">实时检测密码安全等级和建议</p>
+    <div class="max-w-4xl w-full">
+      <!-- 标题区域 -->
+      <div class="text-center mb-8">
+        <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-center mb-6 text-primary">
+          密码强度分析工具
+        </h1>
+        <p class="text-gray-600">检测密码安全等级和建议</p>
+      </div>
+      
+      <!-- 主内容区 -->
+      <div class="bg-surface rounded-2xl p-6 md:p-8 neumorphic grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- 密码输入区域 -->
+        <div class="md:col-span-1">
+          <div class="mb-6">
+            <label for="password" class="block text-sm font-medium mb-2 flex items-center">
+              <i class="fa fa-lock text-primary mr-2"></i>输入密码
+            </label>
+            <div class="relative">
+              <input 
+                type="password" 
+                id="password" 
+                class="w-full bg-surface rounded-xl p-4 neumorphic-inset focus:outline-none focus:ring-2 focus:ring-primary/30 pr-12"
+                placeholder="请输入密码进行强度分析"
+              >
+              <button id="toggleVisibility" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-primary">
+                <i class="fa fa-eye-slash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 强度指示器 -->
+        <div class="md:col-span-1">
+          <div class="mb-6">
+            <label class="block text-sm font-medium mb-2 flex items-center">
+              <i class="fa fa-tachometer text-primary mr-2"></i>密码强度
+            </label>
+            <div class="bg-surface rounded-xl p-4 neumorphic-inset">
+              <!-- 强度条 -->
+              <div class="h-3 w-full bg-gray-200 rounded-full overflow-hidden mb-3">
+                <div id="strengthBar" class="strength-bar h-full w-0 rounded-full bg-weak"></div>
+              </div>
+              
+              <!-- 强度文本 -->
+              <div class="flex justify-between items-center">
+                <span id="strengthText" class="font-medium text-weak">请输入密码</span>
+                <span id="strengthScore" class="text-sm text-gray-500">0/100</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 分析详情和建议 -->
+        <div class="md:col-span-1">
+          <div class="bg-surface rounded-xl p-4 neumorphic-inset mb-6">
+            <h3 class="font-medium mb-3 flex items-center">
+              <i class="fa fa-lightbulb-o text-primary mr-2"></i>安全建议
+            </h3>
+            <ul id="suggestions" class="space-y-2 text-sm text-gray-600">
+              <li class="flex items-start">
+                <i class="fa fa-circle-o text-gray-400 mt-1 mr-2 text-xs"></i>
+                <span>密码长度至少8个字符</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fa fa-circle-o text-gray-400 mt-1 mr-2 text-xs"></i>
+                <span>包含大写字母（A-Z）和小写字母（a-z）</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fa fa-circle-o text-gray-400 mt-1 mr-2 text-xs"></i>
+                <span>包含数字（0-9）</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fa fa-circle-o text-gray-400 mt-1 mr-2 text-xs"></i>
+                <span>包含特殊字符（如!@#$%等）</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fa fa-circle-o text-gray-400 mt-1 mr-2 text-xs"></i>
+                <span>避免使用常见密码或连续字符（如123456）</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <!-- 密码强度评分详情 -->
+        <div class="md:col-span-1">
+          <div class="bg-surface rounded-xl p-4 neumorphic-inset">
+            <h3 class="font-medium mb-3 flex items-center">
+              <i class="fa fa-bar-chart text-primary mr-2"></i>评分详情
+            </h3>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">长度得分</span>
+                <span id="lengthScore" class="font-medium">0/30</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">复杂度得分</span>
+                <span id="complexityScore" class="font-medium">0/40</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">唯一性得分</span>
+                <span id="uniquenessScore" class="font-medium">0/30</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    
-    <!-- 主内容区 -->
-    <div class="bg-surface rounded-2xl p-6 md:p-8 neumorphic">
-      <!-- 密码输入区域 -->
-      <div class="mb-6">
-        <label for="password" class="block text-sm font-medium mb-2 flex items-center">
-          <i class="fa fa-lock text-primary mr-2"></i>输入密码
-        </label>
-        <div class="relative">
-          <input 
-            type="password" 
-            id="password" 
-            class="w-full bg-surface rounded-xl p-4 neumorphic-inset focus:outline-none focus:ring-2 focus:ring-primary/30 pr-12"
-            placeholder="请输入密码进行强度分析"
-          >
-          <button id="toggleVisibility" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-primary">
-            <i class="fa fa-eye-slash"></i>
-          </button>
-        </div>
-      </div>
-      
-      <!-- 强度指示器 -->
-      <div class="mb-6">
-        <label class="block text-sm font-medium mb-2 flex items-center">
-          <i class="fa fa-tachometer text-primary mr-2"></i>密码强度
-        </label>
-        <div class="bg-surface rounded-xl p-4 neumorphic-inset">
-          <!-- 强度条 -->
-          <div class="h-3 w-full bg-gray-200 rounded-full overflow-hidden mb-3">
-            <div id="strengthBar" class="strength-bar h-full w-0 rounded-full bg-weak"></div>
-          </div>
-          
-          <!-- 强度文本 -->
-          <div class="flex justify-between items-center">
-            <span id="strengthText" class="font-medium text-weak">请输入密码</span>
-            <span id="strengthScore" class="text-sm text-gray-500">0/100</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 分析详情和建议 -->
-      <div class="bg-surface rounded-xl p-4 neumorphic-inset mb-6">
-        <h3 class="font-medium mb-3 flex items-center">
-          <i class="fa fa-lightbulb-o text-primary mr-2"></i>安全建议
-        </h3>
-        <ul id="suggestions" class="space-y-2 text-sm text-gray-600">
-          <li class="flex items-start">
-            <i class="fa fa-circle-o text-gray-400 mt-1 mr-2 text-xs"></i>
-            <span>密码长度至少8个字符</span>
-          </li>
-          <li class="flex items-start">
-            <i class="fa fa-circle-o text-gray-400 mt-1 mr-2 text-xs"></i>
-            <span>包含大写字母（A-Z）和小写字母（a-z）</span>
-          </li>
-          <li class="flex items-start">
-            <i class="fa fa-circle-o text-gray-400 mt-1 mr-2 text-xs"></i>
-            <span>包含数字（0-9）</span>
-          </li>
-          <li class="flex items-start">
-            <i class="fa fa-circle-o text-gray-400 mt-1 mr-2 text-xs"></i>
-            <span>包含特殊字符（如!@#$%等）</span>
-          </li>
-          <li class="flex items-start">
-            <i class="fa fa-circle-o text-gray-400 mt-1 mr-2 text-xs"></i>
-            <span>避免使用常见密码或连续字符（如123456）</span>
-          </li>
-        </ul>
-      </div>
-      
-      <!-- 密码强度评分详情 -->
-      <div class="bg-surface rounded-xl p-4 neumorphic-inset">
-        <h3 class="font-medium mb-3 flex items-center">
-          <i class="fa fa-bar-chart text-primary mr-2"></i>评分详情
-        </h3>
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between">
-            <span class="text-gray-600">长度得分</span>
-            <span id="lengthScore" class="font-medium">0/30</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-600">复杂度得分</span>
-            <span id="complexityScore" class="font-medium">0/40</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-600">唯一性得分</span>
-            <span id="uniquenessScore" class="font-medium">0/30</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <script>
 // 常见弱密码列表（用于检测常见密码）

@@ -79,6 +79,57 @@
         main {
             height: calc(100vh - 64px); /* 明确main高度 = 屏幕高度 - header高度（header py-4约64px） */
         }
+        
+        /* 悬浮菜单按钮样式 */
+        #menu-toggle {
+            position: fixed;
+            background: linear-gradient(135deg, #4F46E5 0%, #EC4899 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 30;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        /* PC端菜单按钮样式 */
+         @media (min-width: 768px) {
+             #menu-toggle {
+                 left: 0;
+                 top: 50%;
+                 transform: translateY(-50%);
+                 border-radius: 0 4px 4px 0;
+                 height: 110px !important;
+             }
+         }
+         
+         /* 移动端菜单按钮样式 */
+         @media (max-width: 767px) {
+             #menu-toggle {
+                 top: 16px;
+                 right: 16px;
+                 border-radius: 4px;
+             }
+         }
+        
+        #menu-toggle:hover {
+            width: 45px;
+        }
+        
+        /* 内容区域点击关闭侧边栏 */
+        #content-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 15;
+        }
     </style>
 </head>
 <body class="min-h-screen h-full bg-gray-50 font-sans flex flex-col overflow-hidden">
@@ -90,9 +141,6 @@
                     <h1 class="text-xl font-bold">VLXTools</h1>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button id="menu-toggle" class="md:hidden text-xl">
-                        <i class="fa fa-bars"></i>
-                    </button>
                     <a href="index.html" class="hidden md:flex items-center text-white hover:text-gray-200 transition-colors">
                         <i class="fa fa-home mr-1"></i> 返回首页
                     </a>
@@ -101,9 +149,17 @@
         </div>
     </header>
 
+    <!-- 悬浮菜单按钮 -->
+    <button id="menu-toggle" aria-label="菜单切换">
+        <i class="fa fa-bars"></i>
+    </button>
+    
+    <!-- 内容区域遮罩层 -->
+    <div id="content-overlay"></div>
+    
     <!-- Main Content（明确高度 = 屏幕高度 - header高度） -->
     <main class="flex flex-1 overflow-hidden">
-        <aside id="sidebar" class="w-64 bg-white neumorphic hidden md:block overflow-y-auto transition-all duration-300 h-full">
+        <aside id="sidebar" class="bg-white neumorphic hidden overflow-y-auto transition-all duration-300 h-full">
             <div class="p-4">
                 <div class="neumorphic-inset rounded-lg p-3 mb-4">
                     <div class="flex items-center">
