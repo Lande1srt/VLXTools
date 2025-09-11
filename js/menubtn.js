@@ -1,7 +1,7 @@
 // 监听iframe消息（带域名验证和设备判断）
 window.addEventListener('message', function(event) {
     // 验证消息来源域名
-    const allowedOrigins = ['http://localhost:7700','https://explustools.org','https://eptool.0xl.cc','http://127.0.0.1:5500'];
+    const allowedOrigins = ['http://localhost:7700','https://vl-x.vip','https://vl-x.0xl.cc','http://127.0.0.1:5500'];
     if (!allowedOrigins.includes(event.origin)) {
         console.warn('忽略来自未授权域名的消息:', event.origin);
         return;
