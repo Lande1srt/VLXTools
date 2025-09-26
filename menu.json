@@ -227,6 +227,11 @@
                 "name": "温度换算工具",
                 "icon": "",
                 "url": "tools/other/temperature.html"                
+            },
+            {
+                "name": "SRT转LRC",
+                "icon": "",
+                "url": "tools/other/srt2lrc.html"
             }
             
         ]

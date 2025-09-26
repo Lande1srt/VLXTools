@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BMI指数计算器 - 健康体重管理工具</title>
+  
+  <!-- 外部资源 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.8/chart.umd.min.js"></script>
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#e0e5ec',
+            secondary: '#a3b1c6',
+            accent: '#4a6fa5',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .neu-flat {
+        box-shadow: 5px 5px 10px #b8c1cf, -5px -5px 10px #ffffff;
+      }
+      .neu-pressed {
+        box-shadow: inset 5px 5px 10px #b8c1cf, inset -5px -5px 10px #ffffff;
+      }
+      .neu-convex {
+        box-shadow: inset 1px 1px 2px #ffffff, 5px 5px 10px #b8c1cf;
+      }
+      .text-shadow {
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+      }
+      .input-focus {
+        @apply focus:outline-none focus:neu-pressed;
+      }
+    }
+  </style>
+</head>
+<body class="bg-primary min-h-screen font-sans text-gray-700">
+  <div class="container mx-auto px-4 py-8 max-w-6xl">
+    <!-- 页面标题 -->
+    <header class="text-center mb-10">
+      <h1 class="text-[clamp(1.8rem,4vw,2.8rem)] font-bold text-gray-700 text-shadow">
+        <i class="fas fa-calculator mr-3 text-accent"></i>BMI指数计算器
+      </h1>
+      <p class="text-gray-600 mt-2 text-lg">了解您的身体质量指数，掌握健康状况</p>
+    </header>
+    
+    <!-- 主内容区 - 左右布局 -->
+    <main class="flex flex-col lg:flex-row gap-8">
+      <!-- 左侧：输入区域 -->
+      <section class="lg:w-1/2 bg-primary rounded-3xl p-8 neu-flat transition-all duration-300 hover:shadow-lg">
+        <h2 class="text-2xl font-semibold mb-6 flex items-center">
+          <i class="fas fa-user-edit mr-2 text-accent"></i>输入您的信息
+        </h2>
+        
+        <form id="bmiForm" class="space-y-8">
+          <!-- 身高输入 -->
+          <div class="space-y-2">
+            <label for="height" class="block text-lg font-medium">身高 (厘米)</label>
+            <div class="relative">
+              <input 
+                type="number" 
+                id="height" 
+                min="50" 
+                max="250" 
+                step="0.1" 
+                required
+                class="w-full bg-primary rounded-2xl py-4 px-6 text-xl neu-flat input-focus transition-all duration-300"
+                placeholder="例如: 175.5"
+              >
+              <span class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500">cm</span>
+            </div>
+          </div>
+          
+          <!-- 体重输入 -->
+          <div class="space-y-2">
+            <label for="weight" class="block text-lg font-medium">体重 (千克)</label>
+            <div class="relative">
+              <input 
+                type="number" 
+                id="weight" 
+                min="10" 
+                max="300" 
+                step="0.1" 
+                required
+                class="w-full bg-primary rounded-2xl py-4 px-6 text-xl neu-flat input-focus transition-all duration-300"
+                placeholder="例如: 68.3"
+              >
+              <span class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500">kg</span>
+            </div>
+          </div>
+          
+          <!-- 计算按钮 -->
+          <button 
+            type="submit" 
+            class="w-full bg-primary rounded-2xl py-5 px-6 text-xl font-semibold text-accent neu-flat hover:neu-pressed transition-all duration-300 active:scale-98 focus:outline-none focus:ring-2 focus:ring-accent/30"
+          >
+            <i class="fas fa-calculator mr-2"></i>计算BMI指数
+          </button>
+          
+          <!-- 重置按钮 -->
+          <button 
+            type="reset" 
+            class="w-full bg-primary rounded-2xl py-4 px-6 text-lg text-gray-600 neu-flat hover:neu-pressed transition-all duration-300 active:scale-98 focus:outline-none"
+          >
+            <i class="fas fa-redo-alt mr-2"></i>重置
+          </button>
+        </form>
+      </section>
+      
+      <!-- 右侧：结果展示区域 -->
+      <section class="lg:w-1/2 bg-primary rounded-3xl p-8 neu-flat transition-all duration-300 hover:shadow-lg">
+        <h2 class="text-2xl font-semibold mb-6 flex items-center">
+          <i class="fas fa-chart-line mr-2 text-accent"></i>您的BMI结果
+        </h2>
+        
+        <!-- 初始提示 -->
+        <div id="initialMessage" class="text-center py-10">
+          <p class="text-gray-500 text-lg">请在左侧输入您的身高和体重，然后点击"计算BMI指数"按钮</p>
+          <div class="mt-6 text-6xl text-gray-300">
+            <i class="fas fa-arrow-left"></i>
+          </div>
+        </div>
+        
+        <!-- 结果展示 (默认隐藏) -->
+        <div id="resultContainer" class="hidden space-y-8">
+          <!-- BMI数值 -->
+          <div class="text-center py-6 rounded-2xl neu-pressed">
+            <p class="text-gray-500 mb-2">您的BMI指数是</p>
+            <p id="bmiValue" class="text-[clamp(2.5rem,5vw,4rem)] font-bold text-accent"></p>
+            <p id="bmiCategory" class="text-xl mt-2 font-medium"></p>
+          </div>
+          
+          <!-- BMI图表 -->
+          <div class="p-4 rounded-2xl neu-flat">
+            <p class="text-center mb-4">BMI健康范围参考</p>
+            <div class="h-40">
+              <canvas id="bmiChart"></canvas>
+            </div>
+          </div>
+          
+          <!-- 健康建议 -->
+          <div class="p-6 rounded-2xl neu-flat">
+            <h3 class="text-xl font-semibold mb-3 flex items-center">
+              <i class="fas fa-heartbeat mr-2 text-accent"></i>健康建议
+            </h3>
+            <p id="healthAdvice" class="text-gray-700 leading-relaxed"></p>
+          </div>
+        </div>
+      </section>
+    </main>
+    
+    <!-- BMI说明 -->
+    <section class="mt-10 bg-primary rounded-3xl p-6 neu-flat">
+      <h2 class="text-xl font-semibold mb-4 flex items-center">
+        <i class="fas fa-info-circle mr-2 text-accent"></i>什么是BMI指数？
+      </h2>
+      <p class="text-gray-700 leading-relaxed">
+        BMI（身体质量指数）是评估成人体重与身高比例是否健康的一种国际通用指标。
+        计算公式为：体重(千克) ÷ 身高(米)的平方。
+        BMI指数的正常范围为18.5至23.9，低于18.5为偏瘦，24至27.9为超重，28及以上为肥胖。
+        请注意，BMI指数只是评估健康状况的参考之一，不能完全代表一个人的健康状况。
+      </p>
+    </section>
+    
+    <!-- 页脚 -->
+    <footer class="mt-10 text-center text-gray-500 text-sm">
+      <p>© 2023 BMI指数计算器 - 健康生活，从了解自己开始</p>
+    </footer>
+  </div>
+
+  <script>
+    // 初始化BMI图表
+    let bmiChart;
+    
+    function initChart(bmiValue) {
+      const ctx = document.getElementById('bmiChart').getContext('2d');
+      
+      // 如果图表已存在，先销毁
+      if (bmiChart) {
+        bmiChart.destroy();
+      }
+      
+      // 图表数据
+      bmiChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['偏瘦', '正常', '超重', '肥胖', '您的BMI'],
+          datasets: [{
+            label: 'BMI范围',
+            data: [18.4, 23.9, 27.9, 40, bmiValue],
+            backgroundColor: [
+              'rgba(74, 111, 165, 0.3)',  // 偏瘦
+              'rgba(74, 165, 111, 0.3)',  // 正常
+              'rgba(165, 146, 74, 0.3)',  // 超重
+              'rgba(165, 74, 74, 0.3)',   // 肥胖
+              'rgba(123, 74, 165, 0.6)'   // 您的BMI
+            ],
+            borderColor: [
+              'rgba(74, 111, 165, 0.8)',
+              'rgba(74, 165, 111, 0.8)',
+              'rgba(165, 146, 74, 0.8)',
+              'rgba(165, 74, 74, 0.8)',
+              'rgba(123, 74, 165, 0.8)'
+            ],
+            borderWidth: 2,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 40,
+              ticks: {
+                stepSize: 5
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      });
+    }
+    
+    // 计算BMI
+    function calculateBMI(height, weight) {
+      // 转换身高为米
+      const heightInMeters = height / 100;
+      // 计算BMI
+      const bmi = weight / (heightInMeters * heightInMeters);
+      // 保留一位小数
+      return parseFloat(bmi.toFixed(1));
+    }
+    
+    // 获取BMI分类
+    function getBMICategory(bmi) {
+      if (bmi < 18.5) {
+        return { 
+          category: '偏瘦', 
+          color: 'text-blue-600',
+          advice: '您的体重低于正常范围。建议适当增加营养摄入，保持均衡饮食，同时进行适当的力量训练以增加肌肉量。如有疑虑，请咨询医生或营养师。'
+        };
+      } else if (bmi >= 18.5 && bmi < 24) {
+        return { 
+          category: '正常', 
+          color: 'text-green-600',
+          advice: '恭喜！您的体重在正常健康范围内。请继续保持均衡饮食和规律运动，维持良好的生活习惯，定期监测体重变化。'
+        };
+      } else if (bmi >= 24 && bmi < 28) {
+        return { 
+          category: '超重', 
+          color: 'text-yellow-600',
+          advice: '您的体重略高于正常范围。建议适当控制热量摄入，减少高脂肪、高糖分食物，增加运动量，尤其是有氧运动，如快走、游泳等。'
+        };
+      } else {
+        return { 
+          category: '肥胖', 
+          color: 'text-red-600',
+          advice: '您的体重处于肥胖范围，这可能增加健康风险。建议咨询医生或营养师，制定科学的减重计划，包括健康饮食和规律运动，逐步减轻体重。'
+        };
+      }
+    }
+    
+    // 表单提交处理
+    document.getElementById('bmiForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // 获取输入值
+      const height = parseFloat(document.getElementById('height').value);
+      const weight = parseFloat(document.getElementById('weight').value);
+      
+      // 验证输入
+      if (isNaN(height) || isNaN(weight) || height <= 0 || weight <= 0) {
+        alert('请输入有效的身高和体重数值');
+        return;
+      }
+      
+      // 计算BMI
+      const bmi = calculateBMI(height, weight);
+      const bmiInfo = getBMICategory(bmi);
+      
+      // 显示结果
+      document.getElementById('initialMessage').classList.add('hidden');
+      document.getElementById('resultContainer').classList.remove('hidden');
+      
+      // 更新结果内容
+      document.getElementById('bmiValue').textContent = bmi;
+      document.getElementById('bmiCategory').textContent = `(${bmiInfo.category})`;
+      document.getElementById('bmiCategory').className = `text-xl mt-2 font-medium ${bmiInfo.color}`;
+      document.getElementById('healthAdvice').textContent = bmiInfo.advice;
+      
+      // 初始化/更新图表
+      initChart(bmi);
+      
+      // 添加动画效果
+      const resultElement = document.getElementById('bmiValue');
+      resultElement.classList.add('animate-pulse');
+      setTimeout(() => {
+        resultElement.classList.remove('animate-pulse');
+      }, 1000);
+    });
+    
+    // 重置按钮处理
+    document.getElementById('bmiForm').addEventListener('reset', function() {
+      document.getElementById('resultContainer').classList.add('hidden');
+      document.getElementById('initialMessage').classList.remove('hidden');
+      
+      // 销毁图表
+      if (bmiChart) {
+        bmiChart.destroy();
+        bmiChart = null;
+      }
+    });
+    
+    // 添加输入框动画效果
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+      input.addEventListener('focus', function() {
+        this.parentElement.classList.add('scale-[1.01]');
+        this.classList.add('scale-[1.01]');
+      });
+      
+      input.addEventListener('blur', function() {
+        this.parentElement.classList.remove('scale-[1.01]');
+        this.classList.remove('scale-[1.01]');
+      });
+    });
+  </script>
+</body>
+</html>
