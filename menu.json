@@ -237,6 +237,17 @@
         ]
     },
     {
+        "name": "生活工具",
+        "icon": "",
+        "children": [
+            {
+                "name": "健康指数计算",
+                "icon": "",
+                "url": "tools/life/bmia.html"
+            }
+        ]
+    },
+    {
         "name": "复杂工具",
         "icon": "",
         "children": [
