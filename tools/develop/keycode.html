@@ -115,6 +115,12 @@
             font-family: 'Consolas', monospace;
         }
 
+        
+        .text-primary {
+            color: var(--accent);
+            font-weight: bold;
+        }
+        
         @media (max-width: 768px) {
            .card-container {
                 flex-direction: column;
@@ -132,7 +138,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>KeyCode捕获工具</h1>
+        <h1 class="text-primary">KeyCode捕获工具</h1>
         <div class="card-container">
             <div class="card">
                 <h2>按键状态</h2>
@@ -172,6 +178,10 @@
     <script>
         // 存储当前按下的键（最多3个）
         let pressedKeys = new Set();
+        // 存储最后显示的按键状态
+        let lastDisplayedKeys = [];
+        // 是否有按键被按下
+        let keysPressed = false;
         
         // DOM元素
         const key1 = document.getElementById('key1');
@@ -184,33 +194,54 @@
         const combination = document.getElementById('combination');
 
         // 更新按键显示
-        function updateKeyDisplay() {
+        function updateKeyDisplay(forceReset = false) {
             const keysArray = Array.from(pressedKeys);
             
-            // 重置所有键显示
-            [key1, key2, key3].forEach(key => {
-                key.textContent = '';
-                key.classList.remove('active');
-            });
+            // 如果有按键被按下，保存当前状态
+            if (keysArray.length > 0) {
+                keysPressed = true;
+                lastDisplayedKeys = keysArray.map(key => ({
+                    key: key.key,
+                    keyCode: key.keyCode,
+                    code: key.code,
+                    name: key.name || key.key
+                }));
+            }
             
-            // 更新按键显示
-            keysArray.forEach((key, index) => {
-                if (index < 3) {
-                    const keyEl = [key1, key2, key3][index];
-                    keyEl.textContent = key.name || key.key;
-                    keyEl.classList.add('active');
-                }
-            });
-            
-            // 更新当前按下的键文本
-            if (keysArray.length === 0) {
+            // 如果强制重置或者没有按键被按下且没有历史记录
+            if (forceReset || (keysArray.length === 0 && !keysPressed)) {
+                // 重置所有键显示
+                [key1, key2, key3].forEach(key => {
+                    key.textContent = '';
+                    key.classList.remove('active');
+                });
+                
                 key1.textContent = '等待按键...';
                 keyNames.textContent = '未按下任何键';
                 keyValue.textContent = '-';
                 keyCode.textContent = '-';
                 codeValue.textContent = '-';
                 combination.textContent = '-';
-            } else {
+                return;
+            }
+            
+            // 如果有按键被按下，显示当前按键
+            if (keysArray.length > 0) {
+                // 重置所有键显示
+                [key1, key2, key3].forEach(key => {
+                    key.textContent = '';
+                    key.classList.remove('active');
+                });
+                
+                // 更新按键显示
+                keysArray.forEach((key, index) => {
+                    if (index < 3) {
+                        const keyEl = [key1, key2, key3][index];
+                        keyEl.textContent = key.name || key.key;
+                        keyEl.classList.add('active');
+                    }
+                });
+                
                 const keyNamesText = keysArray.map(k => k.name || k.key).join(' + ');
                 keyNames.textContent = keyNamesText;
                 
@@ -222,11 +253,55 @@
                 
                 // 组合键代码
                 combination.textContent = keysArray.map(k => k.keyCode).join(' + ');
+            } 
+            // 如果没有按键被按下但有历史记录，保持显示最后的状态
+            else if (lastDisplayedKeys.length > 0) {
+                // 重置活动状态但保留文本
+                [key1, key2, key3].forEach(key => {
+                    key.classList.remove('active');
+                });
+                
+                // 显示历史按键
+                lastDisplayedKeys.forEach((key, index) => {
+                    if (index < 3) {
+                        const keyEl = [key1, key2, key3][index];
+                        keyEl.textContent = key.name;
+                    }
+                });
+                
+                const keyNamesText = lastDisplayedKeys.map(k => k.name).join(' + ');
+                keyNames.textContent = keyNamesText;
+                
+                // 最后一个按下的键的详细信息
+                const lastKey = lastDisplayedKeys[lastDisplayedKeys.length - 1];
+                keyValue.textContent = lastKey.key;
+                keyCode.textContent = lastKey.keyCode;
+                codeValue.textContent = lastKey.code;
+                
+                // 组合键代码
+                combination.textContent = lastDisplayedKeys.map(k => k.keyCode).join(' + ');
             }
+        }
+
+        // 重置按键状态
+        function resetKeyState() {
+            pressedKeys.clear();
+            lastDisplayedKeys = [];
+            keysPressed = false;
+            updateKeyDisplay(true);
         }
 
         // 键盘按下事件
         document.addEventListener('keydown', (e) => {
+            // 如果按下Escape键，重置状态
+            if (e.key === 'Escape') {
+                resetKeyState();
+                return;
+            }
+            
+            // 阻止默认行为，避免浏览器快捷键冲突
+            e.preventDefault();
+            
             // 防止重复添加相同键
             if (!pressedKeys.has(e)) {
                 // 限制最多3个键
@@ -235,8 +310,6 @@
                     updateKeyDisplay();
                 }
             }
-            // 阻止默认行为，避免浏览器快捷键冲突
-            // e.preventDefault();
         });
 
         // 键盘释放事件
@@ -250,14 +323,17 @@
             updateKeyDisplay();
         });
 
-        // 窗口失去焦点时清除所有按键
+        // 窗口失去焦点时清除所有按下的键，但保留显示
         window.addEventListener('blur', () => {
             pressedKeys.clear();
             updateKeyDisplay();
         });
 
+        // 添加双击重置功能
+        document.querySelector('.key-display').addEventListener('dblclick', resetKeyState);
+
         // 初始化显示
-        updateKeyDisplay();
+        updateKeyDisplay(true);
     </script>
 </body>
 </html>

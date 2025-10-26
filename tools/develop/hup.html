@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HTML页面转写JS工具</title>
-    <!-- 引入 highlight.js：Cloudflare CDN（githubdark 风格 + JS 核心库） -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/javascript.min.js"></script>
+    
     <style>
         /* 拟态风格核心样式 */
         * {
@@ -84,6 +84,10 @@
             box-shadow: 
                 inset 5px 5px 10px rgba(174, 197, 218, 0.5),
                 inset -5px -5px 10px rgba(255, 255, 255, 0.8);
+        }
+        .text-primary {
+            color: #6366f1;
+            font-weight: bold;
         }
         /* 转码方式选择器 */
         .select-wrapper {
@@ -190,7 +194,7 @@
 <body>
     <div class="container">
         <div class="card">
-            <h1>HTML页面转写JS</h1>
+            <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-center mb-6 text-primary">HTML页面转写JS</h1>
             
             <!-- 1. HTML 输入区 -->
             <div class="input-group">

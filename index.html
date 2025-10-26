@@ -47,7 +47,7 @@
     <section class="py-20 px-4 bg-gradient-to-br from-gray-50 to-gray-100">
         <div class="container mx-auto text-center">
             <h2 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-gray-800 mb-6 leading-tight">
-                多维聚合工具箱
+                静态多维聚合工具箱
             </h2>
             <p class="text-[clamp(1rem,2vw,1.25rem)] text-gray-600 max-w-3xl mx-auto mb-10">
                 一站式解决您的日常工作需求，提供多种实用工具，简单高效，即刻使用。
@@ -58,37 +58,36 @@
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="py-16 px-4 bg-white">
+    <!-- Tools Grid Section -->
+    <section class="py-16 px-4 bg-white min-h-screen hidden md:block">
         <div class="container mx-auto">
-            <h3 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-center text-gray-800 mb-12">工具特点</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Feature 1 -->
-                <div class="neumorphic rounded-xl p-6 transition-transform duration-300 hover:-translate-y-2">
-                    <div class="w-14 h-14 rounded-full gradient-bg flex items-center justify-center text-white mb-4">
-                        <i class="fa fa-bolt text-2xl"></i>
-                    </div>
-                    <h4 class="text-xl font-bold text-gray-800 mb-3">高效便捷</h4>
-                    <p class="text-gray-600">无需安装，在线使用，节省您的设备空间和时间成本</p>
+            <h3 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-center text-gray-800 mb-12">工具集合</h3>
+            
+            <!-- Loading indicator -->
+            <div id="loading" class="text-center">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <p class="mt-2 text-gray-600">加载中...</p>
+            </div>
+            
+            <!-- Tools container -->
+            <div id="tools-container" class="hidden">
+                <!-- Tools will be dynamically loaded here -->
+            </div>
+        </div>
+    </section>
+    
+    <!-- Mobile Notice Section -->
+    <section class="py-16 px-4 bg-white min-h-screen md:hidden">
+        <div class="container mx-auto">
+            <div class="neumorphic rounded-xl p-6 text-center">
+                <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center text-white mb-4 mx-auto">
+                    <i class="fa fa-mobile text-2xl"></i>
                 </div>
-
-                <!-- Feature 2 -->
-                <div class="neumorphic rounded-xl p-6 transition-transform duration-300 hover:-translate-y-2">
-                    <div class="w-14 h-14 rounded-full gradient-bg flex items-center justify-center text-white mb-4">
-                        <i class="fa fa-mobile text-2xl"></i>
-                    </div>
-                    <h4 class="text-xl font-bold text-gray-800 mb-3">响应式设计</h4>
-                    <p class="text-gray-600">完美适配各种设备尺寸，随时随地使用您喜爱的工具</p>
-                </div>
-
-                <!-- Feature 3 -->
-                <div class="neumorphic rounded-xl p-6 transition-transform duration-300 hover:-translate-y-2">
-                    <div class="w-14 h-14 rounded-full gradient-bg flex items-center justify-center text-white mb-4">
-                        <i class="fa fa-lock text-2xl"></i>
-                    </div>
-                    <h4 class="text-xl font-bold text-gray-800 mb-3">安全可靠</h4>
-                    <p class="text-gray-600">本地处理数据，保护您的隐私安全，无需担心信息泄露</p>
-                </div>
+                <h4 class="text-xl font-bold text-gray-800 mb-3">移动设备提示</h4>
+                <p class="text-gray-600 mb-4">工具列表仅在电脑端显示，请使用电脑访问完整功能</p>
+                <a href="content.html" class="inline-block bg-primary hover:bg-primary/90 text-white font-bold py-2 px-6 rounded-full shadow-lg transform transition hover:scale-105 duration-300">
+                    前往工具中心 <i class="fa fa-arrow-right ml-2"></i>
+                </a>
             </div>
         </div>
     </section>
@@ -105,7 +104,7 @@
                     <p class="text-gray-400">开源免费，简约轻量且无广告，纯静态编写易部署。</p>
                 </div>
                 <div class="flex space-x-6">
-                    <a href="https://github.com/Lande1srt/VLXTools" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-300"><i class="fa fa-github text-xl"></i></a>
+                    <a href="https://github.com/Lande1srt/VLXTools" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-300" rel="noopener noreferrer"><i class="fa fa-github text-xl"></i></a>
                 </div>
             </div>
             <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
@@ -115,5 +114,67 @@
         </div>
     </footer>
     <script src="js/copyyear.js"></script>
+    <script>
+        // 动态加载工具列表
+        async function loadTools() {
+            try {
+                const response = await fetch('menu.json');
+                const categories = await response.json();
+                renderTools(categories);
+            } catch (error) {
+                console.error('加载工具列表失败:', error);
+                document.getElementById('loading').innerHTML = '<p class="text-red-600">加载失败，请刷新页面重试</p>';
+            }
+        }
+
+        // 渲染工具列表
+        function renderTools(categories) {
+            const container = document.getElementById('tools-container');
+            const loading = document.getElementById('loading');
+            
+            let html = '';
+            
+            // 过滤掉最后一个类型（关于信息）
+            const filteredCategories = categories.slice(0, -1);
+            
+            filteredCategories.forEach(category => {
+                // 添加分类标题
+                html += `
+                    <div class="mb-8">
+                        <h4 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-primary pb-2">${category.name}</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                `;
+                
+                // 添加工具项
+                category.children.forEach(tool => {
+                    html += `
+                        <a href="content.html?tool=${encodeURIComponent(tool.url)}" class="group block">
+                            <div class="neumorphic rounded-xl p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform duration-300">
+                                        ${tool.icon}
+                                    </div>
+                                    <h5 class="text-lg font-semibold text-gray-800 mb-2 group-hover:text-primary transition-colors duration-300">${tool.name}</h5>
+                                    <p class="text-sm text-gray-600 opacity-75">${tool.url}</p>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            loading.classList.add('hidden');
+            container.classList.remove('hidden');
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', loadTools);
+    </script>
 </body>
 </html>

@@ -385,7 +385,13 @@ function renderMenuItems(items, container) {
                 document.querySelectorAll('#tool-menu .menu-active').forEach(el => el.classList.remove('menu-active'));
                 this.classList.add('menu-active');
                 // 加载iframe内容
-                if (item.url) document.getElementById('tool-iframe').src = item.url;
+                if (item.url) {
+                    document.getElementById('tool-iframe').src = item.url;
+                    // 更新URL参数，避免刷新丢失当前路径
+                    const newUrl = new URL(window.location.href);
+                    newUrl.searchParams.set('tool', item.url);
+                    history.pushState({}, '', newUrl);
+                }
                 // 移动设备点击后收起侧边栏
                 if (isMobileDevice()) closeSidebar();
             });
@@ -406,6 +412,7 @@ async function loadMenu() {
         const menuContainer = document.getElementById('tool-menu');
         menuContainer.innerHTML = '';
         renderMenuItems(menuItems, menuContainer);
+        setupMenuItemClickHandlers(); // 添加点击处理函数
     } catch (error) {
         console.error('加载菜单失败:', error);
         document.getElementById('tool-menu').innerHTML = `
@@ -415,6 +422,32 @@ async function loadMenu() {
             </div>
         `;
     }
+}
+
+// 添加工具项点击处理函数
+function setupMenuItemClickHandlers() {
+    // 等待菜单渲染完成后添加事件监听
+    setTimeout(() => {
+        // 选择所有工具链接（包括按钮和a标签）
+        const toolButtons = document.querySelectorAll('#tool-menu button');
+        const toolLinks = document.querySelectorAll('#tool-menu a');
+        
+        // 为按钮添加点击事件（排除有下拉菜单的按钮）
+        toolButtons.forEach(button => {
+            if (!button.querySelector('.fa-chevron-down')) {
+                button.addEventListener('click', () => {
+                    closeSidebar(); // 无论PC还是移动端都收起侧边栏
+                });
+            }
+        });
+        
+        // 为a标签链接添加点击事件
+        toolLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                closeSidebar(); // 无论PC还是移动端都收起侧边栏
+            });
+        });
+    }, 500);
 }
 
 // 页面加载完成后初始化

@@ -99,7 +99,7 @@
             {
                 "name": "JSON-XML转换",
                 "icon": "<svg t=\"1756555329245\" class=\"icon\" viewBox=\"0 0 1024 1024\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" p-id=\"7265\" data-spm-anchor-id=\"a313x.search_index.0.i17.7bcb3a81TRfsXd\" width=\"16\" height=\"16\"><path d=\"M904 1024H120C53.832 1024 0 970.168 0 904V120C0 53.832 53.832 0 120 0h784c66.168 0 120 53.832 120 120v784c0 66.168-53.832 120-120 120zM120 4C56.038 4 4 56.038 4 120v784c0 63.962 52.038 116 116 116h784c63.962 0 116-52.038 116-116V120c0-63.962-52.038-116-116-116H120z\" fill=\"#D8DDE3\" p-id=\"7266\"></path><path d=\"M299.998 732c-16.5 0-29.914-13.332-29.998-29.85l-1.184-236.814H192a30 30 0 0 1-21.212-51.214l213.334-213.336a30 30 0 0 1 42.424 0L639.88 414.124a30.004 30.004 0 0 1-21.212 51.214H542v5.446c0 16.568-13.432 30-30 30s-30-13.432-30-30v-35.446c0-16.568 13.432-30 30-30h34.242l-140.908-140.91-140.908 140.91h34.24c16.51 0 29.916 13.34 30 29.85L330 701.85c0.084 16.568-13.282 30.066-29.85 30.15h-0.152z\" fill=\"#1296db\" p-id=\"7267\" data-spm-anchor-id=\"a313x.search_index.0.i18.7bcb3a81TRfsXd\" class=\"selected\"></path><path d=\"M618.668 834a29.984 29.984 0 0 1-21.212-8.788L384.122 611.876a30.002 30.002 0 0 1 21.212-51.214H482v-4c0-16.568 13.432-30 30-30s30 13.432 30 30v34c0 16.568-13.432 30-30 30h-34.24l140.908 140.91 140.906-140.91h-34.24c-16.51 0-29.918-13.34-30-29.85L694 324.15c-0.082-16.568 13.282-30.068 29.85-30.15h0.154c16.498 0 29.914 13.332 29.996 29.85l1.184 236.814H832a30 30 0 0 1 21.212 51.214L639.88 825.212A29.984 29.984 0 0 1 618.668 834z\" fill=\"#FF4B07\" p-id=\"7268\"></path></svg>",
-                "url": "tools/develop/yaml2toml.html"
+                "url": "tools/develop/json2xml.html"
             },
             {
                 "name": "HTML符号转义",
@@ -148,24 +148,14 @@
         "icon": "fa-picture-o",
         "children": [
             {
-                "name": "二维码生成",
+                "name": "简易二维码生成",
                 "icon": "fa-compress",
                 "url": "tools/image/qrcodeg.html"
             },
             {
-                "name": "二维码解析",
+                "name": "简易二维码解析",
                 "icon": "fa-compress",
                 "url": "tools/image/qrcodede.html"
-            },
-            {
-                "name": "图片压缩",
-                "icon": "fa-compress",
-                "url": "https://example.com/image-compress"
-            },
-            {
-                "name": "图片格式转换",
-                "icon": "fa-exchange",
-                "url": "https://example.com/image-convert"
             }
         ]
     },
@@ -184,7 +174,7 @@
                 "url": "tools/network/gport.html"
             },
             {
-                "name": "IP子网掩码计算工具",
+                "name": "IP子网信息计算工具",
                 "icon": "fa-compress",
                 "url": "tools/network/ipsubnet.html"
             }
@@ -219,7 +209,7 @@
                 "url": "tools/other/colorselection.html"
             },
             {
-                "name": "文本Hash计算",
+                "name": "计时器",
                 "icon": "",
                 "url": "tools/other/timer.html"                
             },
@@ -244,33 +234,6 @@
                 "name": "健康指数计算",
                 "icon": "",
                 "url": "tools/life/bmia.html"
-            }
-        ]
-    },
-    {
-        "name": "复杂工具",
-        "icon": "",
-        "children": [
-            {
-                "name": "MKV ChapWeb",
-                "icon": "",
-                "url": "modular_tools/mkv_chapweb/index.html"
-            },
-            {
-                "name": "test",
-                "icon": "",
-                "children": [
-                    {
-                        "name": "AAA",
-                        "icon": "",
-                        "url": "index.html"
-                    },
-                    {
-                        "name": "BBB",
-                        "icon": "",
-                        "url": ""
-                    }
-                ]
             }
         ]
     },

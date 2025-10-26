@@ -99,7 +99,7 @@
         "code": 303,
         "title": "查看其他位置",
         "category": "重定向",
-        "description": "客户端应使用GET方法请求另一个URI以获取资源。"
+        "description": "客户端应使用GET方法请求另一个URL以获取资源。"
     },
     {
         "code": 304,
@@ -205,9 +205,9 @@
     },
     {
         "code": 414,
-        "title": "请求URI过长",
+        "title": "请求URL过长",
         "category": "客户端错误",
-        "description": "请求的URI长度超过了服务器能够处理的范围。"
+        "description": "请求的URL长度超过了服务器能够处理的范围。"
     },
     {
         "code": 415,

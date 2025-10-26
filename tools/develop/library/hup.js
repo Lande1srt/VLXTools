@@ -53,7 +53,7 @@ function base64Decode(base64Str) {
             }
 
             // 使用 document.write 渲染
-            const renderCode = 'document.write(decodedHtml); // 渲染整个页面，覆盖当前文档流\n// ExPlusTools生成';
+            const renderCode = 'document.write(decodedHtml); // 渲染整个页面，覆盖当前文档流\n// VLXTools生成 https://vlx.isea.dev/tools/develop/hup.html';
 
             return `${codeComment}\n${encodeLogic ? encodeLogic + '\n' : ''}${decodeCode}\n${renderCode}`;
         }

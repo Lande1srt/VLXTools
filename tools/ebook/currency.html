@@ -58,9 +58,8 @@
 
 <body class="bg-primary min-h-screen text-gray-700 p-4 md:p-6">
   <div class="max-w-7xl mx-auto">
-    <!-- 页面标题 -->
     <header class="mb-8 text-center">
-      <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gray-700">
+      <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-center mb-6 text-accent">
         全球货币检索
       </h1>
       <p class="text-gray-500 mt-2">全球法币与常用虚拟货币</p>
@@ -124,11 +123,6 @@
         </div>
       </section>
     </main>
-
-    <!-- 页脚 -->
-    <footer class="mt-10 text-center text-gray-500 text-sm">
-      <p>© 2025 全球货币名录 | 数据仅供参考</p>
-    </footer>
   </div>
 
   <script>
@@ -187,8 +181,8 @@ function createSmartScrollingCountryElement(countryName) {
     // 确保DOM渲染完成
     setTimeout(() => {
       containerWidth = container.offsetWidth;
-      contentWidth = content.offsetWidth;
-      needScroll = contentWidth > containerWidth;
+      const singleWidth = content.offsetWidth;
+      needScroll = singleWidth > containerWidth;
       
       // 如果需要滚动，添加第二份内容和间隔
       if (needScroll) {
@@ -205,12 +199,22 @@ function createSmartScrollingCountryElement(countryName) {
         content2.textContent = countryName;
         
         scrollWrapper.append(content1, spacer, content2);
-        totalScrollDistance = contentWidth + spacer.offsetWidth; // 计算总滚动距离
-        startScrollAnimation();
+        
+        // 布局完成后再精确测量，包含间距，避免循环跳变卡顿
+        requestAnimationFrame(() => {
+          const spacerStyle = getComputedStyle(spacer);
+          const spacerMargin = parseFloat(spacerStyle.marginLeft) + parseFloat(spacerStyle.marginRight);
+          totalScrollDistance = content1.offsetWidth + spacer.offsetWidth + spacerMargin;
+          
+          // 提示浏览器做GPU加速，提升流畅度
+          scrollWrapper.style.willChange = 'transform';
+          startScrollAnimation();
+        });
       } else {
         // 不需要滚动，保持单份内容居中
         scrollWrapper.style.transform = 'translateX(0)';
         scrollWrapper.style.textAlign = 'center';
+        scrollWrapper.style.willChange = 'auto';
       }
     }, 0);
   }

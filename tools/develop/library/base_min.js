@@ -99,11 +99,6 @@ function initElementCheck() {
 // 根据当前处理目标（字符串/文件）更新格式选项
 function updateFormatOptionsByTarget() {
   const originalValue = formatSelect.value;
-  // 先保存所有选项
-  const allOptions = Array.from(formatSelect.options).map(option => ({
-    value: option.value,
-    text: option.text
-  }));
   
   // 清空选择框
   while (formatSelect.options.length > 0) {
@@ -112,19 +107,16 @@ function updateFormatOptionsByTarget() {
   
   if (currentTarget === 'file') {
     // 文件模式：仅保留Base64和Base16
-    const fileOptions = allOptions.filter(option => 
-      ['base64', 'base16'].includes(option.value)
-    );
-    fileOptions.forEach(option => {
-      formatSelect.add(new Option(option.text, option.value));
-    });
+    formatSelect.add(new Option('Base64', 'base64'));
+    formatSelect.add(new Option('Base16', 'base16'));
     // 确保选中值有效
     formatSelect.value = ['base64', 'base16'].includes(originalValue) ? originalValue : 'base64';
   } else {
     // 字符串模式：显示所有格式
-    allOptions.forEach(option => {
-      formatSelect.add(new Option(option.text, option.value));
-    });
+    formatSelect.add(new Option('Base64', 'base64'));
+    formatSelect.add(new Option('Base32', 'base32'));
+    formatSelect.add(new Option('Base16', 'base16'));
+    formatSelect.add(new Option('二进制', 'base2'));
     formatSelect.value = originalValue || 'base64';
   }
 }
@@ -1101,4 +1093,15 @@ window.addEventListener('load', () => {
   initElementCheck();
   updateCopyButtonState();
   updateUI();
+});
+
+// 格式选择框变化时更新UI
+formatSelect.addEventListener('change', () => {
+  updateUI();
+  // 更新输入框提示文本
+  if (currentTarget === 'string') {
+    inputText.placeholder = currentMode === 'encode'
+      ? `请输入要编码为${getFormatDisplayName()}的字符串...`
+      : `请输入要解码的${getFormatDisplayName()}字符串...`;
+  }
 });

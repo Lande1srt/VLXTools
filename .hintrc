@@ -7,7 +7,8 @@
     "axe/name-role-value": [
       "default",
       {
-        "button-name": "off"
+        "button-name": "off",
+        "link-name": "off"
       }
     ],
     "axe/text-alternatives": [
@@ -16,6 +17,8 @@
         "frame-title": "off",
         "document-title": "off"
       }
-    ]
+    ],
+    "axe/forms": "off",
+    "button-type": "off"
   }
 }

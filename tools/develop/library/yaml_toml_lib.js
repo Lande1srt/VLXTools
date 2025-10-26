@@ -1,4 +1,4 @@
-        // 精简版 YAML 解析库
+// 精简版 YAML 解析库
         const jsyaml = (function(){
             const YAMLException = function(message) {
                 this.name = 'YAMLException';
@@ -122,15 +122,73 @@
             
             function stringify(obj) {
                 let toml = '';
-                Object.entries(obj).forEach(([key, value]) => {
-                    let valueStr;
-                    if (typeof value === 'string') valueStr = `"${value}"`;
-                    else if (typeof value === 'boolean') valueStr = value ? 'true' : 'false';
-                    else if (value === null) valueStr = 'null';
-                    else valueStr = value.toString();
-                    
-                    toml += `${key} = ${valueStr}\n`;
-                });
+                
+                function processArray(array, arrayName) {
+                    // 处理TOML数组表格格式
+                    array.forEach((item, index) => {
+                        if (typeof item === 'object' && item !== null) {
+                            toml += `\n[[${arrayName}]]\n`;
+                            Object.entries(item).forEach(([key, value]) => {
+                                if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                                    // 处理嵌套对象
+                                    Object.entries(value).forEach(([subKey, subValue]) => {
+                                        const formattedValue = formatValue(subValue);
+                                        toml += `${key}.${subKey} = ${formattedValue}\n`;
+                                    });
+                                } else if (Array.isArray(value)) {
+                                    // 处理嵌套数组
+                                    const formattedValue = formatValue(value);
+                                    toml += `${key} = ${formattedValue}\n`;
+                                } else {
+                                    const formattedValue = formatValue(value);
+                                    toml += `${key} = ${formattedValue}\n`;
+                                }
+                            });
+                        } else {
+                            // 简单值数组
+                            const formattedValue = formatValue(item);
+                            toml += `${arrayName}[${index}] = ${formattedValue}\n`;
+                        }
+                    });
+                }
+                
+                function formatValue(value) {
+                    if (typeof value === 'string') return `"${value}"`;
+                    else if (typeof value === 'boolean') return value ? 'true' : 'false';
+                    else if (value === null) return 'null';
+                    else if (Array.isArray(value)) {
+                        // 处理数组
+                        const items = value.map(item => {
+                            if (typeof item === 'string') return `"${item}"`;
+                            if (typeof item === 'object' && item !== null) {
+                                return JSON.stringify(item);
+                            }
+                            return item;
+                        });
+                        return `[${items.join(', ')}]`;
+                    }
+                    else return value.toString();
+                }
+                
+                function processObject(obj, prefix = '') {
+                    Object.entries(obj).forEach(([key, value]) => {
+                        const fullKey = prefix ? `${prefix}.${key}` : key;
+                        
+                        if (Array.isArray(value)) {
+                            // 处理数组
+                            processArray(value, key);
+                        } else if (typeof value === 'object' && value !== null) {
+                            // 处理嵌套对象
+                            toml += `\n[${fullKey}]\n`;
+                            processObject(value, fullKey);
+                        } else {
+                            const formattedValue = formatValue(value);
+                            toml += `${key} = ${formattedValue}\n`;
+                        }
+                    });
+                }
+                
+                processObject(obj);
                 return toml;
             }
             

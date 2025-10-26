@@ -15,7 +15,7 @@
           colors: {
             primary: '#e0e5ec',
             secondary: '#a3b1c6',
-            accent: '#4a6fa5',
+            accent: '#6366f1',
           },
           fontFamily: {
             sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -44,6 +44,12 @@
         box-shadow: 7px 7px 14px rgba(163, 177, 198, 0.7),
                     -7px -7px 14px rgba(255, 255, 255, 0.6);
       }
+      .neumorphic-btn:active {
+        box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
+                    inset -5px -5px 10px rgba(255, 255, 255, 0.5);
+        background-color: rgba(74, 111, 165, 0.1);
+        transform: scale(0.98);
+      }
       .neumorphic-btn.active {
         box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.6),
                     inset -5px -5px 10px rgba(255, 255, 255, 0.5);
@@ -56,7 +62,7 @@
   <div class="max-w-6xl mx-auto">
     <!-- 标题区域 -->
     <div class="text-center mb-8 md:mb-12">
-      <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gray-700 mb-2">Chmod 权限计算器</h1>
+      <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gray-700 mb-2 text-accent">Chmod 权限计算器</h1>
       <p class="text-gray-500 max-w-lg mx-auto">通过选择用户组和权限，自动计算对应的Linux文件权限数值和符号表示</p>
     </div>
     

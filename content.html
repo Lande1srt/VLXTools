@@ -92,7 +92,6 @@
             justify-content: center;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
             z-index: 30;
-            cursor: pointer;
             transition: all 0.3s ease;
         }
         
@@ -210,6 +209,16 @@
             set: function(newSrc) {
                 loadingMask.classList.remove('fade-out');
                 originalSetSrc.call(this, newSrc);
+            }
+        });
+        
+        // 从URL参数加载工具
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const toolUrl = urlParams.get('tool');
+            
+            if (toolUrl) {
+                iframe.src = toolUrl;
             }
         });
     </script>
