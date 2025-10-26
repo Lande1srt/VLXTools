@@ -300,6 +300,7 @@ function getIconHtml(icon) {
         return `<i class="fa fa-cog" style="${baseStyle}"></i>`;
     }
     
+    // 处理URL图标
     if (typeof icon === 'string' && (icon.startsWith('http://') || icon.startsWith('https://'))) {
         const tempId = 'icon-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
         const loadingHtml = `<i class="fa fa-spinner fa-spin" style="${baseStyle}"></i>`;
@@ -316,10 +317,23 @@ function getIconHtml(icon) {
         return `<span id="${tempId}">${loadingHtml}</span>`;
     }
     
+    // 处理本地文件路径图标
+    if (typeof icon === 'string' && (icon.startsWith('./') || icon.startsWith('../') || icon.startsWith('/') || /^[a-zA-Z]:\\/.test(icon) || icon.match(/^[^:]+\/[^:]+/))) {
+        // 确保路径格式正确
+        const imagePath = icon.replace(/\\/g, '/');
+        // 使用div包装图片，确保边框样式一致
+        return `<div style="${baseStyle}; padding:0; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+            <img src="${imagePath}" style="max-width:100%; max-height:100%; object-fit:contain;" 
+            onError="this.parentNode.outerHTML='<i class=\'fa fa-cog\' style=\'${baseStyle}\'></i>'" alt="icon">
+        </div>`;
+    }
+    
+    // 处理Font Awesome图标
     if (typeof icon === 'string' && icon.startsWith('fa-')) {
         return `<i class="fa ${icon}" style="${baseStyle}"></i>`;
     }
     
+    // 处理SVG内容
     return `<div style="${baseStyle}">${icon}</div>`;
 }
 

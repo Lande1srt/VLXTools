@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VLXTools</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="shortcut icon" href="img/logo.ico" type="image/x-icon">
+    <link rel="shortcut icon favicon" href="img/logo.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/Sw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script>
         tailwind.config = {
@@ -115,6 +115,37 @@
     </footer>
     <script src="js/copyyear.js"></script>
     <script>
+        // 生成图标HTML
+        function getIconHtml(icon) {
+            if (!icon) {
+                return '<i class="fa fa-cog"></i>';
+            }
+            
+            // 处理URL图标
+            if (typeof icon === 'string' && (icon.startsWith('http://') || icon.startsWith('https://'))) {
+                return `<img src="${icon}" alt="icon" style="width:70%; height:70%; object-fit:contain;">`;
+            }
+            
+            // 处理本地文件路径图标
+            if (typeof icon === 'string' && (icon.startsWith('./') || icon.startsWith('../') || icon.startsWith('/') || /^[a-zA-Z]:\\/.test(icon) || icon.match(/^[^:]+\/[^:]+/))) {
+                // 确保路径格式正确
+                const imagePath = icon.replace(/\\/g, '/');
+                return `<img src="${imagePath}" alt="icon" style="width:70%; height:70%; object-fit:contain;">`;
+            }
+            
+            // 处理Font Awesome图标
+            if (typeof icon === 'string' && icon.startsWith('fa-')) {
+                return `<i class="fa ${icon}" style="transform: scale(0.70);"></i>`;
+            }
+            
+            // 处理SVG内容
+            if (typeof icon === 'string' && icon.includes('<svg')) {
+                return `<div style="transform: scale(0.70);">${icon}</div>`;
+            }
+            
+            return icon;
+        }
+
         // 动态加载工具列表
         async function loadTools() {
             try {
@@ -151,8 +182,8 @@
                         <a href="content.html?tool=${encodeURIComponent(tool.url)}" class="group block">
                             <div class="neumorphic rounded-xl p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
                                 <div class="flex flex-col items-center text-center">
-                                    <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform duration-300">
-                                        ${tool.icon}
+                                    <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform duration-300" style="overflow: hidden;">
+                                        ${getIconHtml(tool.icon)}
                                     </div>
                                     <h5 class="text-lg font-semibold text-gray-800 mb-2 group-hover:text-primary transition-colors duration-300">${tool.name}</h5>
                                     <p class="text-sm text-gray-600 opacity-75">${tool.url}</p>
