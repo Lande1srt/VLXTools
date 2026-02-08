@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     const currentYear = new Date().getFullYear();
-    const footerText = `© ${currentYear} Coldsea Team 保留所有权利`;
+    const footerText = `© ${currentYear} <a href="https://github.com/landeyucc" target="_blank">@landeyucc</a>&nbsp;All rights reserved. <br/ >Powered by <a href="https://coldsea.vip/" target="_blank"><span style="font-family: 'Frizon', sans-serif;">Coldsea</span></a>&nbsp;Team.`;
     const footerElement = document.getElementById('copyyear');
     
     if (footerElement) {
-        footerElement.textContent = footerText;
+        footerElement.innerHTML = footerText;
     }
 });

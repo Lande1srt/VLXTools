@@ -311,7 +311,7 @@
                 
                 // 解析时间戳
                 const timeLine = lines[indexLine].trim();
-                const timeMatch = timeLine.match(/^(\d+:\d+:\d+,\d+) --> (\d+:\d+:\d+,\d+)$/);
+                const timeMatch = timeLine.match(new RegExp('^(\\d+:\\d+:\\d+,\\d+) --> (\\d+:\\d+:\\d+,\\d+)$'));
                 
                 if (!timeMatch) {
                     throw new Error(`无效的时间格式: ${timeLine}`);
